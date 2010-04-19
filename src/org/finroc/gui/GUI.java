@@ -1,0 +1,115 @@
+/**
+ * You received this file as part of FinGUI - a universal
+ * (Web-)GUI editor for Robotic Systems.
+ *
+ * Copyright (C) 2007-2010 Max Reichardt
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+package org.finroc.gui;
+
+import java.awt.Font;
+import java.io.File;
+import java.util.List;
+
+import javax.swing.JLabel;
+
+import org.finroc.gui.abstractbase.DataModelBase;
+import org.finroc.gui.util.embeddedfiles.FileManager;
+import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
+
+import org.finroc.core.FrameworkElement;
+
+/**
+ * @author max
+ *
+ * This class contains the GUI-(data-)model
+ */
+public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourcePathProvider {
+
+    /** UID */
+    private static final long serialVersionUID = -6655795676216560061L;
+
+    /** Loop Time for IO-Connections */
+    private int loopTime = 100;
+
+    /** Font for connection tree (in left panel) */
+    private float fontSize = 12;
+    //private Font treeFont = new JLabel().getFont().deriveFont(Font.PLAIN);
+
+    /** reference to main class */
+    private transient GUIUiBase<?,?> fingui;
+
+    /** Manager for embedded files */
+    private transient FileManager embeddedFileManager;
+
+    public GUI(GUIUiBase<?,?> fingui) {
+        super(null);
+        this.fingui = fingui;
+        // create GUI-GUI ;-)
+        // create one new panel
+        //addNewWindow();
+        add(new GUIWindow(this));
+        restore(null);
+    }
+
+    public GUIUiBase<?,?> getFingui() {
+        return fingui;
+    }
+
+    public void setJmcagui(GUIUiBase<?,?> fingui) {
+        this.fingui = fingui;
+    }
+
+    public int getLoopTime() {
+        return loopTime;
+    }
+
+    public Font getTreeFont() {
+        return new JLabel().getFont().deriveFont(Font.PLAIN, fontSize);
+    }
+
+    public void setLoopTime(int loopTime) {
+        this.loopTime = loopTime;
+    }
+
+    public FileManager getEmbeddedFileManager() {
+        if (embeddedFileManager == null) {
+            embeddedFileManager = new FileManager(this);
+        }
+        //embeddedFileManager.update();
+        return embeddedFileManager;
+    }
+
+    public void setEmbeddedFileManager(FileManager newEfm) {
+        embeddedFileManager = newEfm;
+    }
+
+    @Override
+    protected FrameworkElement createFrameworkElement() {
+        return new FrameworkElement("GUI");
+    }
+
+    @Override
+    public List<File> getResourcePaths() {
+        return getFingui().getResourcePaths();
+    }
+
+    @Override
+    public void restore(GUI parent) {
+        super.restore(parent);
+        frameworkElement.init();
+    }
+}

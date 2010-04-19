@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="300"
+   height="540"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45"
+   sodipodi:docname="LCD.svg"
+   sodipodi:docbase="/home/max/FP/JavaMCA/jmcagui/widgets"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.0"
+   sodipodi:modified="true">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98158442"
+     inkscape:cx="227.46228"
+     inkscape:cy="289.19543"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     showguides="true"
+     inkscape:grid-points="true"
+     gridtolerance="10000"
+     gridspacingx="1px"
+     gridspacingy="0.5px"
+     inkscape:window-width="1280"
+     inkscape:window-height="754"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     width="300px"
+     height="540px" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 30.5,36.862199 L 20.5,46.862199 L 20.5,246.86219 L 40.5,266.86219 L 60.5,246.86219 L 60.5,66.862199 L 30.5,36.862199"
+       id="NW" />
+    <path
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 45.5,271.86219 L 65.5,291.86219 L 235.5,291.86219 L 255.5,271.86219 L 235.5,251.86219 L 65.5,251.86219 L 45.5,271.86219"
+       id="C"
+       sodipodi:nodetypes="ccccccc" />
+    <path
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 265.5,32.362196 L 255.5,22.362196 L 46,21.862196 L 36,31.862196 L 66,61.862196 L 235.5,62.362196 L 265.5,32.362196"
+       id="N"
+       sodipodi:nodetypes="ccccccc" />
+    <path
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 270.5,36.862196 L 280.5,46.862196 L 280.5,246.86219 L 260.5,266.86219 L 240.5,246.86219 L 240.5,66.862196 L 270.5,36.862196"
+       id="NE"
+       inkscape:label="#NE" />
+    <path
+       id="SW"
+       d="M 30.5,506.86218 L 20.5,496.86218 L 20.5,296.86219 L 40.5,276.86219 L 60.5,296.86219 L 60.5,476.86218 L 30.5,506.86218"
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       sodipodi:nodetypes="ccccccc"
+       id="S"
+       d="M 265.5,511.36218 L 255.5,521.36218 L 46,521.86218 L 36,511.86218 L 66,481.86218 L 235.5,481.36218 L 265.5,511.36218"
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="SE"
+       d="M 270.5,506.86218 L 280.5,496.86218 L 280.5,296.86219 L 260.5,276.86219 L 240.5,296.86219 L 240.5,476.86218 L 270.5,506.86218"
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#f50000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+</svg>

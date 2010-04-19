@@ -1,0 +1,5 @@
+<targets>
+  <finrocjavaprogram name="fingui" libs="finroc_plugin_blackboard.jar finroc_plugin_data_types.jar" main-class="org.finroc.gui.FinrocGUI">
+    <sources>src/** lib/*.jar</sources>
+  </finrocjavaprogram>
+</targets>

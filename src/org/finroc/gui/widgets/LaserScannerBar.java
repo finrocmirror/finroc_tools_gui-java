@@ -1,0 +1,106 @@
+/**
+ * You received this file as part of FinGUI - a universal
+ * (Web-)GUI editor for Robotic Systems.
+ *
+ * Copyright (C) 2007-2010 Max Reichardt
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+package org.finroc.gui.widgets;
+
+import java.awt.Color;
+import java.awt.Dimension;
+
+import javax.naming.OperationNotSupportedException;
+
+import org.finroc.gui.Widget;
+import org.finroc.gui.WidgetInput;
+import org.finroc.gui.WidgetPort;
+import org.finroc.gui.WidgetPorts;
+import org.finroc.gui.WidgetUI;
+import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
+
+import org.finroc.plugin.datatype.Function;
+import org.finroc.core.port.PortCreationInfo;
+import org.finroc.core.port.std.PortBase;
+import org.finroc.core.port.std.PortListener;
+
+
+public class LaserScannerBar extends Widget {
+
+    /** UID */
+    private static final long serialVersionUID = -4297918119999527909L;
+
+    public Color minColor = Color.WHITE;
+    public Color maxColor = Color.BLACK;
+    public double minValue = 0;
+    public double maxValue = 2000;
+    public boolean mirrored = false;
+
+    public WidgetInput.Std<Function> inputFunction;
+
+    @Override
+    protected WidgetUI createWidgetUI() {
+        return new LaserScannerBarUI();
+    }
+
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+        return suggestion.derive(Function.TYPE);
+    }
+
+    class LaserScannerBarUI extends WidgetUI implements PortListener<Function> {
+
+        /** UID */
+        private static final long serialVersionUID = 3384400171418823343L;
+
+        public LaserScannerBarUI() {
+            super(RenderMode.Cached);
+            inputFunction.addChangeListener(this);
+        }
+
+        @Override
+        protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
+            Function f = inputFunction.getAutoLocked();
+
+            // empty function => black
+            if (f == null || Double.isNaN(f.getMinX())) {
+                cache.fill(0);
+                releaseAllLocks();
+                return;
+            }
+
+            for (int x = 0; x < renderSize.width; x++) {
+                double xRel = ((double)x) / ((double)renderSize.width);
+                double xAbs = f.getMinX() + xRel * (f.getMaxX() - f.getMinX());
+                double y = f.getY(xAbs);
+                float alpha = (float)((y - minValue) / (maxValue - minValue));
+                alpha = Math.max(0, Math.min(1, alpha));
+                int color = BufferedImageRGB.mergeColors(minColor.getRGB(), maxColor.getRGB(), alpha);
+                if (!mirrored) {
+                    cache.drawVerticalLine(x, 0, renderSize.height, color);
+                } else {
+                    cache.drawVerticalLine(renderSize.width - 1 - x, 0, renderSize.height, color);
+                }
+            }
+            releaseAllLocks();
+        }
+
+        @Override
+        public void portChanged(PortBase origin, Function value) {
+            this.setChanged();
+            repaint();
+        }
+    }
+}
