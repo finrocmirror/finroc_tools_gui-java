@@ -33,6 +33,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -111,7 +112,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         // Setup all the scrolling stuff
         leftTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
         rightTree = new MJTree<TreePortWrapper>(WidgetPort.class, 2);
-        setPreferredSize(new Dimension(400, 0));
+        setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
         setMinimumSize(new Dimension(300, 0));
         rightTree.setBackground(new Color(242, 242, 255));
         rightTree.setFocusTraversalKeysEnabled(false);
@@ -185,7 +186,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         ((GUIPanel)tm.getRoot()).addDataModelListener(this);
     }
 
-    public void dataModelChanged(DataModelBase<?,?,?> caller, Event event, Object param) {
+    public void dataModelChanged(DataModelBase <? , ? , ? > caller, Event event, Object param) {
         if (event == Event.SelectionChanged) {
             rightTree.repaint();
         }
@@ -250,7 +251,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         r.x += tree.getLocationOnScreen().x - getLocationOnScreen().x;  // Koordinaten im ConnectionPanel
         r.y += tree.getLocationOnScreen().y - getLocationOnScreen().y;
         int offset = (!p.isInputPort()) ? r.height / 2 - 1 : 0;  // An Spitze oder in Vertiefung ansetzen?
-        int xpos = selFromRight? r.x + offset : r.x + r.width - offset - 4;  // Linker oder rechter Baum
+        int xpos = selFromRight ? r.x + offset : r.x + r.width - offset - 4; // Linker oder rechter Baum
 
         // xpos an den Rand setzen, falls es Baum sonst überschreitet
         if (tree == leftTree) {
@@ -307,7 +308,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         if (hypo == null) {
             if (startPoints.size() > 0) {
-                JTree otherTree = selectionFromRight? leftTree : rightTree;
+                JTree otherTree = selectionFromRight ? leftTree : rightTree;
                 otherTree.clearSelection();
                 ((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
             }
@@ -331,8 +332,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         if (port == null || port2 == null) {
             return;
         }
-        WidgetPort<?> wp = (WidgetPort<?>)((port instanceof WidgetPort<?>)? port : port2);
-        PortWrapper other = ((wp == port)? port2 : port);
+        WidgetPort<?> wp = (WidgetPort<?>)((port instanceof WidgetPort<?>) ? port : port2);
+        PortWrapper other = ((wp == port) ? port2 : port);
         wp.connectTo(other);
         /*if (wp.isInputPort()) {
             wp.getPort().connectToSource(other.getPort());
@@ -469,7 +470,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                         break;
                     }
                 }
-                i = (i+1) % potentialPartners.size();
+                i = (i + 1) % potentialPartners.size();
             } while (i != startElement);
             result.add(partner);
         }
@@ -568,7 +569,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     //private static Color selectedBorder = new Color(240, 140, 20);
     public static final Color selected = new Color(255, 30, 30);
 
-    private static Map<String,Icon> iconCache = new HashMap<String,Icon>();
+    private static Map<String, Icon> iconCache = new HashMap<String, Icon>();
     private boolean rightTree;
 
     /** for showing selection after some time */
@@ -614,7 +615,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         //}
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,    row, hasFocus);
         //setBackground(color);
-        setBackgroundSelectionColor((!timer.isRunning() && sel)? selected : color);
+        setBackgroundSelectionColor((!timer.isRunning() && sel) ? selected : color);
         setIconTextGap(0);
         if (!rightTree) {
             setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -651,7 +652,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         int colorTemp = sel ? selected.getRGB() : color.getRGB();
 
         BufferedImageRGB img = new BufferedImageRGB(height / 2 + 1, height);
-        img.drawFilledRectangle(img.getBounds(), input? colorTemp : backgroundTemp);
+        img.drawFilledRectangle(img.getBounds(), input ? colorTemp : backgroundTemp);
 
         // Dreieck malen
         int[] buffer = img.getBuffer();
