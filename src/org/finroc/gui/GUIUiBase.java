@@ -56,10 +56,10 @@ import org.finroc.gui.util.treemodel.PortWrapper;
 
 import org.finroc.core.plugin.ConnectionListener;
 
-public abstract class GUIUiBase<P extends UIBase<?,?,?,?>,C extends UIBase<?,?,?,?>> extends UIBase<P,Container,GUI,C> implements ResourcePathProvider {
+public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends UIBase<P, Container, GUI, C> implements ResourcePathProvider {
 
     /** Constants for GUI files */
-    public static final String GUI_FILE_EXTENSION = "jgui";
+    public static final String GUI_FILE_EXTENSION = "fingui";
     public static final String GUI_MAIN_FILE_IN_ZIP = "gui.xml";
 
     public static final String GUI_MAIN_FILE_IN_BINARY_ZIP = "gui.bin";
