@@ -60,6 +60,11 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
     protected BufferedImage wrapped;
 
     /**
+     * Graphics to draw into this buffered image - lazyly initialized
+     */
+    private Graphics2D graphics = null;
+
+    /**
      * with this constructor, 'wrapped' has to be initialized by subclass
      */
     public FastBufferedImage() {}
@@ -118,7 +123,11 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
     }
 
     public Graphics2D getGraphics() {
-        return wrapped.createGraphics();
+        if (graphics == null) {
+            graphics = wrapped.createGraphics();
+        }
+        return graphics;
+        //return wrapped.createGraphics();
     }
 
     public void paint(Graphics2D g) {
