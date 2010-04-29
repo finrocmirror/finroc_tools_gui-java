@@ -31,6 +31,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.plugin.datatype.Paintable;
 import org.finroc.core.buffer.CoreInput;
 import org.finroc.core.buffer.CoreOutput;
 import org.finroc.core.port.std.PortDataDelegate;

@@ -52,7 +52,6 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.Util;
-import org.finroc.gui.commons.fastdraw.Paintable;
 import org.finroc.gui.themes.Themes;
 import org.finroc.gui.util.embeddedfiles.EmbeddedPaintable;
 import org.finroc.gui.util.embeddedfiles.EmbeddedPaintables;
@@ -63,6 +62,7 @@ import org.finroc.gui.util.gui.MPopupMenu;
 import org.finroc.gui.util.gui.MToolBar;
 import org.finroc.gui.util.gui.MouseEventListener;
 import org.finroc.gui.util.gui.RulerOfTheForest;
+import org.finroc.plugin.datatype.Paintable;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;

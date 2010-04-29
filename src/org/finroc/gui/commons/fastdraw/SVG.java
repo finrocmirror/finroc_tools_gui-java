@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.finroc.gui.commons.Util;
+import org.finroc.plugin.datatype.Paintable;
 
 import com.kitfox.svg.SVGCache;
 import com.kitfox.svg.SVGDiagram;

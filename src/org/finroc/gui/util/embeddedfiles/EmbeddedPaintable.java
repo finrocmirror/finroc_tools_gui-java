@@ -28,8 +28,8 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
-import org.finroc.gui.commons.fastdraw.Paintable;
 import org.finroc.gui.commons.fastdraw.SVG;
+import org.finroc.plugin.datatype.Paintable;
 
 
 /**
