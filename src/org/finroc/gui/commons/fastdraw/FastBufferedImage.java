@@ -91,7 +91,15 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
             int len = buffer.length;
             byte[] bs = ((DataBufferByte)db).getData();
             for (int i = 0; i < len; i++) {
-                buffer[i] = BitOps.merge(bs[i*4+3], bs[i*4+1], bs[i*4+2], bs[i*4]);
+                @SuppressWarnings("unused")
+                int type = img.getType();
+                if (img.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+                    buffer[i] = BitOps.merge(bs[i*4], bs[i*4+3], bs[i*4+2], bs[i*4+1]);
+                } else {
+                    buffer[i] = BitOps.merge(bs[i*4+3], bs[i*4+2], bs[i*4+1], bs[i*4]);
+                } /*else if (img.getType() == BufferedImage.TYPE){
+                    buffer[i] = BitOps.merge(bs[i*4+3], bs[i*4+1], bs[i*4+2], bs[i*4]);
+                }*/
             }
         }
     }

@@ -74,6 +74,10 @@ public class Button extends Widget {
         return null;
     }
 
+    public String toString() {
+        return "Button" + (text.length() == 0 ? "" : (" (\"" + text + "\")"));
+    }
+
     class ButtonUI extends WidgetUI implements ActionListener, MouseListener, CCPortListener<CoreNumber> {
 
         /** UID */

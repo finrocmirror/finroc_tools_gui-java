@@ -68,6 +68,10 @@ public class LED extends Widget {
     static ImageIcon ledOff;
     static BufferedImageARGBColorable ledOn;
 
+    public LED() {
+        setBackground(Themes.getCurTheme().panelBackground());
+    }
+
     @Override
     protected WidgetUI createWidgetUI() {
         return new LEDWidgetUI();
@@ -136,6 +140,8 @@ public class LED extends Widget {
             for (int i = 0; i < numberOfLEDs; i++) {
                 panels.get(i).setText(descriptions.get(i));
                 panels.get(i).jl.setForeground(LED.this.getLabelColor());
+                panels.get(i).setFontSize(fontSize);
+                panels.get(i).setBackground(LED.this.getBackground());
             }
 
             // update Icons
@@ -164,6 +170,12 @@ public class LED extends Widget {
                 jl.setIcon(this);
                 setBackground(LED.this.getBackground());
                 add(jl, BorderLayout.CENTER);
+            }
+
+            public void setFontSize(float fontSize) {
+                if (jl.getFont().getSize() != fontSize) {
+                    jl.setFont(jl.getFont().deriveFont(fontSize));
+                }
             }
 
             public void setText(String text) {
