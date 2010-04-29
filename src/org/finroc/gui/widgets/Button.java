@@ -33,7 +33,6 @@ import javax.swing.JToggleButton;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 
 import org.finroc.core.datatype.CoreNumber;
@@ -68,7 +67,7 @@ public class Button extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == emitValue) {
             return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
         }

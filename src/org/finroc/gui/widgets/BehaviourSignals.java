@@ -44,7 +44,6 @@ import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
 
@@ -75,7 +74,7 @@ public class BehaviourSignals extends Widget {
     public WidgetOutput.Blackboard<BehaviourInfoBlackboard> signals;
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == names) {
             return suggestion.derive(ContainsStrings.TYPE);
         } else if (forPort == signals) {
@@ -107,8 +106,8 @@ public class BehaviourSignals extends Widget {
         GridBagConstraints gbc = new GridBagConstraints();
         JLabel reference = new JLabel("Behaviour");
         private Font font = reference.getFont().deriveFont(Font.PLAIN);
-        private Insets nullInsets = new Insets(0,0,0,0);
-        private Insets padInsets = new Insets(0,0,2,0);
+        private Insets nullInsets = new Insets(0, 0, 0, 0);
+        private Insets padInsets = new Insets(0, 0, 2, 0);
         int bbElemSize = -1;
 
         BehaviourSignalsUI() {

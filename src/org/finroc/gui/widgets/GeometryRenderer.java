@@ -122,8 +122,8 @@ public class GeometryRenderer extends Widget {
     enum Mode { Normal, Move, Zoom, Rotate}
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
-        if (collection == geometry) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
+        if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(Paintable.TYPE);
         }
         return suggestion;
@@ -252,7 +252,7 @@ public class GeometryRenderer extends Widget {
             toolbar.setSelected(Action.Watch, false);
         }
 
-        public void mouseEvent(Action id, AdvancedMouseListener<?, Action> source, MouseEvent me) {
+        public void mouseEvent(Action id, AdvancedMouseListener <? , Action > source, MouseEvent me) {
             switch (id) {
             case Point:
                     Point2D temp = getPoint(me.getPoint());
@@ -382,7 +382,7 @@ public class GeometryRenderer extends Widget {
             while (geometry.size() < numberOfGeometries) {
                 WidgetInput.Std<Paintable> p = new WidgetInput.Std<Paintable>();
                 geometry.add(p);
-                p.setDescription("geometry " + (geometry.size() + 1));
+                p.setDescription("geometry " + geometry.size());
             }
             while (geometry.size() > numberOfGeometries) {  // remove last entries
                 geometry.remove(geometry.size() - 1);
@@ -390,7 +390,7 @@ public class GeometryRenderer extends Widget {
             while (objectCoordinates.size() / MAP_OBJECT_EDGE_COUNT < mapObjects.size()) {
                 objectCoordinates.add(new WidgetInput.Numeric());
             }
-            while ((objectCoordinates.size()+2) / MAP_OBJECT_EDGE_COUNT > mapObjects.size()) {
+            while ((objectCoordinates.size() + 2) / MAP_OBJECT_EDGE_COUNT > mapObjects.size()) {
                 objectCoordinates.remove(objectCoordinates.size() - 1);
             }
             // update port names

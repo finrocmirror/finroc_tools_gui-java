@@ -31,7 +31,6 @@ import java.util.Map;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedConvexSVG;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
@@ -70,7 +69,7 @@ public class LCD extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion;
     }
 
@@ -196,7 +195,7 @@ public class LCD extends Widget {
 
             // calculate block size
             if (s.length() > optimalLength) {
-                blockWidth = (int)(renderSize.width / ((s.length()-1) * (1 + SPACING) + 1));
+                blockWidth = (int)(renderSize.width / ((s.length() - 1) * (1 + SPACING) + 1));
             }
             int blockHeight = SVGHEIGHT * blockWidth / SVGWIDTH;
 

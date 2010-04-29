@@ -77,7 +77,7 @@ public class Oscilloscope extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion;
     }
 
@@ -277,7 +277,7 @@ public class Oscilloscope extends Widget {
                 } else {
                     yRel = (y - rightScaleMin) / (rightScaleMax - rightScaleMin);
                 }
-                return ((double)(getHeight() - 1)) * (1 - yRel);
+                return ((double)(getHeight() - 1)) *(1 - yRel);
             }
 
             public double getXCord(double x) {

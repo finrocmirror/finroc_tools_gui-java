@@ -28,7 +28,6 @@ import javax.naming.OperationNotSupportedException;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 
@@ -56,7 +55,8 @@ public class LaserScannerBar extends Widget {
         return new LaserScannerBarUI();
     }
 
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    @Override
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion.derive(Function.TYPE);
     }
 

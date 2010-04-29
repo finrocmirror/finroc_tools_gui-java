@@ -34,7 +34,6 @@ import javax.swing.event.ChangeListener;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
 
@@ -72,7 +71,7 @@ public class Slider extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
@@ -133,7 +132,7 @@ class DoubleSlider extends JSlider {
     /** UID */
     private static final long serialVersionUID = -2482287632595308051L;
 
-    double min,max,step;
+    double min, max, step;
     private static final double MAXTICKSPERPIXEL = 0.1;
     Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
     JLabel maxLabel, minLabel;

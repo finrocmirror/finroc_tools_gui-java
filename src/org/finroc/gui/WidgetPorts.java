@@ -38,23 +38,23 @@ import org.finroc.core.port.std.PortListener;
  *
  */
 @SuppressWarnings("unchecked")
-public class WidgetPorts<P extends WidgetPort<?>> extends ArrayList<P> implements PortListener, CCPortListener {
+public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener, CCPortListener {
 
     /** UID */
     private static final long serialVersionUID = 3502191793248052616L;
 
     private final Widget parent;
     private String portNamePrefix;
-    private Class<? extends WidgetPort> type;
+    private Class <? extends WidgetPort > type;
     private transient Object hashDelegate;  // necessary that this can be used with EventRouter
     transient boolean initialized;
 
-    public WidgetPorts(String portNamePrefix, int initialSize, Class<? extends WidgetPort> type, Widget parent) {
+    public WidgetPorts(String portNamePrefix, int initialSize, Class <? extends WidgetPort > type, Widget parent) {
         this.portNamePrefix = portNamePrefix;
         this.type = type;
         this.parent = parent;
         initialized = true;
-        setSize(initialSize);
+        //setSize(initialSize);
     }
 
     public int hashCode() {  // necessary that this can be used with EventRouter

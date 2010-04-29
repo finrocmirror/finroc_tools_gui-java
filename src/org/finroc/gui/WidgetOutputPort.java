@@ -39,7 +39,7 @@ public abstract class WidgetOutputPort<P extends AbstractPort> extends WidgetPor
 
     public PortCreationInfo getPci() {
         PortCreationInfo def = stdPci.derive(getDescription());
-        PortCreationInfo pci = getParent().getPortCreationInfo(def, this, null);
+        PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
         return pci == null ? def : pci;
     }
 

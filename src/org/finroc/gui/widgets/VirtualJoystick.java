@@ -35,7 +35,6 @@ import javax.swing.event.MouseInputListener;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.Util;
 import org.finroc.gui.commons.fastdraw.BufferedImageARGBColorable;
@@ -78,7 +77,7 @@ public class VirtualJoystick extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion;
     }
 
@@ -184,9 +183,9 @@ public class VirtualJoystick extends Widget {
                 yf = (yf + 1) / 2;
                 //x.setValue(new NumberWithDefault(xf * xRight + (1-xf) * xLeft, xCenter));
                 //y.setValue(new NumberWithDefault(yf * yBottom + (1-yf) * yTop, yCenter));
-                x.publish(xf * xRight + (1-xf) * xLeft);
-                y.publish(yf * yBottom + (1-yf) * yTop);
-                pointColor = (255-colorFactor) << 8 | colorFactor << 16;
+                x.publish(xf * xRight + (1 - xf) * xLeft);
+                y.publish(yf * yBottom + (1 - yf) * yTop);
+                pointColor = (255 - colorFactor) << 8 | colorFactor << 16;
             }
             setChanged();
             repaint();

@@ -34,7 +34,6 @@ import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 
 import org.finroc.plugin.datatype.ContainsStrings;
@@ -63,7 +62,7 @@ public class TextEditor extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : StringBlackboardBuffer.TYPE);
     }
 

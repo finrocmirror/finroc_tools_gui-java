@@ -51,7 +51,7 @@ import org.finroc.core.port.ThreadLocalCache;
  * This is the base class for all widgets used in the GUI
  */
 
-public abstract class Widget extends DataModelBase<GUI, GUIPanel, WidgetPort<?>> implements ReflectionCallback<Field>, HasEmbeddedFiles {
+public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<? >> implements ReflectionCallback<Field>, HasEmbeddedFiles {
 
     /** UID */
     private static final long serialVersionUID = -5622497094531263503L;
@@ -268,10 +268,9 @@ public abstract class Widget extends DataModelBase<GUI, GUIPanel, WidgetPort<?>>
      *
      * @param suggestion Suggested PortCreationInfo (you may derive from this; if this is not a number port, at least the type needs to be set)
      * @param forPort Port that is created (compare it with any port defined in class)
-     * @param collection Any collection this port is part of - otherwise null
      * @return PortCreationInfo to create port with (null means use suggestion)
      */
-    protected abstract PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection);
+    protected abstract PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort);
 
     @Override
     protected FrameworkElement createFrameworkElement() {

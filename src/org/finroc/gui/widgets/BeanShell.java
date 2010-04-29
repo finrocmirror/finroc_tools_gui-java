@@ -25,7 +25,6 @@ import java.awt.BorderLayout;
 import org.finroc.gui.GUIUiBase;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 
 import org.finroc.core.port.PortCreationInfo;
@@ -46,7 +45,7 @@ public class BeanShell extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return null;
     }
 
@@ -62,7 +61,7 @@ public class BeanShell extends Widget {
             add(console, BorderLayout.CENTER);
             Interpreter ip = new Interpreter(console);
 
-            GUIUiBase<?,?> instance = BeanShell.this.getRoot().getFingui();
+            GUIUiBase <? , ? > instance = BeanShell.this.getRoot().getFingui();
             try {
                 ip.set("mcagui", instance);
                 ip.eval("public void wait(long ms) { Integer dummy = new Integer(5); synchronized(dummy) { dummy.wait(ms); }}");

@@ -29,7 +29,6 @@ import javax.naming.OperationNotSupportedException;
 
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.Blittable;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
@@ -55,11 +54,11 @@ public class VideoJoystick extends VirtualJoystick {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == video) {
             return suggestion.derive(Blittable.TYPE);
         }
-        return super.getPortCreationInfo(suggestion, forPort, collection);
+        return super.getPortCreationInfo(suggestion, forPort);
     }
 
     class VideoJoystickUI extends VirtualJoystickUI implements PortListener<Blittable> {

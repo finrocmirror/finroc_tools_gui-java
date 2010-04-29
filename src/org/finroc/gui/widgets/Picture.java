@@ -29,7 +29,6 @@ import javax.naming.OperationNotSupportedException;
 
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetPort;
-import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.util.embeddedfiles.EmbeddedPaintable;
@@ -54,7 +53,7 @@ public class Picture extends Widget {
     }
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort, WidgetPorts<?> collection) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return null;
     }
 

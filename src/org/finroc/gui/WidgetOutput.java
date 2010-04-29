@@ -124,7 +124,7 @@ public class WidgetOutput {
         @Override
         protected FrameworkElement createFrameworkElement() {
             PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
-            PortCreationInfo pci = getParent().getPortCreationInfo(def, this, null);
+            PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
             RawBlackboardClient c = new RawBlackboardClient(pci == null ? def : pci, false, -1);
             return c.getWritePort();
         }
