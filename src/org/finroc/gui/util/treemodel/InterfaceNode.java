@@ -21,6 +21,7 @@
 package org.finroc.gui.util.treemodel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import org.finroc.core.FrameworkElement;
@@ -32,6 +33,9 @@ public class InterfaceNode extends DefaultMutableTreeNode implements TreeNode, U
 
     protected final FrameworkElement.Link wrapped;
 
+    /** Sort nodes in interface tree? */
+    public static final boolean SORT_TREE = true;
+
     public InterfaceNode(FrameworkElement.Link wrapped) {
         super(wrapped.getDescription());
         this.wrapped = wrapped;
@@ -42,6 +46,31 @@ public class InterfaceNode extends DefaultMutableTreeNode implements TreeNode, U
         StringBuilder sb = new StringBuilder();
         wrapped.getChild().getQualifiedLink(sb, wrapped);
         return sb.toString();
+    }
+
+
+
+    @Override
+    public void add(MutableTreeNode node) {
+        if (SORT_TREE) {
+            for (int i = 0; i < getChildCount(); i++) {
+                TreeNode child = getChildAt(i);
+                boolean nodePort = node instanceof InterfaceNodePort;
+                boolean childPort = child instanceof InterfaceNodePort;
+                if (nodePort == childPort) {
+                    if (node.toString().compareToIgnoreCase(child.toString()) < 0) {
+                        super.insert(node, i);
+                        return;
+                    }
+                } else {
+                    if (childPort && (!nodePort)) {
+                        super.insert(node, i);
+                        return;
+                    }
+                }
+            }
+        }
+        super.add(node);
     }
 
     // If there are links to the same framework element: Points to node that represents next link
