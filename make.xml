@@ -1,5 +1,6 @@
 <targets>
-  <finrocjavaprogram name="fingui" libs="finroc_plugin_blackboard.jar finroc_plugin_data_types.jar" main-class="org.finroc.gui.FinrocGUI">
+  <finrocjavaprogram name="fingui" libs="finroc_plugin_blackboard.jar finroc_plugin_data_types.jar">
     <sources>src/** lib/*.jar</sources>
+    <script name="fingui" pre="$(PRELOAD_HELPER)" main-class="org.finroc.gui.FinrocGUI"/>
   </finrocjavaprogram>
 </targets>

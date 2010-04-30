@@ -20,6 +20,7 @@
  */
 package org.finroc.gui.widgets;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -121,7 +122,7 @@ public class RadioButtons extends Widget {
                     add(jrb);
                     buttons.add(jrb);
                     jrb.setBackground(RadioButtons.this.getBackground());
-                    jrb.setForeground(Themes.getCurTheme().standardLabel());
+                    jrb.setForeground(getLabelColor());
                     itemCount++;
                 } catch (Exception e) {}
             }

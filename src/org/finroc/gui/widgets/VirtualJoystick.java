@@ -137,7 +137,7 @@ public class VirtualJoystick extends Widget {
         }
 
         public void mouseReleased(MouseEvent e) {
-            if (resetOnRelease) {
+            if (resetOnRelease && e.getButton() == MouseEvent.BUTTON1) {
                 setPos(null);
             }
         }
