@@ -65,6 +65,9 @@ public class ColorEditor extends PropertyEditComponent<Color> implements ActionL
     }
 
     private void setButtonColor(Color curWidgetValue) {
+        if (curWidgetValue == null) {
+            curWidgetValue = new Color(0, 0, 0);
+        }
         icon.drawFilledRectangle(icon.getBounds(), curWidgetValue.getRGB());
         button.setIcon(new ImageIcon(icon.getBufferedImage()));
         curColor = curWidgetValue;
