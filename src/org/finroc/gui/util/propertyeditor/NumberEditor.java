@@ -53,7 +53,11 @@ public class NumberEditor extends PropertyEditComponent<Number> {
     public Number getCurEditorValue() {
         Class<?> t = getPropertyType();
         if (t.equals(Double.class) || t.equals(Number.class) || t.equals(double.class)) {
-            return Double.parseDouble(jtf.getText());
+            try {
+                return Double.parseDouble(jtf.getText());
+            } catch (Exception e) {
+                return Double.NaN;
+            }
         } else if (t.equals(Float.class) || t.equals(float.class)) {
             return Float.parseFloat(jtf.getText());
         } else if (t.equals(Integer.class) || t.equals(int.class)) {

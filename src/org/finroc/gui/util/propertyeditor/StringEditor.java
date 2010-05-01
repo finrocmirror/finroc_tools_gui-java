@@ -49,7 +49,7 @@ public class StringEditor extends PropertyEditComponent<String> {
         jtf = new JTextField();
         jtf.setText(s);
         jtf.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        //jtf.setPreferredSize();
+        jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
         add(jtf);
     }
 

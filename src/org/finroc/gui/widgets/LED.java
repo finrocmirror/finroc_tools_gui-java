@@ -26,6 +26,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.finroc.gui.GUIPanel;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
@@ -46,6 +48,7 @@ import org.finroc.gui.commons.fastdraw.BufferedImageARGBColorAdd;
 import org.finroc.gui.commons.fastdraw.BufferedImageARGBColorable;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.themes.Themes;
+import org.finroc.gui.util.propertyeditor.PropertyList;
 import org.finroc.plugin.datatype.StringList;
 
 import org.finroc.core.port.AbstractPort;
@@ -58,11 +61,13 @@ public class LED extends Widget {
 
     public WidgetPorts<WidgetInput.Numeric> signals = new WidgetPorts<WidgetInput.Numeric>("signal", 2, WidgetInput.Numeric.class, this);
 
-    private Color ledColor = Themes.getCurTheme().ledColor();
+    @SuppressWarnings("unused")
+    private transient Color ledColor = Themes.getCurTheme().ledColor(); // outdated - kept for backward compatibility
+    public StringList descriptions = new StringList(); // outdated - kept for backward compatibility
 
     float fontSize = 18;
 
-    public StringList descriptions = new StringList("LED 1\nLED 2");
+    PropertyList<LEDProperty> leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
 
     /** Raw-Icons only need to be initialized once application-wide */
     static ImageIcon ledOff;
@@ -70,6 +75,8 @@ public class LED extends Widget {
 
     public LED() {
         setBackground(Themes.getCurTheme().panelBackground());
+        leds.add(new LEDProperty("LED 1"));
+        leds.add(new LEDProperty("LED 2"));
     }
 
     @Override
@@ -82,13 +89,42 @@ public class LED extends Widget {
         return suggestion;
     }
 
+    @Override
+    public void restore(GUIPanel parent) {
+        // import legacy widget setttings
+        if (descriptions != null && descriptions.size() > 0) {
+            leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
+            for (String s : descriptions) {
+                leds.add(new LEDProperty(s));
+            }
+        }
+
+        super.restore(parent);
+    }
+
+    /** Properties of one bar */
+    public static class LEDProperty implements Serializable {
+
+        /** UID */
+        private static final long serialVersionUID = 6464808920773228472L;
+
+        private Color off = new Color(0, 0, 0), on = Themes.getCurTheme().ledColor();
+        private double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
+        String label = "LED";
+
+        public LEDProperty() {}
+
+        public LEDProperty(String label) {
+            this.label = label;
+        }
+    }
+
     class LEDWidgetUI extends WidgetUI implements WidgetPortsListener {
 
         /** UID */
         private static final long serialVersionUID = 1667635834447207L;
 
         List<LEDPanel> panels = new ArrayList<LEDPanel>();
-        BufferedImageRGB renderBuffer;  // buffer for rendering
 
         LEDWidgetUI() {
             super(RenderMode.Swing);
@@ -102,7 +138,6 @@ public class LED extends Widget {
                     throw new RuntimeException(e);
                 }
             }
-            renderBuffer = new BufferedImageRGB(ledOn.getSize());
             signals.addChangeListener(this);
             widgetPropertiesChanged();
         }
@@ -110,7 +145,9 @@ public class LED extends Widget {
         @Override
         public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
             for (int i = 0; i < signals.size(); i++) {
-                panels.get(i).on = signals.get(i).getDouble() != 0.0;
+                double d = signals.get(i).getDouble();
+                LEDPanel pan = panels.get(i);
+                pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
             }
             repaint();
         }
@@ -119,7 +156,7 @@ public class LED extends Widget {
         @Override
         public void widgetPropertiesChanged() {
 
-            int numberOfLEDs = descriptions.size();
+            int numberOfLEDs = leds.size();
 
             // adjust number of ports
             signals.setSize(numberOfLEDs);
@@ -138,15 +175,8 @@ public class LED extends Widget {
 
             // update panels
             for (int i = 0; i < numberOfLEDs; i++) {
-                panels.get(i).setText(descriptions.get(i));
-                panels.get(i).jl.setForeground(LED.this.getLabelColor());
-                panels.get(i).setFontSize(fontSize);
-                panels.get(i).setBackground(LED.this.getBackground());
+                panels.get(i).update(leds.get(i));
             }
-
-            // update Icons
-            renderBuffer.fill(LED.this.getBackground().getRGB());
-            ledOn.blitToInColor(renderBuffer, new Point(0, 0), ledOn.getBounds(), ledColor.getRGB());
 
             // redraw
             validate();
@@ -160,6 +190,9 @@ public class LED extends Widget {
 
             private JLabel jl;
             private boolean on;
+            BufferedImageRGB renderBuffer;  // buffer for rendering
+            BufferedImageRGB renderBufferOff;  // buffer for rendering
+            LEDProperty info = null;
 
             public LEDPanel() {
                 setLayout(new BorderLayout());
@@ -170,16 +203,24 @@ public class LED extends Widget {
                 jl.setIcon(this);
                 setBackground(LED.this.getBackground());
                 add(jl, BorderLayout.CENTER);
+                renderBuffer = new BufferedImageRGB(ledOn.getSize());
+                renderBufferOff = new BufferedImageRGB(ledOn.getSize());
             }
 
-            public void setFontSize(float fontSize) {
+            public void update(LEDProperty info) {
+                jl.setText(info.label);
+                jl.setForeground(LED.this.getLabelColor());
                 if (jl.getFont().getSize() != fontSize) {
                     jl.setFont(jl.getFont().deriveFont(fontSize));
                 }
-            }
+                setBackground(LED.this.getBackground());
 
-            public void setText(String text) {
-                jl.setText(text);
+                // update Icons
+                renderBuffer.fill(LED.this.getBackground().getRGB());
+                ledOn.blitToInColor(renderBuffer, new Point(0, 0), ledOn.getBounds(), info.on.getRGB());
+                renderBufferOff.fill(LED.this.getBackground().getRGB());
+                ledOn.blitToInColor(renderBufferOff, new Point(0, 0), ledOn.getBounds(), info.off.getRGB());
+                this.info = info;
             }
 
             public int getIconHeight() {
@@ -193,8 +234,10 @@ public class LED extends Widget {
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 if (on) {
                     renderBuffer.paintIcon(c, g, x, y);
-                } else {
+                } else if (info.off.equals(Color.BLACK)) {
                     ledOff.paintIcon(c, g, x, y);
+                } else {
+                    renderBufferOff.paintIcon(c, g, x, y);
                 }
             }
         }
