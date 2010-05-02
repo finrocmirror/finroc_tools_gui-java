@@ -45,6 +45,7 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -52,6 +53,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -106,6 +108,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     private transient JCheckBoxMenuItem miConnectionPanel, miSnapToGrid;
     private transient JMenuItem miDebugConsole, miGuiSettings, miGlobalSettings, miFrameworkElementDump;
     private transient JMenu miConnectMenu, /*miDisconnectMenu, miReconnectMenu,*/ miRecentFiles;
+    private transient JRadioButtonMenuItem miEditOriginal, miEditCtrl, miUseOnly;
 
     /** Toolbar */
     private transient MToolBar toolBar;
@@ -114,7 +117,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     private transient JButton tbNew, tbLoad, tbSave, tbCut, tbCopy, tbPaste, tbUndo, tbRedo;
 
     /** Temporary object that stores, which type of Widget the user wants to create */
-    private transient Class<? extends Widget> objectToCreate;
+    private transient Class <? extends Widget > objectToCreate;
 
     /** Is Control-Key currently pressed? */
     private transient boolean ctrlPressed = false;
@@ -170,6 +173,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         menuBar.setVisible(true);
 
         // edit menu
+        ButtonGroup editModes = new ButtonGroup();
         JMenu menuEdit = new JMenu("Edit");
         menuEdit.setMnemonic(KeyEvent.VK_E);
         menuEdit.addMenuListener(this);
@@ -185,6 +189,11 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         miSelectNone = createMenuEntry("Select None", menuEdit, KeyEvent.VK_N);
         menuEdit.addSeparator();
         miDelete = createMenuEntry("Delete", menuEdit, KeyEvent.VK_D);
+        menuEdit.addSeparator();
+        miEditOriginal = createRadioButtonMenuEntry("Edit Mode (Office-like)", menuEdit, KeyEvent.VK_E, editModes);
+        miEditCtrl = createRadioButtonMenuEntry("Edit Mode (Hold Ctrl)", menuEdit, KeyEvent.VK_M, editModes);
+        miUseOnly = createRadioButtonMenuEntry("Use GUI only", menuEdit, KeyEvent.VK_O, editModes);
+        miEditOriginal.setSelected(true);
         menuEdit.addSeparator();
         miSnapToGrid = new JCheckBoxMenuItem("Snap to Grid", false);
         miSnapToGrid.addActionListener(this);
@@ -231,7 +240,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         toolBar.addSeparator();
 
         // create and add Create-Widget actions
-        for (Class<? extends Widget> widgetClass : WidgetAndInterfaceRegister.getInstance()) {
+        for (Class <? extends Widget > widgetClass : WidgetAndInterfaceRegister.getInstance()) {
             Action action = new CreateWidgetAction(widgetClass);
             JMenuItem menuitem = new JMenuItem(action);
             menuitem.setToolTipText(null);
@@ -260,7 +269,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         repaint();
 
         // set editmode
-        editMode = EditMode.editObject;
+        editMode = getEditModeFromMenu();
         undoBuffer = new UndoBuffer<GUIWindow>();
         undoBuffer.addUndoComponent(miUndo);
         undoBuffer.addUndoComponent(tbUndo);
@@ -354,6 +363,22 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         return item;
     }
 
+    /**
+     * Convenient method the create radion button menu entries and add this Window as listener
+     *
+     * @param string Text of menu entry
+     * @param menuFile Menu to add menu entry to
+     * @return Create menu entry
+     */
+    private JRadioButtonMenuItem createRadioButtonMenuEntry(String string, JMenu menu, int mnemonic, ButtonGroup bg) {
+        JRadioButtonMenuItem item = new JRadioButtonMenuItem(string);
+        item.setMnemonic(mnemonic);
+        item.addActionListener(this);
+        menu.add(item);
+        bg.add(item);
+        return item;
+    }
+
     public void actionPerformed(ActionEvent ae) {
         FinrocGUI guiCore = getParent();
         try {
@@ -427,6 +452,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } else if (src == miGlobalSettings) {
                 new PropertiesDialog((JFrame)ui, getParent().getPersistentSettings(), getModel().getRoot().getEmbeddedFileManager(), false);
                 getModel().getRoot().getEmbeddedFileManager().update();
+            } else if (src == miEditOriginal || src == miEditCtrl || src == miUseOnly) {
+                setEditMode(getEditModeFromMenu());
+                getModel().getParent().setEditMode(getEditMode().ordinal());
             }
             requestFocus();
         } catch (Exception e) {
@@ -550,8 +578,8 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } catch (Exception e) {
                 parent.showErrorMessage(e);
             }
-            setEditMode(EditMode.editObject);
-        } else if (editMode == EditMode.editObject) {
+            setEditMode(getEditModeFromMenu());
+        } else if (editMode == EditMode.editObject || editMode == EditMode.ctrlEditObject) {
             for (Widget w : panel.getChildren()) {
                 if (createRectangle.intersects(w.getBounds())) {
                     selection.add(w);
@@ -658,6 +686,17 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             return;
         }
 
+        // restore edit mode from gui file
+        int em = getParent().getModel().getEditMode();
+        if (em == EditMode.editObject.ordinal()) {
+            miEditOriginal.setSelected(true);
+        } else if (em == EditMode.ctrlEditObject.ordinal()) {
+            miEditCtrl.setSelected(true);
+        } else {
+            miUseOnly.setSelected(true);
+        }
+        setEditMode(getEditModeFromMenu());
+
         if (event == DataModelListener.Event.CompleteChange || event == DataModelListener.Event.ChildAdded || event == DataModelListener.Event.ChildRemoved) {
             GUIPanelUI gpu = null;
             try {
@@ -719,9 +758,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         /** UID */
         private static final long serialVersionUID = 5229170166031859951L;
 
-        private Class<? extends Widget> widgetClass;
+        private Class <? extends Widget > widgetClass;
 
-        public CreateWidgetAction(Class<? extends Widget> widgetClass2) {
+        public CreateWidgetAction(Class <? extends Widget > widgetClass2) {
             this.widgetClass = widgetClass2;
             putValue(Action.SMALL_ICON, IconManager.getInstance().getIcon(widgetClass2.getSimpleName() + ".png"));
             putValue(Action.NAME, widgetClass2.getSimpleName());
@@ -808,7 +847,17 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     }
 
     public void updateTitle() {
-        ((JFrame)ui).setTitle(TITLE + ((getParent().toString() != "")? (" - " + getParent().toString()) : ""));
+        ((JFrame)ui).setTitle(TITLE + ((getParent().toString() != "") ? (" - " + getParent().toString()) : ""));
+    }
+
+    private EditMode getEditModeFromMenu() {
+        if (miEditOriginal.isSelected()) {
+            return EditMode.editObject;
+        } else if (miEditCtrl.isSelected()) {
+            return EditMode.ctrlEditObject;
+        } else {
+            return EditMode.none;
+        }
     }
 
     private static class ClipboardContent {

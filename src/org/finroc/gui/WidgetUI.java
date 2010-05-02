@@ -64,7 +64,7 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
             super(parent, ui, model);
         }
 
-        public void dataModelChanged(DataModelBase<?,?,?> caller, Event event, Object param) {
+        public void dataModelChanged(DataModelBase <? , ? , ? > caller, Event event, Object param) {
             //System.out.println("''");
             if (event == Event.widgetBoundsChanged) {
                 setBounds(model.getBounds());
@@ -246,7 +246,9 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
         }
 
         private boolean sendEventToParent(MouseEvent e) {
-            return (!isEnabled()) || ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0);
+            GUIWindowUIBase<?> win = container.getParent().getParent();
+            GUIWindowUIBase.EditMode mode = win.getEditMode();
+            return (!isEnabled()) || ((mode == GUIWindowUIBase.EditMode.editObject || mode == GUIWindowUIBase.EditMode.createObject) && ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0) || win.isCtrlPressed());
         }
 
         private void adjustEvent(MouseEvent e) {

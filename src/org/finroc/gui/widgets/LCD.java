@@ -287,6 +287,17 @@ public class LCD extends Widget {
             }
             int blockHeight = SVGHEIGHT * blockWidth / SVGWIDTH;
 
+            // prepend whitespace
+            int fillSpace = optimalLength - s.length();
+            if (fillSpace > 0) {
+                StringBuilder sb = new StringBuilder(fillSpace);
+                for (int i = 0; i < fillSpace; i++) {
+                    sb.append(" ");
+                }
+                s = sb.toString() + s;
+                commaPos += fillSpace;
+            }
+
             boolean warn = ((warnings == WarnOptions.LargerThan && cn.doubleValue() > warningThreshold) || (warnings == WarnOptions.SmallerThan && cn.doubleValue() < warningThreshold));
             Color background = warn ? lcdWarningBackground : lcdBackground;
             cache.drawFilledRectangle(new Rectangle(renderSize), background.getRGB());
@@ -351,17 +362,8 @@ public class LCD extends Widget {
                         s = s.substring(0, s.length() - 1);
                     }
                     s += suffix;
-                    int fillSpace = optimalLength - s.length();
-                    if (fillSpace > 0) {
-                        StringBuilder sb = new StringBuilder(fillSpace);
-                        for (int i = 0; i < fillSpace; i++) {
-                            sb.append(" ");
-                        }
-                        s = sb.toString() + s;
-                        commaPos += fillSpace;
-                    }
-                    return s;
 
+                    return s;
                 }
             }
 

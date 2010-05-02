@@ -91,7 +91,7 @@ public class LED extends Widget {
 
     @Override
     public void restore(GUIPanel parent) {
-        // import legacy widget setttings
+        // import legacy widget settings
         if (descriptions != null && descriptions.size() > 0) {
             leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
             for (String s : descriptions) {

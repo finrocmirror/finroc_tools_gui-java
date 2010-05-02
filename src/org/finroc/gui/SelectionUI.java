@@ -345,6 +345,9 @@ public class SelectionUI implements MouseInputListener, DataModelListener {
                 return Cursor.getPredefinedCursor(entry.getKey());
             }
         }
+        if (parent.getParent().isCtrlPressed()) { // don't move if ctrl is pressed
+            return null;
+        }
         for (SelectedElement elem : elements) {
             if (elem.widget.getBounds().contains(e.getPoint())) {
                 return Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);

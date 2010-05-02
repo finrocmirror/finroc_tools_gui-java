@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 
 import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.util.embeddedfiles.FileManager;
+import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
 
 import org.finroc.core.FrameworkElement;
@@ -50,12 +51,16 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
     //private Font treeFont = new JLabel().getFont().deriveFont(Font.PLAIN);
 
     /** reference to main class */
-    private transient GUIUiBase<?,?> fingui;
+    private transient GUIUiBase <? , ? > fingui;
 
     /** Manager for embedded files */
     private transient FileManager embeddedFileManager;
 
-    public GUI(GUIUiBase<?,?> fingui) {
+    /** Edit Mode saved in GUI file */
+    @NotInPropertyEditor
+    private int editMode = GUIWindowUIBase.EditMode.editObject.ordinal();
+
+    public GUI(GUIUiBase <? , ? > fingui) {
         super(null);
         this.fingui = fingui;
         // create GUI-GUI ;-)
@@ -65,11 +70,11 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
         restore(null);
     }
 
-    public GUIUiBase<?,?> getFingui() {
+    public GUIUiBase <? , ? > getFingui() {
         return fingui;
     }
 
-    public void setJmcagui(GUIUiBase<?,?> fingui) {
+    public void setJmcagui(GUIUiBase <? , ? > fingui) {
         this.fingui = fingui;
     }
 
@@ -111,5 +116,13 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
     public void restore(GUI parent) {
         super.restore(parent);
         frameworkElement.init();
+    }
+
+    public int getEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(int editMode) {
+        this.editMode = editMode;
     }
 }

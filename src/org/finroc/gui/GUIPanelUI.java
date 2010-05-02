@@ -53,7 +53,7 @@ import org.finroc.gui.themes.Themes;
  *
  * View of GUIPanel
  */
-public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUIJPanel, GUIPanel, WidgetUI.WidgetUIContainer> implements MouseInputListener, ActionListener {
+public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUIJPanel, GUIPanel, WidgetUI.WidgetUIContainer > implements MouseInputListener, ActionListener {
 
     /** UID */
     private static final long serialVersionUID = 5486418827698342216L;
@@ -139,17 +139,27 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
             if (parent == null || parent.getEditMode() == GUIWindowUI.EditMode.none) {
                 return;
             }
-            if (parent.getEditMode() == GUIWindowUI.EditMode.editObject) {
+
+            if (parent.getEditMode() == GUIWindowUI.EditMode.editObject || parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject) {
 
                 // only draw rectangle if outside of all objects
-                for (Widget w : model.getChildren()) {
-                    if (w.getBounds().contains(e.getPoint())) {
-                        return;
+                if (!parent.isCtrlPressed()) {
+                    for (Widget w : model.getChildren()) {
+                        if (w.getBounds().contains(e.getPoint())) {
+                            return;
+                        }
                     }
                 }
                 if (selection.criticalPosition(e.getPoint())) {
                     return;
                 }
+
+                // clear selection in ctrl-edit mode when ctrl isn't pressed
+                if (parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject && (!parent.isCtrlPressed())) {
+                    getParent().areaSelected(new Rectangle(-1000000, -1000000, 0, 0));
+                    return;
+                }
+
                 createRectangle = new Rectangle(e.getPoint());
             } else {
                 createRectangle = new Rectangle(snapToGrid(e.getPoint()));
@@ -170,7 +180,7 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
     public void mouseExited(MouseEvent e) {}
     public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            if (parent.getEditMode() == GUIWindowUI.EditMode.editObject) {
+            if (parent.getEditMode() == GUIWindowUI.EditMode.editObject || parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject) {
                 if (parent.isCtrlPressed()) {
                     for (Widget w : model.getChildren()) {
                         if (w.getBounds().contains(e.getPoint())) {
@@ -195,7 +205,7 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
         if (parent == null) {
             return;
         }
-        if (parent.getEditMode() == GUIWindowUI.EditMode.editObject) {
+        if (parent.getEditMode() == GUIWindowUI.EditMode.editObject || parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject) {
             Cursor c = selection.getCursor(e);
             if (c != null) {
                 setCursor(c);
@@ -210,7 +220,7 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
             return;
         }
 
-        if (me.getButton() == MouseEvent.BUTTON3) {
+        if (me.getButton() == MouseEvent.BUTTON3 && (parent.getEditMode() == GUIWindowUI.EditMode.editObject || (parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject && parent.isCtrlPressed()))) {
             Point p = me.getPoint();
             curPos = p;
 
@@ -298,8 +308,8 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
      * @return Rectangle with positive width and height which covers the same area
      */
     public static Rectangle cleanRectangle(Rectangle createRectangle) {
-        return new Rectangle(createRectangle.width >= 0 ? createRectangle.x : createRectangle.x+createRectangle.width,
-                             createRectangle.height >= 0 ? createRectangle.y : createRectangle.y+createRectangle.height,
+        return new Rectangle(createRectangle.width >= 0 ? createRectangle.x : createRectangle.x + createRectangle.width,
+                             createRectangle.height >= 0 ? createRectangle.y : createRectangle.y + createRectangle.height,
                              Math.abs(createRectangle.width), Math.abs(createRectangle.height));
     }
 
@@ -369,7 +379,7 @@ public class GUIPanelUI extends UIBase<GUIWindowUIBase<?>, GUIPanelUI.GUIPanelUI
     }
 
 
-    public void dataModelChanged(DataModelBase<?,?,?> caller, Event event, Object param) {
+    public void dataModelChanged(DataModelBase <? , ? , ? > caller, Event event, Object param) {
         /*if (caller != model) {
             caller.removeDataModelListener(this);
             return;

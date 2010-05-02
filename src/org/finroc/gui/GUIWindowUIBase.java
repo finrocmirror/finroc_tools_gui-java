@@ -37,10 +37,10 @@ import org.finroc.gui.abstractbase.UIBase;
 import org.finroc.core.plugin.ConnectionListener;
 
 
-public abstract class GUIWindowUIBase<P extends UIBase<?,?,?,?>> extends UIBase<P, Container, GUIWindow, GUIPanelUI> implements ConnectionListener {
+public abstract class GUIWindowUIBase < P extends UIBase <? , ? , ? , ? >> extends UIBase<P, Container, GUIWindow, GUIPanelUI> implements ConnectionListener {
 
     /** Available GUI-Modes and current GUI-Mode */
-    public enum EditMode { none, createObject, editObject }
+    public enum EditMode { none, createObject, editObject, ctrlEditObject }
     protected transient EditMode editMode;
 
     /** JTabbedPane (used for displaying multiple panels) */
@@ -69,7 +69,7 @@ public abstract class GUIWindowUIBase<P extends UIBase<?,?,?,?>> extends UIBase<
         if (em == EditMode.createObject) {
             getCurPanel().getModel().setSelection(null);
             setPanelCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (em == EditMode.editObject) {
+        } else {
             setPanelCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
