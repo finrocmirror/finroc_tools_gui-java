@@ -128,7 +128,7 @@ public class BufferedConvexSVG extends BufferedImageRGBConvexShape {
     }
 
     @Override
-    public void blitTo(BufferedImageRGB destination, Point dest, Rectangle sourceArea) {
+    public void blitTo(Destination destination, Point dest, Rectangle sourceArea) {
         if (!sourceArea.getSize().equals(diagramDimension)) {
             setDiagramSize(sourceArea.getSize());
         }

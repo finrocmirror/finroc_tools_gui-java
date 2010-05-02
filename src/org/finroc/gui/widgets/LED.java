@@ -48,6 +48,7 @@ import org.finroc.gui.commons.fastdraw.BufferedImageARGBColorAdd;
 import org.finroc.gui.commons.fastdraw.BufferedImageARGBColorable;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.themes.Themes;
+import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.gui.util.propertyeditor.PropertyList;
 import org.finroc.plugin.datatype.StringList;
 
@@ -62,7 +63,9 @@ public class LED extends Widget {
     public WidgetPorts<WidgetInput.Numeric> signals = new WidgetPorts<WidgetInput.Numeric>("signal", 2, WidgetInput.Numeric.class, this);
 
     @SuppressWarnings("unused")
+    @NotInPropertyEditor
     private transient Color ledColor = Themes.getCurTheme().ledColor(); // outdated - kept for backward compatibility
+    @NotInPropertyEditor
     public StringList descriptions = new StringList(); // outdated - kept for backward compatibility
 
     float fontSize = 18;
@@ -92,11 +95,12 @@ public class LED extends Widget {
     @Override
     public void restore(GUIPanel parent) {
         // import legacy widget settings
-        if (descriptions != null && descriptions.size() > 0) {
+        if (descriptions != null && descriptions.size() > 0 && (leds == null || leds.size() == 0)) {
             leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
             for (String s : descriptions) {
                 leds.add(new LEDProperty(s));
             }
+            descriptions.clear();
         }
 
         super.restore(parent);

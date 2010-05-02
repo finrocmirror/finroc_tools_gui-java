@@ -63,6 +63,7 @@ import org.finroc.gui.util.gui.MToolBar;
 import org.finroc.gui.util.gui.MouseEventListener;
 import org.finroc.gui.util.gui.RulerOfTheForest;
 import org.finroc.plugin.datatype.Paintable;
+import org.finroc.plugin.datatype.PaintablePortData;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;
@@ -81,7 +82,7 @@ public class GeometryRenderer extends Widget {
     private static final int MAP_OBJECT_EDGE_COUNT = 4;
 
     /** Geometry to render */
-    public WidgetPorts<WidgetInput.Std<Paintable>> geometry;
+    public WidgetPorts<WidgetInput.Std<PaintablePortData>> geometry;
     public WidgetPorts<WidgetInput.Numeric> objectCoordinates;
     public WidgetOutput.Numeric clickX;
     public WidgetOutput.Numeric clickY;
@@ -104,7 +105,7 @@ public class GeometryRenderer extends Widget {
     public int drawGeometriesAfterMapObject = 2;
 
     public GeometryRenderer() {
-        geometry = new WidgetPorts<WidgetInput.Std<Paintable>>("geometry", 3, WidgetInput.Std.class, this);
+        geometry = new WidgetPorts<WidgetInput.Std<PaintablePortData>>("geometry", 3, WidgetInput.Std.class, this);
         objectCoordinates = new WidgetPorts<WidgetInput.Numeric>("", 0, WidgetInput.Numeric.class, this);
     }
 
@@ -124,12 +125,12 @@ public class GeometryRenderer extends Widget {
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (geometry != null && geometry.contains(forPort)) {
-            return suggestion.derive(Paintable.TYPE);
+            return suggestion.derive(PaintablePortData.TYPE);
         }
         return suggestion;
     }
 
-    class GeometryRendererUI extends WidgetUI implements PortListener<Paintable>, ActionListener, MouseEventListener<Action>, ComponentListener {
+    class GeometryRendererUI extends WidgetUI implements PortListener<PaintablePortData>, ActionListener, MouseEventListener<Action>, ComponentListener {
 
         Renderer renderer;
         AdvancedMouseListener<Mode, Action> listener;
@@ -380,7 +381,7 @@ public class GeometryRenderer extends Widget {
 
             // Init Input Ports
             while (geometry.size() < numberOfGeometries) {
-                WidgetInput.Std<Paintable> p = new WidgetInput.Std<Paintable>();
+                WidgetInput.Std<PaintablePortData> p = new WidgetInput.Std<PaintablePortData>();
                 geometry.add(p);
                 p.setDescription("geometry " + geometry.size());
             }
@@ -409,7 +410,7 @@ public class GeometryRenderer extends Widget {
             }
 
             // register as listener as inputports
-            for (WidgetInput.Std<Paintable> wp : geometry) {
+            for (WidgetInput.Std<PaintablePortData> wp : geometry) {
                 wp.addChangeListener(this);
             }
             for (WidgetInput.Numeric wp : objectCoordinates) {
@@ -425,7 +426,7 @@ public class GeometryRenderer extends Widget {
         private static final long serialVersionUID = -922703839059777637L;
 
         @Override
-        public void portChanged(PortBase origin, Paintable value) {
+        public void portChanged(PortBase origin, PaintablePortData value) {
             renderer.repaint();
         }
 
@@ -521,7 +522,7 @@ public class GeometryRenderer extends Widget {
             public void drawGeometries(Graphics2D g2d) {
 
                 // Draw geometries
-                for (WidgetInput.Std<Paintable> wip : geometry) {
+                for (WidgetInput.Std<PaintablePortData> wip : geometry) {
                     Paintable p = wip.getAutoLocked();
                     if (p == null) {
                         continue;

@@ -27,9 +27,6 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-
 /**
  * @author max
  *
@@ -40,15 +37,13 @@ public class BufferedImageARGBColorable extends FastBufferedImage {
     /** UID */
     private static final long serialVersionUID = 4192556769255842657L;
 
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(BufferedImageARGBColorable.class);
-
     public BufferedImageARGBColorable(URL resource) throws Exception {
         super(ImageIO.read(new BufferedInputStream(resource.openStream())), true);
     }
 
     protected int colorR = 256, colorG = 256, colorB = 256; // Temporäre Variablen, in denen zusätzlich Blitting-Parameter (Farbe) abgelegt werden
 
-    public void blitToInColor(BufferedImageRGB destination, Point dest, Rectangle sourceArea, int color) {
+    public void blitToInColor(Destination destination, Point dest, Rectangle sourceArea, int color) {
         colorR = BitOps.getByte(color, 1);
         colorG = BitOps.getByte(color, 2);
         colorB = BitOps.getByte(color, 3);

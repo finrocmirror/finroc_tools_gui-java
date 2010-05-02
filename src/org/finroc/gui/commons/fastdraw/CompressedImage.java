@@ -31,12 +31,19 @@ import javax.imageio.ImageIO;
 
 import org.finroc.core.buffer.CoreInput;
 import org.finroc.core.buffer.CoreOutput;
+import org.finroc.core.port.std.PortDataDelegate;
+import org.finroc.core.port.std.PortDataManager;
+import org.finroc.core.port.std.PortDataReference;
 import org.finroc.core.portdatabase.DataType;
 import org.finroc.core.portdatabase.DataTypeRegister;
+import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.plugin.datatype.Blittable;
+import org.finroc.plugin.datatype.HasBlittable;
 
-public class CompressedImage extends Blittable {
+public class CompressedImage extends Blittable implements HasBlittable {
 
     private byte[] compressedData;
+    private int dataSize;
 
     public static DataType TYPE = DataTypeRegister.getInstance().getDataType(CompressedImage.class);
 
@@ -66,7 +73,7 @@ public class CompressedImage extends Blittable {
     }
 
     @Override
-    public void blitTo(BufferedImageRGB destination, Point dest, Rectangle sourceArea) {
+    public void blitTo(Destination destination, Point dest, Rectangle sourceArea) {
         checkUncompressed();
         destination.getBufferedImage().createGraphics().drawImage(uncompressedImage, dest.x, dest.y, sourceArea.width, sourceArea.height, Color.black, null);
     }
@@ -99,11 +106,36 @@ public class CompressedImage extends Blittable {
 
     @Override
     public void deserialize(CoreInput is) {
-        throw new RuntimeException("Unsupported");
+        int size = is.readInt();
+        if (compressedData.length < size) {
+            compressedData = new byte[size * 2]; // keep some bytes for reserve...
+        }
+        dataSize = size;
+        is.readFully(compressedData, 0, dataSize);
     }
 
     @Override
     public void serialize(CoreOutput os) {
-        throw new RuntimeException("Unsupported");
+        os.writeInt(dataSize);
+        os.write(compressedData, 0, dataSize);
     }
+
+    @Override
+    public Blittable getBlittable() {
+        return this;
+    }
+
+    // stuff to make this valid port data
+
+    @JavaOnly private PortDataDelegate delegate = new PortDataDelegate(this);
+    @Override @JavaOnly public PortDataReference getCurReference() {
+        return delegate.getCurReference();
+    }
+    @Override @JavaOnly public PortDataManager getManager() {
+        return delegate.getManager();
+    }
+    @Override @JavaOnly public DataType getType() {
+        return delegate.getType();
+    }
+    @Override public void handleRecycle() {}
 }

@@ -45,6 +45,7 @@ import org.finroc.gui.commons.reflection.ReflectionCallback;
 import org.finroc.gui.commons.reflection.ReflectionHelper;
 import org.finroc.gui.util.ObjectCloner;
 
+@SuppressWarnings("unchecked")
 public class PropertyListEditor extends PropertyEditComponent<PropertyList> implements ChangeListener, ReflectionCallback<Field> {
 
     /** UID */
@@ -107,7 +108,6 @@ public class PropertyListEditor extends PropertyEditComponent<PropertyList> impl
         repaint();
     }
 
-    @SuppressWarnings("unchecked")
     private void createComponents(Object object) {
         gbc.gridy = guielems.size() + 1;
         PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
@@ -145,7 +145,6 @@ public class PropertyListEditor extends PropertyEditComponent<PropertyList> impl
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public PropertyList getCurEditorValue() {
         PropertyList newList = ObjectCloner.clone(getCurWidgetValue());

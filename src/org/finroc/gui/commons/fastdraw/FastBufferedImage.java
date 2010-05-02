@@ -30,16 +30,8 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.plugin.datatype.Blittable;
 import org.finroc.plugin.datatype.Paintable;
-import org.finroc.core.buffer.CoreInput;
-import org.finroc.core.buffer.CoreOutput;
-import org.finroc.core.port.std.PortDataDelegate;
-import org.finroc.core.port.std.PortDataManager;
-import org.finroc.core.port.std.PortDataReference;
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-
 
 /**
  * @author max
@@ -52,8 +44,6 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
 
     /** UID */
     private static final long serialVersionUID = 820927637285545160L;
-
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(FastBufferedImage.class);
 
     /**
      * Wrapped BufferedImage
@@ -152,6 +142,7 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
         ImageIO.write(wrapped, formatName, baos);
     }
 
+    /*
     @JavaOnly private PortDataDelegate delegate = new PortDataDelegate(this);
     @Override @JavaOnly public PortDataReference getCurReference() {
         return delegate.getCurReference();
@@ -163,14 +154,5 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
         return delegate.getType();
     }
     @Override public void handleRecycle() {}
-    @Override
-    public void deserialize(CoreInput is) {
-        throw new RuntimeException("currently unsupported");
-    }
-
-    @Override
-    public void serialize(CoreOutput os) {
-        throw new RuntimeException("currently unsupported");
-    }
-
+     */
 }

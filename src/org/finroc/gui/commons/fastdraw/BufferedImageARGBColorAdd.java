@@ -22,9 +22,6 @@ package org.finroc.gui.commons.fastdraw;
 
 import java.net.URL;
 
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-
 /**
  * @author max
  *
@@ -34,8 +31,6 @@ public class BufferedImageARGBColorAdd extends BufferedImageARGBColorable {
 
     /** UID */
     private static final long serialVersionUID = 4253400348181769150L;
-
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(BufferedImageARGBColorAdd.class);
 
     public BufferedImageARGBColorAdd(URL resource) throws Exception {
         super(resource);

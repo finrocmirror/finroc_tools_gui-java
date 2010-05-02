@@ -30,6 +30,7 @@ import javax.swing.JComboBox;
  * @author max
  *
  */
+@SuppressWarnings("unchecked")
 public class EnumEditor extends PropertyEditComponent<Enum> {
 
     /** UID */

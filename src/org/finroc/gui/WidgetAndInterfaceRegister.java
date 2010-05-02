@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.finroc.jc.container.SimpleList;
 
-import org.finroc.gui.commons.fastdraw.Blittable;
+import org.finroc.gui.commons.fastdraw.CompressedImage;
 import org.finroc.gui.plugin.GUIPlugin;
 import org.finroc.gui.util.PackageContentEnumerator;
 
@@ -41,7 +41,7 @@ import org.finroc.core.plugin.Plugins;
  *
  * Register for Widgets and IO-interfaces
  */
-public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget>> implements Comparator<Class<?>> {
+public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Widget >> implements Comparator < Class<? >> {
 
     /** UID */
     private static final long serialVersionUID = -8979927965402899643L;
@@ -63,7 +63,7 @@ public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget
     public static boolean appletMode = false;
     public static boolean serverMode = false;
 
-    public static void init(GUIUiBase<?,?> base) {
+    public static void init(GUIUiBase <? , ? > base) {
         widgetTypes = new WidgetAndInterfaceRegister(base);
     }
 
@@ -74,7 +74,7 @@ public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget
         return widgetTypes;
     }
 
-    private WidgetAndInterfaceRegister(GUIUiBase<?,?> fingui) {
+    private WidgetAndInterfaceRegister(GUIUiBase <? , ? > fingui) {
         try {
             initWidgetTypes(fingui);
         } catch (Exception e) {
@@ -88,12 +88,12 @@ public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget
      * @param fingui
      */
     @SuppressWarnings("unchecked")
-    private void initWidgetTypes(GUIUiBase<?,?> fingui) throws Exception {
+    private void initWidgetTypes(GUIUiBase <? , ? > fingui) throws Exception {
 
         // load core widgets
         for (String s : new PackageContentEnumerator(this, WIDGETPACKAGENAME)) {
             if (s.endsWith(".class")) {
-                Class<? extends Widget> c = (Class<? extends Widget>)Class.forName(getClass().getPackage().getName() + "." + WIDGETPACKAGENAME + "." + s.substring(0, s.length() - 6));
+                Class <? extends Widget > c = (Class <? extends Widget >)Class.forName(getClass().getPackage().getName() + "." + WIDGETPACKAGENAME + "." + s.substring(0, s.length() - 6));
                 if (Widget.class.isAssignableFrom(c)) {
                     this.add(c);
 
@@ -107,14 +107,14 @@ public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget
 
         // JavaOnlyBlock
         //JavaPlugins.loadAllDataTypesInPackage(StringList.class);
-        Plugins.loadAllDataTypesInPackage(Blittable.class);
+        Plugins.loadAllDataTypesInPackage(CompressedImage.class);
 
         SimpleList<Plugin> plugins = Plugins.getInstance().getPlugins();
         for (Plugin plugin : plugins.getBackend()) {
             if (plugin instanceof GUIPlugin) {
-                Class<? extends Widget>[] cs = ((GUIPlugin)plugin).getWidgets();
+                Class <? extends Widget > [] cs = ((GUIPlugin)plugin).getWidgets();
                 if (cs != null) {
-                    for (Class<? extends Widget> c : cs) {
+                    for (Class <? extends Widget > c : cs) {
                         this.add(c);
                     }
                 }
@@ -194,7 +194,7 @@ public class WidgetAndInterfaceRegister extends ArrayList<Class<? extends Widget
         return Plugins.getInstance().getExternalConnections().getBackend();
     }
 
-    public static List<Class<? extends Widget>> getWidgets() {
+    public static List < Class <? extends Widget >> getWidgets() {
         return getInstance();
     }
 

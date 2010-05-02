@@ -30,8 +30,8 @@ import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
-import org.finroc.gui.commons.fastdraw.Blittable;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
+import org.finroc.plugin.datatype.HasBlittable;
 
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.std.PortBase;
@@ -43,7 +43,7 @@ public class VideoRenderer extends Widget {
     /** UID */
     private static final long serialVersionUID = -8452479527434504700L;
 
-    public WidgetInput.Std<Blittable> videoInput;
+    public WidgetInput.Std<HasBlittable> videoInput;
 
     @Override
     protected WidgetUI createWidgetUI() {
@@ -52,10 +52,10 @@ public class VideoRenderer extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(Blittable.TYPE);
+        return suggestion.derive(HasBlittable.TYPE);
     }
 
-    class VideoWindowUI extends WidgetUI implements PortListener<Blittable> {
+    class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable> {
 
         public VideoWindowUI() {
             super(RenderMode.Cached);
@@ -67,18 +67,18 @@ public class VideoRenderer extends Widget {
 
         @Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
-            Blittable b = videoInput.getAutoLocked();
+            HasBlittable b = videoInput.getAutoLocked();
             if (b == null) {
                 cache.fill(0);
                 releaseAllLocks();
                 return;
             }
-            b.blitTo(cache, new Rectangle(renderSize));
+            b.getBlittable().blitTo(cache, new Rectangle(renderSize));
             releaseAllLocks();
         }
 
         @Override
-        public void portChanged(PortBase origin, Blittable value) {
+        public void portChanged(PortBase origin, HasBlittable value) {
             this.setChanged();
             repaint();
         }

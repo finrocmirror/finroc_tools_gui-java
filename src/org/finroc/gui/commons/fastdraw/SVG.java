@@ -45,23 +45,15 @@ import com.kitfox.svg.SVGException;
 import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGPanel;
 
-import org.finroc.core.buffer.CoreInput;
-import org.finroc.core.buffer.CoreOutput;
-import org.finroc.core.port.std.PortDataImpl;
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-
 /**
  * @author max
  *
  * Wraps SVG diagram
  */
-public class SVG extends PortDataImpl implements Paintable {
+public class SVG implements Paintable {
 
     /** UID */
     private static final long serialVersionUID = 8883013998203770170L;
-
-    static DataType TYPE = DataTypeRegister.getInstance().getDataType(SVG.class);
 
     /** unique ID for element */
     private String id;
@@ -205,15 +197,5 @@ public class SVG extends PortDataImpl implements Paintable {
             e.printStackTrace();
         }
         return bounds;
-    }
-
-    @Override
-    public void deserialize(CoreInput is) {
-        throw new RuntimeException("Currently unsupported");
-    }
-
-    @Override
-    public void serialize(CoreOutput os) {
-        throw new RuntimeException("Currently unsupported");
     }
 }

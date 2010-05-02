@@ -30,8 +30,8 @@ import javax.naming.OperationNotSupportedException;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
-import org.finroc.gui.commons.fastdraw.Blittable;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
+import org.finroc.plugin.datatype.HasBlittable;
 
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.std.PortBase;
@@ -42,7 +42,7 @@ public class VideoJoystick extends VirtualJoystick {
     /** UID */
     private static final long serialVersionUID = 960660239432850435L;
 
-    private WidgetInput.Std<Blittable> video;
+    private WidgetInput.Std<HasBlittable> video;
 
     public VideoJoystick() {
         zeroRadius = 10;
@@ -56,12 +56,12 @@ public class VideoJoystick extends VirtualJoystick {
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == video) {
-            return suggestion.derive(Blittable.TYPE);
+            return suggestion.derive(HasBlittable.TYPE);
         }
         return super.getPortCreationInfo(suggestion, forPort);
     }
 
-    class VideoJoystickUI extends VirtualJoystickUI implements PortListener<Blittable> {
+    class VideoJoystickUI extends VirtualJoystickUI implements PortListener<HasBlittable> {
 
         /** UID */
         private static final long serialVersionUID = -4884477845301064039L;
@@ -73,11 +73,11 @@ public class VideoJoystick extends VirtualJoystick {
 
         @Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
-            Blittable b = video.getAutoLocked();
+            HasBlittable b = video.getAutoLocked();
             if (b == null) {
                 cache.fill(0);
             } else {
-                b.blitTo(cache, new Rectangle(renderSize));
+                b.getBlittable().blitTo(cache, new Rectangle(renderSize));
             }
 
             // initial position
@@ -94,7 +94,7 @@ public class VideoJoystick extends VirtualJoystick {
         }
 
         @Override
-        public void portChanged(PortBase origin, Blittable value) {
+        public void portChanged(PortBase origin, HasBlittable value) {
             setChanged();
             repaint();
         }

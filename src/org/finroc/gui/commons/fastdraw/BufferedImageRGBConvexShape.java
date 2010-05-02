@@ -22,9 +22,6 @@ package org.finroc.gui.commons.fastdraw;
 
 import java.awt.image.BufferedImage;
 
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-
 /**
  * @author max
  *
@@ -35,8 +32,6 @@ public class BufferedImageRGBConvexShape extends FastBufferedImage {
 
     /** UID */
     private static final long serialVersionUID = 7351558429252555162L;
-
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(BufferedImageRGBConvexShape.class);
 
     public enum BackgroundColorPixel { TopLeft, TopRight, BottomLeft, BottomRight }
 

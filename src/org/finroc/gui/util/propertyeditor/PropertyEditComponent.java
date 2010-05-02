@@ -54,6 +54,9 @@ import org.finroc.plugin.datatype.StringList;
  */
 public abstract class PropertyEditComponent<T> extends JPanel {
 
+    /** UID */
+    private static final long serialVersionUID = 908490162821129814L;
+
     protected final int LABELWIDTH = 150;
     protected final int TEXTFIELDWIDTH = 150;
 
@@ -115,7 +118,7 @@ public abstract class PropertyEditComponent<T> extends JPanel {
                 extensions = ve.value();
             }
 
-            wpec = new AbstractFileEditor((Class<? extends AbstractFile>)type, extensions);
+            wpec = new AbstractFileEditor((Class <? extends AbstractFile >)type, extensions);
         } else if (AbstractFiles.class.isAssignableFrom(type)) {
             wpec = new AbstractFilesEditor();
         } else if (StringList.class.isAssignableFrom(type)) {

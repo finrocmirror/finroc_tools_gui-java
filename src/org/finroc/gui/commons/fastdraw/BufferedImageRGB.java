@@ -31,8 +31,7 @@ import java.util.Arrays;
 
 import javax.swing.Icon;
 
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
+import org.finroc.plugin.datatype.Blittable;
 
 /**
  * @author max
@@ -40,12 +39,10 @@ import org.finroc.core.portdatabase.DataTypeRegister;
  * Image class that extends BufferedImage.
  * Image manipulation should be reasonably fast using this class.
  */
-public class BufferedImageRGB extends FastBufferedImage implements Icon {
+public class BufferedImageRGB extends FastBufferedImage implements Icon, Blittable.Destination {
 
     /** UID */
     private static final long serialVersionUID = -447839239477407754L;
-
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(BufferedImageRGB.class);
 
     public BufferedImageRGB(int width, int height) {
         super(width, height);
