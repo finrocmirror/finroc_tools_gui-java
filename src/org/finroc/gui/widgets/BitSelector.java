@@ -66,6 +66,8 @@ public class BitSelector extends Widget {
     /** RadioButtons description & key (format: "description = key" */
     public StringList descriptions = new StringList("Description 1\nDescription 2");
 
+    private boolean hideButtonsAndValueDisplay = false;
+
     @Override
     protected void setDefaultColors() {
         setBackground(Themes.getCurTheme().standardBackground());
@@ -116,6 +118,9 @@ public class BitSelector extends Widget {
 
         @Override
         public void widgetPropertiesChanged() {
+            all.setVisible(!hideButtonsAndValueDisplay);
+            none.setVisible(!hideButtonsAndValueDisplay);
+            valueDisplay.setVisible(!hideButtonsAndValueDisplay);
 
             // remove old buttons
             if (descriptions.size() >= 1) {
