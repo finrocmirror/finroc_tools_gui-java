@@ -35,6 +35,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -53,6 +55,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -83,7 +86,7 @@ import org.finroc.core.port.ThreadLocalCache;
  * @author max
  *
  */
-public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener {
+public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener, MouseListener {
 
     /** UID */
     private static final long serialVersionUID = 754612157890759400L;
@@ -110,6 +113,11 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     private transient JMenuItem miDebugConsole, miGuiSettings, miGlobalSettings, miFrameworkElementDump;
     private transient JMenu miConnectMenu, /*miDisconnectMenu, miReconnectMenu,*/ miRecentFiles;
     private transient JRadioButtonMenuItem miEditOriginal, miEditCtrl, miUseOnly;
+
+    /** Tab-Popupmenu */
+    private transient int clickedOnTab = 0; // tab that was clicked on
+    private transient JMenuItem pmiChangePanelName; // change tab name
+    private transient List<JMenuItem> pmiMoveTo = new ArrayList<JMenuItem>(); // move to commands
 
     /** Toolbar */
     private transient MToolBar toolBar;
@@ -227,6 +235,10 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             miFrameworkElementDump = createMenuEntry("Dump FrameworkElement info", menuDebug, KeyEvent.VK_D);
         }
 
+        // popup menu
+        pmiChangePanelName = new JMenuItem("Change Name...");
+        pmiChangePanelName.addActionListener(this);
+
         // create Toolbar
         toolBar = new MToolBar("Standard");
         toolBar.setFloatable(false);
@@ -331,6 +343,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 }
             }
             guipanels = tabbedPane;
+            tabbedPane.addMouseListener(this);
         }
         for (GUIPanelUI panel : children) {
             panel.setParent(this);
@@ -442,9 +455,10 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 new DebugConsole(this);
             } else if (src == miFrameworkElementDump) {
                 RuntimeEnvironment.getInstance().printStructure();
-            } else if (src == miChangePanelName) {
+            } else if (src == miChangePanelName || src == pmiChangePanelName) {
                 String name = JOptionPane.showInputDialog("Please enter new name for panel", getCurPanel().getModel().toString());
-                getCurPanel().getModel().setName(name);
+                GUIPanel panel = (src == miChangePanelName) ? getCurPanel().getModel() : getModel().getChildAt(clickedOnTab);
+                panel.setName(name);
                 arrangePanels(getCurPanel());
             } else if (src == miGuiSettings) {
                 new PropertiesDialog((JFrame)ui, getModel().getParent(), getModel().getRoot().getEmbeddedFileManager(), false);
@@ -457,6 +471,13 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } else if (src == miEditOriginal || src == miEditCtrl || src == miUseOnly) {
                 setEditMode(getEditModeFromMenu());
                 getModel().getParent().setEditMode(getEditMode().ordinal());
+            } else if (pmiMoveTo.contains(src)) {
+                int moveTo = pmiMoveTo.indexOf(src);
+                GUIPanelUI current = getCurPanel();
+                getModel().moveChildTo(getModel().getChildAt(clickedOnTab), moveTo); // move in model
+                GUIPanelUI remove = children.remove(clickedOnTab); // move in ui
+                children.add(moveTo, remove);
+                arrangePanels(current);
             }
             requestFocus();
         } catch (Exception e) {
@@ -903,6 +924,47 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
         public String toString() {
             return FinrocGuiXmlSerializer.getInstance().toXML(this);
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent me) {
+
+        // from JTabbedPane
+        JTabbedPane tabs = (JTabbedPane)me.getSource();
+
+        if (me.getButton() == MouseEvent.BUTTON3 && (getEditMode() == GUIWindowUI.EditMode.editObject || (getEditMode() == GUIWindowUI.EditMode.ctrlEditObject && isCtrlPressed()))) {
+
+            // show right-click-menu?
+            Point p = me.getPoint();
+            int tabIdx = tabs.indexAtLocation(p.x, p.y);
+            if (tabIdx >= 0) {
+                clickedOnTab = tabIdx;
+
+                JPopupMenu pmenu = new JPopupMenu();
+                pmenu.add(pmiChangePanelName);
+                pmenu.addSeparator();
+                for (int i = 0; i < getModel().getChildCount(); i++) {
+                    if (i >= pmiMoveTo.size()) {
+                        JMenuItem item = new JMenuItem("Move to position " + (i + 1));
+                        item.addActionListener(this);
+                        pmiMoveTo.add(item);
+                    }
+                    JMenuItem item = pmiMoveTo.get(i);
+                    pmenu.add(item);
+                    item.setEnabled(i != clickedOnTab);
+                }
+                pmenu.show(tabs, me.getX(), me.getY());
+            }
         }
     }
 }

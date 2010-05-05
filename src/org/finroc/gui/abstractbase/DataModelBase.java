@@ -42,7 +42,7 @@ import org.finroc.core.FrameworkElement;
  * Base class for all classes implementing the fingui data model
  */
 @SuppressWarnings("unchecked")
-public abstract class DataModelBase<R extends DataModelBase<R,?,?>, P extends DataModelBase<R,?,?>, C extends DataModelBase> implements Serializable, TreeNode {
+public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > implements Serializable, TreeNode {
 
     /** UID */
     private static final long serialVersionUID = -8960599158692149672L;
@@ -127,9 +127,9 @@ public abstract class DataModelBase<R extends DataModelBase<R,?,?>, P extends Da
         JmcaguiEventRouter.fireDataModelEvent(this, ev, param);
 
         // fire events for TreeModel that may exist
-        for (DataModelBase<?,?,?> dmbi = this; dmbi != null; dmbi = dmbi.getParent()) {
+        for (DataModelBase <? , ? , ? > dmbi = this; dmbi != null; dmbi = dmbi.getParent()) {
             if (dmbi instanceof DataModelBase) {
-                DefaultTreeModel tm = ((DataModelBase<?,?,?>)dmbi).treeModel;
+                DefaultTreeModel tm = ((DataModelBase <? , ? , ? >)dmbi).treeModel;
                 if (tm != null) {
                     if (ev == DataModelListener.Event.ChildAdded) {
                         tm.nodesWereInserted(this, new int[] {children.indexOf(param)});
@@ -175,7 +175,7 @@ public abstract class DataModelBase<R extends DataModelBase<R,?,?>, P extends Da
     }
 
     public R getRoot() {
-        DataModelBase<R,?,?> dmbi = this;
+        DataModelBase < R, ? , ? > dmbi = this;
         while (dmbi.getParent() != null) {
             dmbi = dmbi.getParent();
         }
@@ -218,5 +218,20 @@ public abstract class DataModelBase<R extends DataModelBase<R,?,?>, P extends Da
             treeModel = new DefaultTreeModel(this);
         }
         return treeModel;
+    }
+
+    /**
+     * Move child to different position in list
+     *
+     * @param child Child to move
+     * @param newIndex New position in list
+     */
+    public void moveChildTo(C child, int newIndex) {
+        int idx = children.indexOf(child);
+        if (idx < 0 || idx == newIndex || newIndex >= children.size()) {
+            return;
+        }
+        C c = children.remove(idx);
+        children.add(newIndex, c);
     }
 }

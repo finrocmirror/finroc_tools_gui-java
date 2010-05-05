@@ -186,15 +186,18 @@ public class Oscilloscope extends Widget {
                     return;
                 }
 
-                synchronized (functions) {
-                    long time = System.currentTimeMillis();
-                    for (int i = 0; i < functions.size(); i++) {
-                        functions.get(i).addNewValue((time - startTime) % timeScaleMaxInMs, signals.get(i).getDouble(), (lastTime - startTime + 1) % timeScaleMaxInMs);
+                try {
+                    synchronized (functions) {
+                        long time = System.currentTimeMillis();
+                        for (int i = 0; i < functions.size(); i++) {
+                            functions.get(i).addNewValue((time - startTime) % timeScaleMaxInMs, signals.get(i).getDouble(), (lastTime - startTime + 1) % timeScaleMaxInMs);
+                        }
+                        lastTime = time;
                     }
-                    lastTime = time;
+                    repaint();
+                } catch (Exception e) {
+                    System.out.println("Oscilloscope Thread skipped loop, because of temporary exception");
                 }
-
-                repaint();
             }
         }
 
