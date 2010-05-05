@@ -76,6 +76,7 @@ import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
 import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.plugin.Plugins;
+import org.finroc.core.port.ThreadLocalCache;
 
 
 /**
@@ -127,6 +128,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
     public GUIWindowUI(FinrocGUI parent, GUIWindow model) {
         super(parent, new JFrame(), model);
+        ThreadLocalCache.get();
         this.setMinimumSize(new Dimension(640, 480));
         JFrame jframe = (JFrame)ui;
 

@@ -123,6 +123,8 @@ public class PropertyListEditor extends PropertyEditComponent<PropertyList> impl
                 pec = new NumberEditor();
             } else if (Enum.class.isAssignableFrom(type)) {
                 pec = new EnumEditor();
+            } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
+                pec = new BooleanEditor();
             } else {
                 throw new RuntimeException("Type not supported");
             }

@@ -72,9 +72,11 @@ public class LED extends Widget {
 
     PropertyList<LEDProperty> leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
 
+    public boolean smallLEDs = false;
+
     /** Raw-Icons only need to be initialized once application-wide */
-    static ImageIcon ledOff;
-    static BufferedImageARGBColorable ledOn;
+    static ImageIcon ledOff, ledOffSmall;
+    static BufferedImageARGBColorable ledOn, ledOnSmall;
 
     public LED() {
         setBackground(Themes.getCurTheme().panelBackground());
@@ -115,6 +117,8 @@ public class LED extends Widget {
         private Color off = new Color(0, 0, 0), on = Themes.getCurTheme().ledColor();
         private double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
         String label = "LED";
+        boolean bitMode = false;
+        int bit = 0;
 
         public LEDProperty() {}
 
@@ -138,6 +142,8 @@ public class LED extends Widget {
                 try {
                     ledOff = new ImageIcon(LED.class.getResource("led-off.png"));
                     ledOn = new BufferedImageARGBColorAdd(LED.class.getResource("led-on.png"));
+                    ledOffSmall = new ImageIcon(LED.class.getResource("led-off-small.png"));
+                    ledOnSmall = new BufferedImageARGBColorAdd(LED.class.getResource("led-on-small.png"));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -149,9 +155,14 @@ public class LED extends Widget {
         @Override
         public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
             for (int i = 0; i < signals.size(); i++) {
-                double d = signals.get(i).getDouble();
                 LEDPanel pan = panels.get(i);
-                pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
+                if (!pan.info.bitMode) {
+                    double d = signals.get(i).getDouble();
+                    pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
+                } else {
+                    int v = signals.get(i).getInt();
+                    pan.on = (v & (1 << pan.info.bit)) != 0;
+                }
             }
             repaint();
         }
@@ -196,6 +207,8 @@ public class LED extends Widget {
             private boolean on;
             BufferedImageRGB renderBuffer;  // buffer for rendering
             BufferedImageRGB renderBufferOff;  // buffer for rendering
+            BufferedImageRGB renderBufferSmall;  // buffer for rendering
+            BufferedImageRGB renderBufferOffSmall;  // buffer for rendering
             LEDProperty info = null;
 
             public LEDPanel() {
@@ -209,6 +222,8 @@ public class LED extends Widget {
                 add(jl, BorderLayout.CENTER);
                 renderBuffer = new BufferedImageRGB(ledOn.getSize());
                 renderBufferOff = new BufferedImageRGB(ledOn.getSize());
+                renderBufferSmall = new BufferedImageRGB(ledOnSmall.getSize());
+                renderBufferOffSmall = new BufferedImageRGB(ledOnSmall.getSize());
             }
 
             public void update(LEDProperty info) {
@@ -220,28 +235,53 @@ public class LED extends Widget {
                 setBackground(LED.this.getBackground());
 
                 // update Icons
-                renderBuffer.fill(LED.this.getBackground().getRGB());
-                ledOn.blitToInColor(renderBuffer, new Point(0, 0), ledOn.getBounds(), info.on.getRGB());
-                renderBufferOff.fill(LED.this.getBackground().getRGB());
-                ledOn.blitToInColor(renderBufferOff, new Point(0, 0), ledOn.getBounds(), info.off.getRGB());
+                if (!smallLEDs) {
+                    renderBuffer.fill(LED.this.getBackground().getRGB());
+                    ledOn.blitToInColor(renderBuffer, new Point(0, 0), ledOn.getBounds(), info.on.getRGB());
+                    renderBufferOff.fill(LED.this.getBackground().getRGB());
+                    ledOn.blitToInColor(renderBufferOff, new Point(0, 0), ledOn.getBounds(), info.off.getRGB());
+                } else {
+                    renderBufferSmall.fill(LED.this.getBackground().getRGB());
+                    ledOnSmall.blitToInColor(renderBufferSmall, new Point(0, 0), ledOnSmall.getBounds(), info.on.getRGB());
+                    renderBufferOffSmall.fill(LED.this.getBackground().getRGB());
+                    ledOnSmall.blitToInColor(renderBufferOffSmall, new Point(0, 0), ledOnSmall.getBounds(), info.off.getRGB());
+                }
                 this.info = info;
             }
 
             public int getIconHeight() {
-                return ledOff.getIconHeight();
+                if (!smallLEDs) {
+                    return ledOff.getIconHeight();
+                } else {
+                    return ledOffSmall.getIconHeight();
+                }
             }
 
             public int getIconWidth() {
-                return ledOff.getIconWidth();
+                if (!smallLEDs) {
+                    return ledOff.getIconWidth();
+                } else {
+                    return ledOffSmall.getIconWidth();
+                }
             }
 
             public void paintIcon(Component c, Graphics g, int x, int y) {
-                if (on) {
-                    renderBuffer.paintIcon(c, g, x, y);
-                } else if (info.off.equals(Color.BLACK)) {
-                    ledOff.paintIcon(c, g, x, y);
+                if (!smallLEDs) {
+                    if (on) {
+                        renderBuffer.paintIcon(c, g, x, y);
+                    } else if (info.off.equals(Color.BLACK)) {
+                        ledOff.paintIcon(c, g, x, y);
+                    } else {
+                        renderBufferOff.paintIcon(c, g, x, y);
+                    }
                 } else {
-                    renderBufferOff.paintIcon(c, g, x, y);
+                    if (on) {
+                        renderBufferSmall.paintIcon(c, g, x, y);
+                    } else if (info.off.equals(Color.BLACK)) {
+                        ledOffSmall.paintIcon(c, g, x, y);
+                    } else {
+                        renderBufferOffSmall.paintIcon(c, g, x, y);
+                    }
                 }
             }
         }

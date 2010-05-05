@@ -46,7 +46,7 @@ public class BufferedImageRGB extends FastBufferedImage implements Icon, Blittab
 
     public BufferedImageRGB(int width, int height) {
         super(width, height);
-        System.out.println("Creating image");
+        //System.out.println("Creating image");
     }
 
     public BufferedImageRGB(Dimension dim) {

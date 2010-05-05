@@ -188,6 +188,11 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
 
         // sort widgets alphabetically
         Collections.sort(this, this);
+
+        ClassLoader cl = Plugins.getInstance().getPluginClassLoader();
+        if (cl != null) {
+            FinrocGuiXmlSerializer.getInstance().setClassLoader(cl);
+        }
     }
 
     public static List<CreateExternalConnectionAction> getIOInterfaces() {

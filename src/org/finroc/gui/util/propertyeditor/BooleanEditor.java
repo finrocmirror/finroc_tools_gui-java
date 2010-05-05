@@ -20,6 +20,7 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import javax.naming.OperationNotSupportedException;
 import javax.swing.JCheckBox;
 
 public class BooleanEditor extends PropertyEditComponent<Boolean> {
@@ -33,6 +34,13 @@ public class BooleanEditor extends PropertyEditComponent<Boolean> {
     protected void createAndShow() {
         chk = new JCheckBox(getPropertyName());
         chk.setSelected(getCurWidgetValue());
+        add(chk);
+    }
+
+    @Override
+    public void createAndShowMinimal(Boolean b) throws OperationNotSupportedException {
+        chk = new JCheckBox();
+        chk.setSelected(b);
         add(chk);
     }
 
