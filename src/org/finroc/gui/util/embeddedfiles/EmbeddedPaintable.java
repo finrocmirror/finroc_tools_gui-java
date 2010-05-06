@@ -22,6 +22,7 @@ package org.finroc.gui.util.embeddedfiles;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 
@@ -114,10 +115,12 @@ public class EmbeddedPaintable extends EmbeddedFile {
         }
         //Rectangle clipBounds = g.getClipBounds();
         //g.clipRect(clipBounds.x + originalBounds.x, clipBounds.y + originalBounds.y, clipBounds.width, clipBounds.height);
+        AffineTransform at = g.getTransform();
         if (fitTo != null) {
             double factorX = ((double)fitTo.width) / ((double)originalBounds.width);
             double factorY = ((double)fitTo.height) / ((double)originalBounds.height);
             double factor = Math.min(factorX, factorY);
+            System.out.println(factorX + " " + factorY + " " + factor);
             if (preserveAspectRatio) {
                 g.scale(factor, factor);
             } else {
@@ -126,6 +129,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
         }
         g.translate(-originalBounds.x, -originalBounds.y);
         paintInstance.paint(g);
+        g.setTransform(at);
     }
 
     public Paintable getPaintable(FileManager efm) throws Exception {
