@@ -35,7 +35,7 @@ import org.finroc.gui.util.treemodel.PortWrapper;
 import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.ExternalConnection;
 
-public abstract class GUIUiWithInterfaces<P extends UIBase<?,?,?,?>, C extends UIBase<?,?,?,?>> extends GUIUiBase<P,C> implements ConnectionListener {
+public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends GUIUiBase<P, C> implements ConnectionListener {
 
     /** Interface of MCAGUI */
     protected transient InterfaceTreeModel ioInterface = new InterfaceTreeModel();
@@ -88,7 +88,7 @@ public abstract class GUIUiWithInterfaces<P extends UIBase<?,?,?,?>, C extends U
 //  }
 
 
-    public void dataModelChanged(DataModelBase<?,?,?> caller, DataModelListener.Event event, Object param) {
+    public void dataModelChanged(DataModelBase <? , ? , ? > caller, DataModelListener.Event event, Object param) {
         setLoopTime(getModel().getLoopTime());
     }
 
@@ -151,18 +151,18 @@ public abstract class GUIUiWithInterfaces<P extends UIBase<?,?,?,?>, C extends U
         return ioInterface.getActiveInterfaces();
     }
 
-    public String getConnectionAddress() {
-        String result = "";
-        for (ExternalConnection io : getActiveInterfaces()) {
-            if (io.isConnected()) {
-                result += io.getConnectionAddress() + "; ";
-            }
-        }
-        if (result.equals("")) {
-            return "";
-        }
-        return result.substring(0, result.length() - 2);
-    }
+//    public String getConnectionAddress() {
+//        String result = "";
+//        for (ExternalConnection io : getActiveInterfaces()) {
+//            if (io.isConnected()) {
+//                result += io.getConnectionAddress() + "; ";
+//            }
+//        }
+//        if (result.equals("")) {
+//            return "";
+//        }
+//        return result.substring(0, result.length() - 2);
+//    }
 
     public void connectionEvent(ExternalConnection source, int e) {
         fireConnectionEvent(e);

@@ -60,6 +60,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -133,6 +134,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
     /** the appication's clipboard */
     private static Clipboard clipboard;
+
+    /** timer to update status bar */
+    private Timer statusBarTimer;
 
     public GUIWindowUI(FinrocGUI parent, GUIWindow model) {
         super(parent, new JFrame(), model);
@@ -294,6 +298,10 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         getParent().addConnectionListener(this);
         updateToolBarState();
         connectionEvent(null, ConnectionListener.NOT_CONNECTED);  // update Menu item and toolbar state
+
+        statusBarTimer = new Timer(2000, this);
+        statusBarTimer.setInitialDelay(2000);
+        statusBarTimer.start();
     }
 
     /**
@@ -471,6 +479,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } else if (src == miEditOriginal || src == miEditCtrl || src == miUseOnly) {
                 setEditMode(getEditModeFromMenu());
                 getModel().getParent().setEditMode(getEditMode().ordinal());
+            } else if (src == statusBarTimer) {
+                connectionEvent(null, 0);
+                return;
             } else if (pmiMoveTo.contains(src)) {
                 int moveTo = pmiMoveTo.indexOf(src);
                 GUIPanelUI current = getCurPanel();
@@ -549,13 +560,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
     @Override
     public void connectionEvent(ExternalConnection source, int e) {
-        int connectedCount = 0;
-        for (ExternalConnection ioi : parent.getActiveInterfaces()) {
-            if (ioi.isConnected()) {
-                connectedCount++;
-            }
-        }
-        statusBar.setStatus(getParent().getConnectionAddress(), connectedCount, parent.ioInterface.childEntryCount());
+        statusBar.setStatus(getParent().getActiveInterfaces());
         /*if (connectionPanel != null && source != null) {
             connectionPanel.setLeftTree(((JMCAGUI)source).getTreeModel());
         }*/
@@ -966,5 +971,10 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 pmenu.show(tabs, me.getX(), me.getY());
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        statusBarTimer.stop();
     }
 }

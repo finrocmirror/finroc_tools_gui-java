@@ -120,7 +120,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
             double factorX = ((double)fitTo.width) / ((double)originalBounds.width);
             double factorY = ((double)fitTo.height) / ((double)originalBounds.height);
             double factor = Math.min(factorX, factorY);
-            System.out.println(factorX + " " + factorY + " " + factor);
+            //System.out.println(factorX + " " + factorY + " " + factor);
             if (preserveAspectRatio) {
                 g.scale(factor, factor);
             } else {
