@@ -24,6 +24,7 @@ import org.finroc.gui.commons.EventRouter;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.cc.CCPort;
 import org.finroc.core.port.cc.CCPortData;
 import org.finroc.core.port.cc.CCPortListener;
@@ -55,6 +56,9 @@ public class WidgetInput {
         }
 
         public T getAutoLocked() {
+            if ((super.defaultFlags & PortFlags.PUSH_STRATEGY) != 0 && (!getPort().pushStrategy())) {
+                getPort().setPushStrategy(true); // we still/soon seem to need push strategy
+            }
             return getPort().getAutoLocked();
         }
     }

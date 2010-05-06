@@ -357,6 +357,12 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             panel.setParent(this);
         }
 
+        // update strategies
+        GUIPanel gp = getCurPanel().getModel();
+        for (GUIPanel gp2 : getModel().getChildren()) {
+            updatePortStrategies(gp2, gp == gp2);
+        }
+
         // Connection Panel?
         if (miConnectionPanel.isSelected()) {
             JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, connectionPanel, guipanels);
@@ -370,6 +376,21 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
         root.validate();
         repaint();
+    }
+
+    /**
+     * Update port strategies of specified panel
+     *
+     * @param gp GUIPanel of which to update ports of
+     * @param push Push values if this is default?
+     */
+    private void updatePortStrategies(GUIPanel gp, boolean push) {
+        System.out.println("Setting strategies of panel " + gp.toString() + " to " + push);
+        for (Widget w : gp.getChildren()) {
+            for (WidgetPort<?> wp : w.getChildren()) {
+                wp.updateStrategy(push);
+            }
+        }
     }
 
     /**
@@ -970,6 +991,12 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 }
                 pmenu.show(tabs, me.getX(), me.getY());
             }
+        }
+
+        // update strategies
+        GUIPanel gp = getCurPanel().getModel();
+        for (GUIPanel gp2 : getModel().getChildren()) {
+            updatePortStrategies(gp2, gp == gp2);
         }
     }
 

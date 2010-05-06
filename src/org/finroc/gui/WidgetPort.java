@@ -31,8 +31,9 @@ import org.finroc.gui.util.treemodel.PortWrapper;
 import org.finroc.gui.util.treemodel.TreePortWrapper;
 
 import org.finroc.core.port.AbstractPort;
+import org.finroc.core.port.PortFlags;
 
-public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase<GUI, Widget, WidgetPort<?>> implements TreePortWrapper, Serializable {
+public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;
@@ -42,6 +43,9 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase<G
 
     /** name/description of port (redundant - for serialization) */
     protected String description;
+
+    /** Default flags of port - stored to restore original strategies */
+    protected transient int defaultFlags;
 
     //protected P port;
 
@@ -78,6 +82,7 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase<G
                 getPort().connectToTarget(s);
             }
         }
+        defaultFlags = getPort().getAllFlags();
     }
 
     public void clearConnections() {
@@ -202,5 +207,23 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase<G
             getPort().connectToTarget(other.getPort());
         }
         connectedTo.add(other.getUid());
+    }
+
+    /**
+     * update port strategy
+     *
+     * @param push Enable pushing if this is the default?
+     */
+    public void updateStrategy(boolean push) {
+        AbstractPort p = getPort();
+        if (p.getDataType().isCCType()) { // not worth changing strategies for cc types
+            return;
+        }
+        if (p.getFlag(PortFlags.ACCEPTS_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY) != 0) {
+            p.setPushStrategy(push);
+        }
+        if (p.getFlag(PortFlags.MAY_ACCEPT_REVERSE_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY_REVERSE) != 0) {
+            p.setReversePushStrategy(push);
+        }
     }
 }
