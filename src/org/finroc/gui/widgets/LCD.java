@@ -148,6 +148,7 @@ public class LCD extends Widget {
                 blocksForDigits.put("-", Arrays.asList(new String[] {"C"}));
                 blocksForDigits.put("E", Arrays.asList(new String[] {"NW", "N", "SW", "S", "C"}));
                 blocksForDigits.put(" ", Arrays.asList(new String[] {}));
+                blocksForDigits.put("N", Arrays.asList(new String[] {"SW", "C", "SE"}));
                 blocksForDigits.put("n", Arrays.asList(new String[] {"SW", "C", "SE"}));
                 blocksForDigits.put("A", Arrays.asList(new String[] {"NW", "N", "NE", "C", "SW", "SE"}));
                 blocksForDigits.put("a", Arrays.asList(new String[] {"NW", "N", "NE", "C", "SW", "SE"}));
@@ -324,6 +325,16 @@ public class LCD extends Widget {
             //super.paintComponent(g);
             //input.setValue(-123567890);
 
+            // catch nan and infinity
+            if (num.isFloatingPoint()) {
+                double d = num.doubleValue();
+                if (Double.isNaN(d)) {
+                    return "nan";
+                } else if (Double.isInfinite(d)) {
+                    return "inf";
+                }
+            }
+
             switch (formatting) {
             case Default:
                 if (!num.isFloatingPoint()) {
@@ -391,6 +402,9 @@ public class LCD extends Widget {
         public void renderBlock(BufferedImageRGB cache, Rectangle pos, String digit) {
 
             List<String> blocks = blocksForDigits.get(digit);
+            if (blocks == null) {
+                System.out.println("warning in LCD Widget: Cannot render digit " + digit);
+            }
             for (String s : allBlocks) {
                 if (blocks.contains(s)) {
                     blocksOn.get(s).blitTo(cache, pos);
