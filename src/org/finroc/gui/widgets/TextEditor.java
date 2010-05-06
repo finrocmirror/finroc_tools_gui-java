@@ -56,6 +56,8 @@ public class TextEditor extends Widget {
     private WidgetInput.Std<ContainsStrings> textInput;
     private WidgetOutput.Std<StringBlackboardBuffer> textOutput;
 
+    private boolean hideButtons = false;
+
     @Override
     protected WidgetUI createWidgetUI() {
         return new TextEditorUI();
@@ -73,10 +75,11 @@ public class TextEditor extends Widget {
 
         private JTextArea textArea;
         private JButton undoButton, commitButton;
+        private JPanel buttonPanel;
 
         TextEditorUI() {
             super(RenderMode.Swing);
-            JPanel buttonPanel = new JPanel();
+            buttonPanel = new JPanel();
             buttonPanel.setLayout(new GridLayout(1, 2));
             undoButton = new JButton("Undo Changes");
             undoButton.addActionListener(this);
@@ -91,11 +94,22 @@ public class TextEditor extends Widget {
             add(buttonPanel, BorderLayout.SOUTH);
             textInput.addChangeListener(this);
             portChanged(null, null);
+            widgetPropertiesChanged();
         }
 
         @Override
         protected boolean isWidgetFocusable() {
             return true;
+        }
+
+        @Override
+        public void widgetPropertiesChanged() {
+            buttonPanel.setVisible(!hideButtons);
+
+            validate();
+            repaint();
+            //actionPerformed(null);  // update value
+            portChanged(null, null);
         }
 
         public void actionPerformed(ActionEvent e) {
