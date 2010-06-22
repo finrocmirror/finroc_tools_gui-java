@@ -22,6 +22,7 @@ package org.finroc.gui;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -226,5 +227,12 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase <
         if (p.getFlag(PortFlags.MAY_ACCEPT_REVERSE_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY_REVERSE) != 0) {
             p.setReversePushStrategy(push);
         }
+    }
+
+    /**
+     * @return Unmodifiable set of connection links
+     */
+    public Set<String> getConnectionLinks() {
+        return Collections.unmodifiableSet(connectedTo);
     }
 }

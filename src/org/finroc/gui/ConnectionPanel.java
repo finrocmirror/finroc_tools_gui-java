@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 import javax.swing.BorderFactory;
@@ -99,6 +100,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private List<Point> startPoints = new ArrayList<Point>();
     private Point lastMousePos;
 
+    /** WidgetPort that mouse cursor is currently over - NULL if somewhere else */
+    TreePortWrapper mouseOver = null;
+
     /** PopupMenu */
     private JPopupMenu popupMenu;
     private boolean popupOnRight;
@@ -130,8 +134,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         add(rightScrollPane, BorderLayout.CENTER);
 
         // setup renderer
-        leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, leftTree.getBackground(), false));
-        rightTree.setCellRenderer(new GuiTreeCellRenderer(rightTree, rightTree.getBackground(), true));
+        leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, leftTree.getBackground(), false, this));
+        rightTree.setCellRenderer(new GuiTreeCellRenderer(rightTree, rightTree.getBackground(), true, this));
 
         // init Listeners
         leftTree.addMouseListener(this);
@@ -198,7 +202,48 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     public void mouseClicked(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseMoved(MouseEvent e) {
+        Point pos = e.getPoint();
+        Point diff = ((JComponent)e.getSource()).getLocationOnScreen();
+        pos.x += diff.x - getLocationOnScreen().x;
+        pos.y += diff.y - getLocationOnScreen().y;
+        TreePortWrapper tpw = getTreeNodeFromPos(rightTree, pos);
+        WidgetPort<?> wp = null;
+        if (tpw == null) {
+            tpw = getTreeNodeFromPos(leftTree, pos);
+        } else {
+            wp = (WidgetPort<?>)tpw;
+        }
+
+        if (tpw != mouseOver) {
+            mouseOver = tpw;
+
+            // tool tip text
+            if (wp != null) {
+
+                Set<String> links = wp.getConnectionLinks();
+                if (links.size() == 0) {
+                    rightTree.setToolTipText(null);
+                } else {
+                    String s = null;
+                    for (String link : links) {
+                        link = link.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+                        if (s == null) {
+                            s = "<html><p>" + link;
+                        } else {
+                            s += "<br/>" + link; // + "</br>";
+                        }
+                    }
+                    rightTree.setToolTipText(s + "</p></html>");
+                }
+
+            } else {
+                rightTree.setToolTipText(null);
+            }
+            rightTree.repaint();
+            leftTree.repaint();
+        }
+    }
     public void mousePressed(MouseEvent e) {
 
         if (e.getButton() != MouseEvent.BUTTON1) {
@@ -403,10 +448,16 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                     if (leftTree.isVisible((TreePortWrapper)port2)) {
                         Point p1 = getStartingPoint(rightTree, port, true);
                         Point p2 = getStartingPoint(leftTree, (TreePortWrapper)port2, false);
+                        Color c = GuiTreeCellRenderer.connected;
+                        if (mouseOver != null) {
+                            if (mouseOver == port || mouseOver == port2) {
+                                c = c.brighter();
+                            }
+                        }
                         if (visible.contains(p1) && visible.contains(p2)) {
-                            drawLine(g, p1, p2, GuiTreeCellRenderer.connected, true, transparent);
+                            drawLine(g, p1, p2, c, true, transparent);
                         } else if (g.getClipBounds().intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                            drawLine(g, p1, p2, GuiTreeCellRenderer.connected, false, false);
+                            drawLine(g, p1, p2, c, false, false);
                         }
                     }
                 }
@@ -479,8 +530,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     public TreePortWrapper getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree) {
+        return getTreeNodeFromPos(otherTree, lastMousePos);
+    }
+
+    public TreePortWrapper getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
+
         // getPosition on JTree
-        Point relMousePos = new Point(lastMousePos);
+        Point relMousePos = new Point(pos);
         Point diff = otherTree.getLocationOnScreen();
         relMousePos.x -= (diff.x - getLocationOnScreen().x);
         relMousePos.y -= (diff.y - getLocationOnScreen().y);
@@ -569,7 +625,6 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     private Color background;
     //private static Color selectedBorder = new Color(240, 140, 20);
     public static final Color selected = new Color(255, 30, 30);
-    public static final Color mouseOver = new Color(255, 30, 30);
     public static final Color connected = new Color(30, 200, 30);
     public static final Color connectionPartnerMissing = new Color(120, 10, 10);
 
@@ -586,9 +641,12 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
 
     private DefaultTreeCellRenderer defaultRenderer;
 
-    public GuiTreeCellRenderer(JTree parent, Color background, boolean rightTree) {
+    private ConnectionPanel panel;
+
+    public GuiTreeCellRenderer(JTree parent, Color background, boolean rightTree, ConnectionPanel panel) {
         setBackgroundNonSelectionColor(color);
         this.background = background;
+        this.panel = panel;
         setBorderSelectionColor(selected);
         setTextSelectionColor(background);
         setTextNonSelectionColor(background);
@@ -622,6 +680,12 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         boolean portSelected = (!timer.isRunning() && sel);
         TreePortWrapper port = (TreePortWrapper)value;
         Color c = portSelected ? selected : (port.getPort().isConnected() ? connected : (port.getPort().hasLinkEdges() ? connectionPartnerMissing : color));
+        if (panel.mouseOver != null) {
+            boolean mouseOver = (port.getPort() == panel.mouseOver.getPort()) || port.getPort().isConnectedTo(panel.mouseOver.getPort());
+            if (mouseOver) {
+                c = c.brighter();
+            }
+        }
         setBackgroundSelectionColor(c);
         setBackgroundNonSelectionColor(c);
         setIconTextGap(0);
@@ -636,8 +700,6 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         /*return result;*/
         return this;
     }
-
-
 
     @Override
     public void paint(Graphics g) {
