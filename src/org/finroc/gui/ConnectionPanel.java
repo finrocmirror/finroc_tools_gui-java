@@ -106,7 +106,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     /** PopupMenu */
     private JPopupMenu popupMenu;
     private boolean popupOnRight;
-    JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID;
+    JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
 
     public ConnectionPanel(GUIWindowUI win, Font treeFont) {
 
@@ -158,7 +158,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         miSelectNone = createMenuEntry("Select None");
         popupMenu.addSeparator();
         miCopyUID = createMenuEntry("Copy UID");
-
+        miCopyLinks = createMenuEntry("Copy Connection Links");
+        miShowPartner = createMenuEntry("Show Connection Partner(s)");
         setTreeFont(treeFont);
     }
 
@@ -340,8 +341,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             popupMenu.show(this, e.getX() + p.x - p2.x, e.getY() + p.y - p2.y);
             saveLastMousePos(e);
             miRemoveConnections.setEnabled(getTreeNodeFromPos((MJTree<TreePortWrapper>)e.getSource()) != null);
-            TreePortWrapper tnp = getTreeNodeFromPos(leftTree);
-            miCopyUID.setEnabled(!popupOnRight && (tnp instanceof Uid));
+            if (!popupOnRight) {
+                TreePortWrapper tnp = getTreeNodeFromPos(leftTree);
+                miCopyUID.setEnabled(!popupOnRight && (tnp instanceof Uid));
+                miCopyLinks.setEnabled(false);
+                miShowPartner.setEnabled(false);
+            } else {
+                TreePortWrapper tnp = getTreeNodeFromPos(rightTree);
+                miCopyUID.setEnabled(false);
+                miCopyLinks.setEnabled(popupOnRight && tnp instanceof WidgetPort<?> && ((WidgetPort<?>)tnp).getConnectionLinks().size() > 0);
+                miShowPartner.setEnabled(miCopyLinks.isEnabled() && ((WidgetPort<?>)tnp).getConnectionPartners().size() > 0);
+            }
             return;
         }
 
@@ -605,6 +615,27 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             }
             Clipboard clipboard = getToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(uid), null);
+        } else if (e.getSource() == miCopyLinks) {
+            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            String uid = "";
+            if (tnp instanceof WidgetPort<?>) {
+                for (String s : ((WidgetPort<?>)tnp).getConnectionLinks()) {
+                    if (uid.length() > 0) {
+                        uid += "\n";
+                    }
+                    uid += s;
+                }
+            }
+            Clipboard clipboard = getToolkit().getSystemClipboard();
+            clipboard.setContents(new StringSelection(uid), null);
+        } else if (e.getSource() == miShowPartner) {
+            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            WidgetPort<?> wp = (WidgetPort<?>)tnp;
+            List<PortWrapper> partners = wp.getConnectionPartners();
+            for (PortWrapper partner : partners) {
+                TreePath tp = leftTree.getTreePathFor((TreePortWrapper)partner);
+                leftTree.scrollPathToVisible(tp);
+            }
         }
     }
 

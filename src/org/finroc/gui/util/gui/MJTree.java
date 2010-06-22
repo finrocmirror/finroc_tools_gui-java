@@ -53,7 +53,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     private static final long serialVersionUID = 1166608861920603326L;
 
     /** Type of objects that can be selected */
-    private Class<? extends T> selectableObjectType;
+    private Class <? extends T > selectableObjectType;
 
     /** temporary variable - for letting selection get smaller at mouse release (for drag & drop) */
     private TreePath[] newSelection;
@@ -66,7 +66,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
     @SuppressWarnings("unchecked")
     public MJTree(Class<?> selectableObjectType, int newModelExpandLevel) {
-        this.selectableObjectType = (Class<? extends T>)selectableObjectType;
+        this.selectableObjectType = (Class <? extends T >)selectableObjectType;
         this.newModelExpandLevel = newModelExpandLevel;
         super.addMouseListener(this);
     }
@@ -93,7 +93,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     public void setSelectedObjects(List<T> objects, boolean overwriteMouseRelease) {
         if (objects == null) {
             setSelectionPaths(null);
-            newSelection = overwriteMouseRelease? null : newSelection;
+            newSelection = overwriteMouseRelease ? null : newSelection;
             return;
         }
         TreePath[] temp = new TreePath[objects.size()];
@@ -101,10 +101,10 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
             temp[i] = getTreePathFor(objects.get(i));
         }
         setSelectionPaths(temp);
-        newSelection = overwriteMouseRelease? temp : newSelection;
+        newSelection = overwriteMouseRelease ? temp : newSelection;
     }
 
-    private TreePath getTreePathFor(TreeNode object) {
+    public TreePath getTreePathFor(TreeNode object) {
         LinkedList<TreeNode> temp = new LinkedList<TreeNode>();
         temp.add(object);
         TreeNode temp2 = object;
@@ -138,7 +138,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
     public List<T> getVisibleObjects() {
         List<T> result = getObjects();
-        for (Iterator<T> i = result.iterator(); i.hasNext(); ) {
+        for (Iterator<T> i = result.iterator(); i.hasNext();) {
             if (!isVisible(getTreePathFor(i.next()))) {
                 i.remove();
             }
