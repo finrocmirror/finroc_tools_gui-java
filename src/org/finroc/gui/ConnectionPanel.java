@@ -83,7 +83,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private static final long serialVersionUID = -4672134128946142093L;
 
     /** for optimized drawing */
-    private static int MAXTRANSPARENTCONNECTIONS = 3;
+    private static int MAXTRANSPARENTCONNECTIONS = 2;
 
     /** left and right tree */
     private MJTree<TreePortWrapper> leftTree;
@@ -404,9 +404,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                         Point p1 = getStartingPoint(rightTree, port, true);
                         Point p2 = getStartingPoint(leftTree, (TreePortWrapper)port2, false);
                         if (visible.contains(p1) && visible.contains(p2)) {
-                            drawLine(g, p1, p2, GuiTreeCellRenderer.color, true, transparent);
+                            drawLine(g, p1, p2, GuiTreeCellRenderer.connected, true, transparent);
                         } else if (g.getClipBounds().intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                            drawLine(g, p1, p2, GuiTreeCellRenderer.color, false, false);
+                            drawLine(g, p1, p2, GuiTreeCellRenderer.connected, false, false);
                         }
                     }
                 }
@@ -524,6 +524,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                     WidgetPort<?> wp = (WidgetPort<?>)wptnp;
                     wp.removeConnection(tnp.getPort(), tnp.getUid());
                 }
+                tnp.getPort().disconnectAll(); // just to make sure...
             }
             parent.addUndoBufferEntry("Remove connections");
             repaint();
@@ -568,6 +569,9 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     private Color background;
     //private static Color selectedBorder = new Color(240, 140, 20);
     public static final Color selected = new Color(255, 30, 30);
+    public static final Color mouseOver = new Color(255, 30, 30);
+    public static final Color connected = new Color(30, 200, 30);
+    public static final Color connectionPartnerMissing = new Color(120, 10, 10);
 
     private static Map<String, Icon> iconCache = new HashMap<String, Icon>();
     private boolean rightTree;
@@ -615,7 +619,11 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         //}
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,    row, hasFocus);
         //setBackground(color);
-        setBackgroundSelectionColor((!timer.isRunning() && sel) ? selected : color);
+        boolean portSelected = (!timer.isRunning() && sel);
+        TreePortWrapper port = (TreePortWrapper)value;
+        Color c = portSelected ? selected : (port.getPort().isConnected() ? connected : (port.getPort().hasLinkEdges() ? connectionPartnerMissing : color));
+        setBackgroundSelectionColor(c);
+        setBackgroundNonSelectionColor(c);
         setIconTextGap(0);
         if (!rightTree) {
             setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -624,7 +632,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         //setOpaque(true);
         /*result.setFont(c.getFont());
         result.setForeground(sel ? selected : background);*/
-        setIcon(createInputIcon(getPreferredSize().height, !((TreePortWrapper)value).isInputPort(), rightTree, !timer.isRunning() && sel));
+        setIcon(createInputIcon(getPreferredSize().height, !port.isInputPort(), rightTree, portSelected, c));
         /*return result;*/
         return this;
     }
@@ -641,15 +649,15 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         g.setColor(temp);
     }
 
-    private Icon createInputIcon(int height, boolean input, boolean front, boolean sel) {
-        String key = new Boolean(input).toString() + new Boolean(front).toString() + new Boolean(sel).toString() + height;
+    private Icon createInputIcon(int height, boolean input, boolean front, boolean sel, Color c) {
+        String key = new Boolean(input).toString() + new Boolean(front).toString() + c.getRGB() + height;
         Icon temp = iconCache.get(key);
         if (temp != null) {
             return temp;
         }
 
         int backgroundTemp = background.getRGB();
-        int colorTemp = sel ? selected.getRGB() : color.getRGB();
+        int colorTemp = c.getRGB();
 
         BufferedImageRGB img = new BufferedImageRGB(height / 2 + 1, height);
         img.drawFilledRectangle(img.getBounds(), input ? colorTemp : backgroundTemp);

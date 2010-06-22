@@ -91,8 +91,9 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase <
     }
 
     public void removeConnection(AbstractPort p, String uid) {
-        connectedTo.remove(uid);
-        getPort().disconnectFrom(p);
+        if (connectedTo.remove(uid)) {
+            getPort().disconnectFrom(p);
+        }
     }
 
     public String getUid() {

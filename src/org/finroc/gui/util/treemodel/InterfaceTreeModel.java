@@ -64,6 +64,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
     /**
      * Get Node for element with specified handle. If it doesn't exist yet - create it
+     * (only called in synchronized context)
      *
      * @param handle Handle (positive sign)
      * @return Node
@@ -113,7 +114,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
     @Override
     public synchronized void runtimeChange(byte changeType, FrameworkElement element) {
-        if (!element.isChildOf(root.wrapped.getChild())) {
+        if (!element.isChildOf(root.wrapped.getChild(), true)) {
             return; // not of interest
         }
 
