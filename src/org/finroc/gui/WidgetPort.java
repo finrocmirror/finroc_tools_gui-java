@@ -204,9 +204,9 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase <
             return;
         }
         if (getPort().isInputPort()) {
-            getPort().connectToSource(other.getPort());
+            getPort().connectToSource(other.getUid());
         } else {
-            getPort().connectToTarget(other.getPort());
+            getPort().connectToTarget(other.getUid());
         }
         connectedTo.add(other.getUid());
     }
