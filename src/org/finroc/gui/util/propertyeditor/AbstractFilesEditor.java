@@ -25,11 +25,13 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.gui.util.embeddedfiles.EmbeddedFile;
 import org.finroc.gui.util.gui.FileDialog;
 import org.finroc.gui.util.gui.ListWithNewAndDeleteButton;
+import org.finroc.log.LogLevel;
 
 
 public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<AbstractFile>> {
@@ -75,7 +77,7 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
                     EmbeddedFile ef = getParentDialog().getEmbeddedFileManager().loadFile(f, list.getFileClass());
                     return ef;
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), ex);
                     JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }

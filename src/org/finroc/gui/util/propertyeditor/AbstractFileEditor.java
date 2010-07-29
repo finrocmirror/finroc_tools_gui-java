@@ -31,9 +31,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.gui.util.embeddedfiles.ExternalFolder;
 import org.finroc.gui.util.gui.FileDialog;
+import org.finroc.log.LogLevel;
 
 
 /**
@@ -52,10 +54,10 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
 
     private AbstractFile embeddedFile;
 
-    private Class<? extends AbstractFile> clazz;
+    private Class <? extends AbstractFile > clazz;
     private String[] extensions;
 
-    public AbstractFileEditor(Class<? extends AbstractFile> clazz, String[] extensions) {
+    public AbstractFileEditor(Class <? extends AbstractFile > clazz, String[] extensions) {
         this.clazz = clazz;
         this.extensions = extensions;
     }
@@ -93,7 +95,7 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
                 curFileText.setText(embeddedFile.toString());
                 return;
             } catch (Exception ex) {
-                ex.printStackTrace();
+                FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), ex);
                 JOptionPane.showMessageDialog(null, ex.getMessage());
             }
         }

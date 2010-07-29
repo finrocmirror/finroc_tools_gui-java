@@ -26,6 +26,9 @@ import java.lang.reflect.Method;
 import javax.naming.OperationNotSupportedException;
 import javax.swing.JComboBox;
 
+import org.finroc.gui.FinrocGUI;
+import org.finroc.log.LogLevel;
+
 /**
  * @author max
  *
@@ -47,7 +50,7 @@ public class EnumEditor extends PropertyEditComponent<Enum> {
             jcmb = new JComboBox(values);
             jcmb.setSelectedItem(getCurWidgetValue());
         } catch (Exception e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         jcmb.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jcmb.getPreferredSize().height));
         createStdLayoutWith(jcmb);
@@ -64,7 +67,7 @@ public class EnumEditor extends PropertyEditComponent<Enum> {
             jcmb = new JComboBox(values);
             jcmb.setSelectedItem(object);
         } catch (Exception e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         add(jcmb);
     }

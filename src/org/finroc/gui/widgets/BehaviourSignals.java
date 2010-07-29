@@ -47,6 +47,7 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
 
+import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.BehaviourInfo;
 import org.finroc.plugin.datatype.mca.BehaviourInfoBlackboard;
 import org.finroc.plugin.datatype.ContainsStrings;
@@ -279,7 +280,7 @@ public class BehaviourSignals extends Widget {
                 try {
                     signals.getClient().commitAsynchChange(offset, buf);
                 } catch (MethodCallException e1) {
-                    System.out.println("Warning: Couldn't commit behaviour info blackboard change");
+                    log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
                 }
             }
         }

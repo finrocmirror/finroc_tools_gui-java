@@ -24,7 +24,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -40,8 +39,11 @@ import java.util.zip.ZipOutputStream;
 
 import javax.swing.tree.TreeNode;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.util.ObjectCloner;
 import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
+import org.finroc.log.LogLevel;
+import org.finroc.log.LogStream;
 
 import org.finroc.core.util.Files;
 
@@ -149,7 +151,7 @@ public class FileManager {
 
     @SuppressWarnings("unchecked")
     public synchronized <T extends AbstractFile> T loadFile(File f, Class<T> c) throws Exception {
-        Constructor<? extends AbstractFile> con = c.getDeclaredConstructor(File.class);
+        Constructor <? extends AbstractFile > con = c.getDeclaredConstructor(File.class);
         AbstractFile abstractNewfile = con.newInstance(f);
 
         if (abstractNewfile instanceof EmbeddedFile) {
@@ -202,7 +204,7 @@ public class FileManager {
         for (byte[] data : files.values()) {
             space += data.length;
         }
-        System.out.println("File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
+        FinrocGUI.logDomain.log(LogLevel.LL_DEBUG, "FileManager", "File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
     }
 
     byte[] getData(long uid) {
@@ -313,16 +315,19 @@ public class FileManager {
             }
         }
 
-        System.out.print("warning: file " + relFilename + " not found in resource paths... ");
+        LogStream ls = FinrocGUI.logDomain.getLogStream(LogLevel.LL_WARNING, "FileManager");
+        ls.append("warning: file " + relFilename + " not found in resource paths... ");
 
         // hmm... not found - maybe the absolute file name is still the same
         result = new File(absFilename);
         if (result.exists()) {
-            System.out.println("luckily " + absFilename + " is still there");
+            ls.append("luckily " + absFilename + " is still there");
+            ls.close();
             return result;
         }
 
-        System.out.println("not loading it");
+        ls.append("not loading it");
+        ls.close();
         return null;
     }
 

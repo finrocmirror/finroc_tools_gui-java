@@ -22,10 +22,12 @@ package org.finroc.gui.widgets;
 
 import java.awt.BorderLayout;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.GUIUiBase;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
+import org.finroc.log.LogLevel;
 
 import org.finroc.core.port.PortCreationInfo;
 
@@ -89,7 +91,7 @@ public class BeanShell extends Widget {
                         "   XYZ.instance = new XYZ(ms); " +
                         "}");
             } catch (EvalError e) {
-                e.printStackTrace();
+                FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
             }
             new Thread(ip).start();
         }

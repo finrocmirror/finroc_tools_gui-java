@@ -31,8 +31,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.commons.EventRouter;
 import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
+import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomain;
 
 import org.finroc.core.FrameworkElement;
 
@@ -42,7 +45,7 @@ import org.finroc.core.FrameworkElement;
  * Base class for all classes implementing the fingui data model
  */
 @SuppressWarnings("unchecked")
-public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > implements Serializable, TreeNode {
+public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > extends LogUser implements Serializable, TreeNode {
 
     /** UID */
     private static final long serialVersionUID = -8960599158692149672L;
@@ -62,6 +65,9 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
 
     /** Framework element (backend) corresponding to this Data model element */
     protected transient FrameworkElement frameworkElement = null;
+
+    /** log domain for gui */
+    public final LogDomain logDomain = FinrocGUI.logDomain;
 
     public DataModelBase(P parent) {
         if (parent != null) {

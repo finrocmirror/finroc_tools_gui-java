@@ -39,9 +39,11 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.commons.reflection.ReflectionCallback;
 import org.finroc.gui.commons.reflection.ReflectionHelper;
 import org.finroc.gui.util.embeddedfiles.FileManager;
+import org.finroc.log.LogLevel;
 
 
 /**
@@ -55,8 +57,8 @@ public class PropertiesDialog extends JDialog implements ActionListener {
     /** UID */
     private static final long serialVersionUID = -3537793359933146900L;
 
-    private Map<Field, PropertyEditComponent<?>> components;
-    private List<PropertyEditComponent<?>> componentsList;  // for constant order
+    private Map < Field, PropertyEditComponent<? >> components;
+    private List < PropertyEditComponent<? >> componentsList;  // for constant order
 
     private JButton btnOkay, btnCancel, btnApply;
 
@@ -97,8 +99,8 @@ public class PropertiesDialog extends JDialog implements ActionListener {
         this.efm = efm;
 
         // inspect widget and create components
-        components = new HashMap<Field, PropertyEditComponent<?>>();
-        componentsList = new ArrayList<PropertyEditComponent<?>>();
+        components = new HashMap < Field, PropertyEditComponent<? >> ();
+        componentsList = new ArrayList < PropertyEditComponent<? >> ();
         try {
             for (final Object x : o) {
                 ReflectionHelper.visitAllFields(x.getClass(), true, true, new ReflectionCallback<Field>() {
@@ -111,7 +113,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
                                         components.put(f, pec);
                                         componentsList.add(pec);
                                     } catch (ClassNotFoundException e) {
-                                        e.printStackTrace(); // skip this property
+                                        FinrocGUI.logDomain.log(LogLevel.LL_WARNING, toString(), e); // skip this property
                                     }
                                 }
                             }
@@ -122,7 +124,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
                 }, 0);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
 
         // create content pane

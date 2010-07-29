@@ -30,6 +30,8 @@ import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeListener;
 import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.port.net.RemoteCoreRegister;
+import org.finroc.gui.FinrocGUI;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -169,7 +171,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
                 }
                 inp = (InterfaceNodePort)inp.next;
             }
-            System.out.println("Strange... could not find " + uid + " - although runtime returned something for it");
+            FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "InterfaceTreeModel", "Strange... could not find " + uid + " - although runtime returned something for it");
         }
         return null;
     }

@@ -39,6 +39,7 @@ import org.finroc.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
+import org.finroc.log.LogLevel;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.port.PortCreationInfo;
@@ -140,7 +141,7 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         try {
             ReflectionHelper.visitAllFields(getClass(), true, true, this, 1);
         } catch (Exception e) {
-            e.printStackTrace();
+            log(LogLevel.LL_ERROR, logDomain, e);
         }
         return embeddedFiles;
     }

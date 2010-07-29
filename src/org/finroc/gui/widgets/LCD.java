@@ -40,6 +40,7 @@ import org.finroc.gui.commons.fastdraw.BufferedConvexSVG;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.commons.fastdraw.SVG;
 import org.finroc.gui.themes.Themes;
+import org.finroc.log.LogLevel;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;
@@ -170,7 +171,7 @@ public class LCD extends Widget {
                 }
                 updateColors(false);
             } catch (Exception e) {
-                e.printStackTrace();
+                log(LogLevel.LL_ERROR, logDomain, e);
             }
             widgetPropertiesChanged();
         }
@@ -305,7 +306,7 @@ public class LCD extends Widget {
             try {
                 updateColors(warn);
             } catch (Exception e) {
-                e.printStackTrace();
+                log(LogLevel.LL_ERROR, logDomain, e);
             }
             Rectangle firstBlock = new Rectangle(renderSize.width - blockWidth, (renderSize.height - blockHeight) / 2, blockWidth, blockHeight);
             for (int i = s.length() - 1; i >= 0; i--) {
@@ -403,7 +404,7 @@ public class LCD extends Widget {
 
             List<String> blocks = blocksForDigits.get(digit);
             if (blocks == null) {
-                System.out.println("warning in LCD Widget: Cannot render digit " + digit);
+                log(LogLevel.LL_WARNING, logDomain, "warning in LCD Widget: Cannot render digit " + digit);
             }
             for (String s : allBlocks) {
                 if (blocks.contains(s)) {

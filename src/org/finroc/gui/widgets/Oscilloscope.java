@@ -37,10 +37,11 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetPorts;
 import org.finroc.gui.WidgetPortsListener;
 import org.finroc.gui.WidgetUI;
-import org.finroc.gui.commons.LoopThread;
 import org.finroc.gui.themes.Themes;
 import org.finroc.gui.util.gui.RulerOfTheForest;
 import org.finroc.gui.util.propertyeditor.PropertyList;
+import org.finroc.jc.thread.LoopThread;
+import org.finroc.log.LogLevel;
 
 import org.finroc.plugin.datatype.PartWiseLinearFunction;
 import org.finroc.core.port.AbstractPort;
@@ -128,7 +129,7 @@ public class Oscilloscope extends Widget {
             // create thread
             thread = new OscilloscopeThread();
             thread.start();
-            System.out.println("Oscilloscope Thread started.");
+            log(LogLevel.LL_DEBUG, logDomain, "Oscilloscope Thread started.");
 
             signals.addChangeListener(this);
             widgetPropertiesChanged();
@@ -155,7 +156,7 @@ public class Oscilloscope extends Widget {
             bottom.setMinAndMax(0, timeScaleMaxInMs);
             left.setMinAndMax(leftScaleMin, leftScaleMax);
             right.setMinAndMax(rightScaleMin, rightScaleMax);
-            thread.setLoopTime(timerIntervalInMs);
+            thread.setCycleTime(timerIntervalInMs);
             synchronized (functions) {
                 signals.setSize(channels.size());
                 initPorts();
@@ -182,7 +183,7 @@ public class Oscilloscope extends Widget {
             public void mainLoopCallback() throws Exception {
                 if (!isVisible()) {
                     stopLoop(); // disposed
-                    System.out.println("Oscilloscope Thread stopped.");
+                    log(LogLevel.LL_DEBUG, logDomain, "Oscilloscope Thread stopped.");
                     return;
                 }
 
@@ -196,7 +197,7 @@ public class Oscilloscope extends Widget {
                     }
                     repaint();
                 } catch (Exception e) {
-                    System.out.println("Oscilloscope Thread skipped loop, because of temporary exception");
+                    log(LogLevel.LL_DEBUG_WARNING, logDomain, "Oscilloscope Thread skipped loop, because of temporary exception");
                 }
             }
         }

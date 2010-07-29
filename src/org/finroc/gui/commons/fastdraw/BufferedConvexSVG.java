@@ -38,6 +38,8 @@ import com.kitfox.svg.SVGElementException;
 
 import org.finroc.core.portdatabase.DataType;
 import org.finroc.core.portdatabase.DataTypeRegister;
+import org.finroc.gui.FinrocGUI;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -139,7 +141,7 @@ public class BufferedConvexSVG extends BufferedImageRGBConvexShape {
                 initColor();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
             return;
         }
         Point newDest = new Point(dest.x + xOffset - sourceArea.x, dest.y + yOffset - sourceArea.y);

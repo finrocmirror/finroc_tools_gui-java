@@ -27,12 +27,14 @@ import java.awt.geom.AffineTransform;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.commons.fastdraw.SVG;
+import org.finroc.log.LogLevel;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;
@@ -85,7 +87,7 @@ public class Compass extends Widget {
             svgSize = Math.min(svgWidth, svgHeight);
             halfSVGSize = svgSize / 2;
         } catch (Exception e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "Compass", e);
         }
     }
 

@@ -24,6 +24,8 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
+import org.finroc.log.LogLevel;
+
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.util.JConsole;
@@ -41,7 +43,7 @@ public class DebugConsole extends JFrame {
         pack();
         setVisible(true);
         Interpreter ip = new Interpreter(console);
-        GUIUiBase<?,?> instance = windowUI.getModel().getParent().getFingui();
+        GUIUiBase <? , ? > instance = windowUI.getModel().getParent().getFingui();
         //ip.setConsole(console);
         try {
             ip.set("fingui", instance);
@@ -50,7 +52,7 @@ public class DebugConsole extends JFrame {
             ip.eval("setAccessibility(true);");
             ip.eval("mcapart = fingui.getActiveInterfaces().get(0)");
         } catch (EvalError e) {
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "DebugConsole", e);
         }
         new Thread(ip).start();
     }

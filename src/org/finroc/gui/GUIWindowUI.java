@@ -74,6 +74,7 @@ import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.gui.IconManager;
 import org.finroc.gui.util.gui.MToolBar;
 import org.finroc.gui.util.propertyeditor.PropertiesDialog;
+import org.finroc.log.LogLevel;
 
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.plugin.ConnectionListener;
@@ -385,7 +386,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
      * @param push Push values if this is default?
      */
     private void updatePortStrategies(GUIPanel gp, boolean push) {
-        System.out.println("Setting strategies of panel " + gp.toString() + " to " + push);
+        FinrocGUI.logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, "GUIWindowUI", "Setting strategies of panel " + gp.toString() + " to " + push);
         for (Widget w : gp.getChildren()) {
             for (WidgetPort<?> wp : w.getChildren()) {
                 wp.updateStrategy(push);
@@ -575,7 +576,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             addUndoBufferEntry("Paste");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(ui, "Cannot import current clipboard contents", "Paste Operation failed", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "GUIWindowUI", e);
         }
     }
 

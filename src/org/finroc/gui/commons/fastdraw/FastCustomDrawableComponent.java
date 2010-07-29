@@ -29,6 +29,9 @@ import java.awt.Rectangle;
 import javax.naming.OperationNotSupportedException;
 import javax.swing.JPanel;
 
+import org.finroc.gui.FinrocGUI;
+import org.finroc.log.LogLevel;
+
 /**
  * @author max
  *
@@ -102,7 +105,7 @@ public abstract class FastCustomDrawableComponent extends JPanel {
                             renderToCache(cache, size, resized);
                             changed = false;
                         } catch (OperationNotSupportedException e) {
-                            e.printStackTrace();
+                            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
                         }
                     }
                 }

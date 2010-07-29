@@ -28,8 +28,10 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.gui.commons.fastdraw.SVG;
+import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.Paintable;
 
 
@@ -70,7 +72,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
                 try {
                     paintInstance = getPaintable(efm);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
                     return;
                 }
             }
