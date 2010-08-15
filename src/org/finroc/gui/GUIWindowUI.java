@@ -88,7 +88,7 @@ import org.finroc.core.port.ThreadLocalCache;
  * @author max
  *
  */
-public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener, MouseListener {
+public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener, MouseListener, ConnectionPanel.Owner {
 
     /** UID */
     private static final long serialVersionUID = 754612157890759400L;
@@ -1004,5 +1004,10 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     @Override
     public void dispose() {
         statusBarTimer.stop();
+    }
+
+    @Override
+    public void refreshConnectionPanelModels() {
+        getParent().updateInterface();
     }
 }

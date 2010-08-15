@@ -40,6 +40,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +60,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -92,8 +96,11 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private JScrollPane leftScrollPane;
     private JScrollPane rightScrollPane;
 
+    /** show right tree? */
+    private boolean showRightTree;
+
     /** parent window */
-    private GUIWindowUI parent;
+    private Owner parent;
 
     /** temporary variables for UI behaviour */
     private boolean selectionFromRight;
@@ -108,15 +115,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private boolean popupOnRight;
     JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
 
-    public ConnectionPanel(GUIWindowUI win, Font treeFont) {
+    public ConnectionPanel(Owner win, Font treeFont) {
 
         setLayout(new GridLayout(1, 0));
         parent = win;
 
         // Setup all the scrolling stuff
         leftTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
-        rightTree = new MJTree<TreePortWrapper>(WidgetPort.class, 2);
-        setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
+        rightTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
+        //setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
         setMinimumSize(new Dimension(300, 0));
         rightTree.setBackground(new Color(242, 242, 255));
         rightTree.setFocusTraversalKeysEnabled(false);
@@ -127,6 +134,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         rightTree.setRepaintDelegate(this);
         leftScrollPane = new JScrollPane(leftTree);
         rightScrollPane = new JScrollPane(rightTree);
+        leftScrollPane.setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 4, 0));
+        rightScrollPane.setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 4, 0));
         leftScrollPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         leftScrollPane.setBorder(BorderFactory.createEmptyBorder());
         rightScrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -187,8 +196,23 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     public void setRightTree(TreeModel tm) {
-        rightTree.setModel(tm);
-        ((GUIPanel)tm.getRoot()).addDataModelListener(this);
+        if (tm != null) {
+            rightTree.setModel(tm);
+            showRightTree = true;
+            if (tm.getRoot() instanceof GUIPanel) {
+                ((GUIPanel)tm.getRoot()).addDataModelListener(this);
+            }
+            if (getComponentCount() == 1) {
+                add(rightScrollPane);
+            }
+        } else {
+            showRightTree = false;
+            rightTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
+            if (getComponentCount() == 2) {
+                remove(rightScrollPane);
+            }
+        }
+        //rightScrollPane.setVisible(showRightTree);
     }
 
     public void dataModelChanged(DataModelBase <? , ? , ? > caller, Event event, Object param) {
@@ -545,6 +569,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     public TreePortWrapper getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
 
+        if (otherTree == rightTree && (!showRightTree)) {
+            return null;
+        }
+
         // getPosition on JTree
         Point relMousePos = new Point(pos);
         Point diff = otherTree.getLocationOnScreen();
@@ -595,7 +623,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             parent.addUndoBufferEntry("Remove connections");
             repaint();
         } else if (e.getSource() == miRefresh) {
-            parent.getParent().updateInterface();
+            parent.refreshConnectionPanelModels();
+            //parent.getParent().updateInterface();
         } else if (e.getSource() == miExpandAll) {
             ptree.expandAll(20);
         } else if (e.getSource() == miCollapseAll) {
@@ -642,6 +671,31 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     public void setTreeFont(Font f) {
         leftTree.setFont(f);
         rightTree.setFont(f);
+    }
+
+    /**
+     * GUI window that owns panel
+     */
+    public interface Owner extends KeyListener {
+
+        /**
+         * Add undo buffer entry
+         *
+         * @param string Entry name
+         */
+        public void addUndoBufferEntry(String string);
+
+        /**
+         * Refresh models that are displayed in connection panel
+         */
+        public void refreshConnectionPanelModels();
+    }
+
+    /**
+     * @param listener Raw Selection listener for left tree
+     */
+    public void addSelectionListener(TreeSelectionListener listener) {
+        leftTree.addTreeSelectionListener(listener);
     }
 }
 

@@ -43,9 +43,6 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
 //  /** GUI's InputInterfaces */
 //  protected transient List<RobotInterface> ioInterfaces;
 
-    /** PlugIn directory */
-    public static final File PLUGIN_DIR = getPluginDir();
-
     public static File getPluginDir() {
         File f = new File(PackageContentEnumerator.getRootDir(GUIUiWithInterfaces.class) + "dist");
         if (!f.exists()) {

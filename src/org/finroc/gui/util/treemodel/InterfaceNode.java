@@ -48,7 +48,9 @@ public class InterfaceNode extends DefaultMutableTreeNode implements TreeNode, U
         return sb.toString();
     }
 
-
+    public FrameworkElement getFrameworkElement() {
+        return wrapped.getChild();
+    }
 
     @Override
     public void add(MutableTreeNode node) {
