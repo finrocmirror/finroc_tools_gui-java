@@ -43,8 +43,8 @@ public class MToolBar extends JToolBar {
     private static final long serialVersionUID = -1271048336146051984L;
 
     /** Register with ActionEnums and actions (not used yet) */
-    private Map<Enum<?>, Action> actionRegister = new HashMap<Enum<?>, Action>();
-    private Map<Enum<?>, AbstractButton> buttonRegister = new HashMap<Enum<?>, AbstractButton>();
+    private Map < Enum<?>, Action > actionRegister = new HashMap < Enum<?>, Action > ();
+    private Map < Enum<?>, AbstractButton > buttonRegister = new HashMap < Enum<?>, AbstractButton > ();
     private ButtonGroup buttonGroup = new ButtonGroup();
 
     public MToolBar(String string) {
@@ -64,7 +64,7 @@ public class MToolBar extends JToolBar {
         jb.addActionListener(listener);
         jb.setToolTipText(toolTip);
         jb.setFocusable(false);
-        jb.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+        jb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
         add(jb);
         return jb;
     }
@@ -72,7 +72,7 @@ public class MToolBar extends JToolBar {
     public JButton add(Action a) {
         JButton jb = super.add(a);
         jb.setFocusable(false);
-        jb.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+        jb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
         if (a instanceof MAction) {
             Enum<?> e = ((MAction)a).getID();
             actionRegister.put(e, a);
@@ -88,13 +88,17 @@ public class MToolBar extends JToolBar {
     public JToggleButton addToggleButton(Action a, boolean independantSelection) {
         JToggleButton jb = new JToggleButton(a);
         jb.setFocusable(false);
-        jb.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+        jb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        jb.setText("");
         if (a instanceof MAction) {
-            Enum<?> e = ((MAction)a).getID();
+            MAction ma = (MAction)a;
+            Enum<?> e = ma.getID();
             actionRegister.put(e, a);
             buttonRegister.put(e, jb);
+            if (ma.getValue(Action.SMALL_ICON) == null) {
+                jb.setText(ma.getValue(Action.NAME).toString());
+            }
         }
-        jb.setText("");
         add(jb);
         if (!independantSelection) {
             buttonGroup.add(jb);
@@ -115,7 +119,38 @@ public class MToolBar extends JToolBar {
         jb.setSelected(selected);
     }
 
+    /**
+     * @param e Enum
+     * @return Is button associated with specified enum selected?
+     */
     public boolean isSelected(Enum<?> e) {
         return buttonRegister.get(e).isSelected();
+    }
+
+    /**
+     * Is any button associated with any of the provided enum constants selected?
+     *
+     * @param values Enum values
+     * @return Such a button
+     */
+    public < E extends Enum<? >> E getSelection(E[] values) {
+        for (Map.Entry < Enum<?>, AbstractButton > button : buttonRegister.entrySet()) {
+            if (button.getValue().isSelected()) {
+                for (E e : values) {
+                    if (e == button.getKey()) {
+                        return e;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Inserts another button group.
+     * All toggle buttons added now, belong to this new group
+     */
+    public void startNextButtonGroup() {
+        buttonGroup = new ButtonGroup();
     }
 }

@@ -51,6 +51,10 @@ public class IconManager {
     }
 
     public Icon getIcon(String filename) {
+        if (filename == null) {
+            return null;
+        }
+
         if (lookup.containsKey(filename)) {
             return lookup.get(filename);
         }

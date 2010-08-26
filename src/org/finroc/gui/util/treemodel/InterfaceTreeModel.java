@@ -65,10 +65,10 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
     }
 
     /**
-     * Get Node for element with specified handle. If it doesn't exist yet - create it
+     * Get Node for element. If it doesn't exist yet - create it
      * (only called in synchronized context)
      *
-     * @param handle Handle (positive sign)
+     * @param element Framework Element to get node for
      * @return Node
      */
     public InterfaceNode getInterfaceNode(FrameworkElement element) {
