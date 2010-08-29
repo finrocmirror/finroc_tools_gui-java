@@ -221,6 +221,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     /**
+     * @return log description
+     */
+    public String getLogDescription() {
+        return getClass().getSimpleName();
+    }
+
+    /**
      * @return tree model of right tree
      */
     public TreeModel getRightTree() {
@@ -791,6 +798,31 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      */
     public void addSelectionListener(TreeSelectionListener listener) {
         leftTree.addTreeSelectionListener(listener);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        TreeModel tml = leftTree.getModel();
+        TreeModel tmr = rightTree.getModel();
+        if (tml != null) {
+            synchronized (tml) {
+                if (tmr != null) {
+                    synchronized (tmr) {
+                        super.paint(g);
+                    }
+                } else {
+                    super.paint(g);
+                }
+            }
+        } else {
+            if (tmr != null) {
+                synchronized (tmr) {
+                    super.paint(g);
+                }
+            } else {
+                super.paint(g);
+            }
+        }
     }
 }
 

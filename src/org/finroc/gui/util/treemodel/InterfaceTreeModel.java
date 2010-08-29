@@ -23,6 +23,7 @@ package org.finroc.gui.util.treemodel;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.finroc.core.FrameworkElement;
@@ -66,12 +67,11 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
     /**
      * Get Node for element. If it doesn't exist yet - create it
-     * (only called in synchronized context)
      *
      * @param element Framework Element to get node for
      * @return Node
      */
-    public InterfaceNode getInterfaceNode(FrameworkElement element) {
+    public synchronized InterfaceNode getInterfaceNode(FrameworkElement element) {
 
         assert(element.isInitialized());
         InterfaceNode node = element.isPort() ? ports.get(element.getHandle()) : elements.get(-element.getHandle());
@@ -120,29 +120,44 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
             return; // not of interest
         }
 
+
         if (changeType == ADD) {
-            InterfaceNode in = getInterfaceNode(element);
+            final InterfaceNode in = getInterfaceNode(element);
             //super.nodesWereInserted(in.getParent(), new int[]{in.getParent().getIndex(in)});
-            super.nodeStructureChanged(in.getParent());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    InterfaceTreeModel.this.nodeStructureChanged(in.getParent());
+                }
+            });
         } else if (changeType == REMOVE) {
             if (element.isPort()) {
                 InterfaceNode in = ports.get(element.getHandle());
                 ports.remove(element.getHandle());
                 while (in != null) { // remove all links
-                    InterfaceNode parent = (InterfaceNode)in.getParent();
-                    int idx = parent.getIndex(in);
+                    final InterfaceNode parent = (InterfaceNode)in.getParent();
+                    final int idx = parent.getIndex(in);
+                    final InterfaceNode inCopy = in;
                     parent.remove(in);
-                    super.nodesWereRemoved(parent, new int[] {idx}, new Object[] {in});
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                        }
+                    });
                     in = in.next;
                 }
             } else {
                 InterfaceNode in = elements.get(-element.getHandle());;
                 elements.remove(-element.getHandle());
                 while (in != null) { // remove all links
-                    InterfaceNode parent = (InterfaceNode)in.getParent();
-                    int idx = parent.getIndex(in);
+                    final InterfaceNode parent = (InterfaceNode)in.getParent();
+                    final int idx = parent.getIndex(in);
+                    final InterfaceNode inCopy = in;
                     parent.remove(in);
-                    super.nodesWereRemoved(parent, new int[] {idx}, new Object[] {in});
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                        }
+                    });
                     in = in.next;
                 }
             }
