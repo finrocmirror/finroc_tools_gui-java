@@ -30,6 +30,7 @@ import org.finroc.core.FrameworkElement;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeListener;
 import org.finroc.core.plugin.ExternalConnection;
+import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.net.RemoteCoreRegister;
 import org.finroc.gui.FinrocGUI;
 import org.finroc.log.LogLevel;
@@ -166,12 +167,12 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
     public PortWrapper getInputPort(String uid) {
         PortWrapper in = getPort(uid);
-        return (in != null && in.isInputPort()) ? in : null;
+        return (in != null && in.getPort().getFlag(PortFlags.ACCEPTS_DATA)) ? in : null;
     }
 
     public PortWrapper getOutputPort(String uid) {
         PortWrapper in = getPort(uid);
-        return (in != null && (!in.isInputPort())) ? in : null;
+        return (in != null && in.getPort().getFlag(PortFlags.EMITS_DATA)) ? in : null;
     }
 
     public PortWrapper getPort(String uid) {

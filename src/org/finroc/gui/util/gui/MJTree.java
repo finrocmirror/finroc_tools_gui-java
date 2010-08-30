@@ -370,4 +370,18 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         }
     }
 
+    /**
+     * Expand element and all parent nodes
+     *
+     * @param tn TreeNode
+     */
+    public void expandToElement(TreeNode tn) {
+        synchronized (getModel()) {
+            TreePath tp = getTreePathFor(tn);
+            while (tp != null && tp.getPath().length > 0) {
+                expandPath(tp);
+                tp = tp.getParentPath();
+            }
+        }
+    }
 }
