@@ -167,12 +167,12 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
     public PortWrapper getInputPort(String uid) {
         PortWrapper in = getPort(uid);
-        return (in != null && in.getPort().getFlag(PortFlags.ACCEPTS_DATA)) ? in : null;
+        return (in != null && in.getPort().getFlag(PortFlags.EMITS_DATA)) ? in : null;
     }
 
     public PortWrapper getOutputPort(String uid) {
         PortWrapper in = getPort(uid);
-        return (in != null && in.getPort().getFlag(PortFlags.EMITS_DATA)) ? in : null;
+        return (in != null && in.getPort().getFlag(PortFlags.ACCEPTS_DATA)) ? in : null;
     }
 
     public PortWrapper getPort(String uid) {
