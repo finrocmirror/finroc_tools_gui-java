@@ -729,7 +729,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     public void windowOpened(WindowEvent e) {}
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void dataModelChanged(DataModelBase caller, org.finroc.gui.abstractbase.DataModelListener.Event event, Object param) {
         if (caller != model) {
             caller.removeDataModelListener(this);

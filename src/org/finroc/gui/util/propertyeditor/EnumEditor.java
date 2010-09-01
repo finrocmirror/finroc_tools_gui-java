@@ -33,7 +33,7 @@ import org.finroc.log.LogLevel;
  * @author max
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class EnumEditor extends PropertyEditComponent<Enum> {
 
     /** UID */

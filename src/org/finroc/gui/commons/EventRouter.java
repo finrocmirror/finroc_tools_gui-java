@@ -64,11 +64,11 @@ import org.finroc.core.port.std.PortListener;
  * This is usually the case, but for example not with (classes extending) Java Collection
  * classes.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class EventRouter implements PortListener, CCPortListener, ConnectionListener {
 
     /** Map for storing connections: Observable, listener, Listener type */
-    private static Map<Object, Map<EventListener, List<Class<? extends EventListener>>>> listeners = new WeakHashMap<Object, Map<EventListener, List<Class<? extends EventListener>>>>();
+    private static Map < Object, Map < EventListener, List < Class <? extends EventListener >>> > listeners = new WeakHashMap < Object, Map < EventListener, List < Class <? extends EventListener >>> > ();
 
     /** Cache for ordinary add***Listener methods */
     private static Map<String, Method> methodCache;
@@ -83,12 +83,12 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
         return instance;
     }
 
-    public synchronized static void addListener(Object observable, EventListener observer, Class<? extends EventListener> type) {
+    public synchronized static void addListener(Object observable, EventListener observer, Class <? extends EventListener > type) {
         if (observable == null || observer == null || type == null) {
             return;
         }
 
-        List<Class<? extends EventListener>> list = getListenerTypes(observable, observer);
+        List < Class <? extends EventListener >> list = getListenerTypes(observable, observer);
 
         // add listener
         if (!list.contains(type)) {
@@ -100,7 +100,7 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
         if (observable == null || observer == null || addMethodName == null) {
             return;
         }
-        assert (addMethodName.startsWith("add") && (addMethodName.endsWith("Listener") || addMethodName.endsWith("ListenerRaw")));
+        assert(addMethodName.startsWith("add") && (addMethodName.endsWith("Listener") || addMethodName.endsWith("ListenerRaw")));
         String key = observable.getClass().getName() + "." + addMethodName;
 
         // make sure cache has been initialized
@@ -130,10 +130,10 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
             throw new RuntimeException(e);
         }
 
-        addListener(observable, observer, (Class<? extends EventListener>)addMethod.getParameterTypes()[0]);
+        addListener(observable, observer, (Class <? extends EventListener >)addMethod.getParameterTypes()[0]);
     }
 
-    public synchronized static void removeListener(Object observable, EventListener observer, Class<? extends EventListener> type) {
+    public synchronized static void removeListener(Object observable, EventListener observer, Class <? extends EventListener > type) {
         if (observable != null && observer != null && type != null) {
             getListenerTypes(observable, observer).remove(type);
         }
@@ -151,24 +151,24 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
     }
 
     public synchronized static void removeAsListener(EventListener observer) {
-        for (Entry<Object, Map<EventListener, List<Class<? extends EventListener>>>> entry : listeners.entrySet()) {
+        for (Entry < Object, Map < EventListener, List < Class <? extends EventListener >>> > entry : listeners.entrySet()) {
             entry.getValue().remove(observer);
         }
     }
 
-    private synchronized static List<Class<? extends EventListener>> getListenerTypes(Object observable, EventListener observer) {
+    private synchronized static List < Class <? extends EventListener >> getListenerTypes(Object observable, EventListener observer) {
         // make sure 'listeners' has been initialized
         /*if (listeners == null) {
             listeners =
         }*/
-        Map<EventListener, List<Class<? extends EventListener>>> mapOfObj = listeners.get(observable);
+        Map < EventListener, List < Class <? extends EventListener >>> mapOfObj = listeners.get(observable);
         if (mapOfObj == null) {
-            mapOfObj = new WeakHashMap<EventListener, List<Class<? extends EventListener>>>();
+            mapOfObj = new WeakHashMap < EventListener, List < Class <? extends EventListener >>> ();
             listeners.put(observable, mapOfObj);
         }
-        List<Class<? extends EventListener>> list = mapOfObj.get(observer);
+        List < Class <? extends EventListener >> list = mapOfObj.get(observer);
         if (list == null) {
-            list = new ArrayList<Class<? extends EventListener>>();
+            list = new ArrayList < Class <? extends EventListener >> ();
             mapOfObj.put(observer, list);
         }
         return list;
@@ -178,7 +178,7 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
     public synchronized static <T extends EventListener> Collection<T> getListeners(Object caller, Class<T> listenerType) {
         List<T> result = new ArrayList<T>();
         try {
-            for (Entry<EventListener, List<Class<? extends EventListener>>> entry : listeners.get(caller).entrySet()) {
+            for (Entry < EventListener, List < Class <? extends EventListener >>> entry : listeners.get(caller).entrySet()) {
                 if (entry.getValue().contains(listenerType)) {
                     result.add((T)entry.getKey());
                 }
@@ -187,20 +187,20 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
         return result;
     }
 
-    public synchronized static void removeListeners(Object observable, Class<? extends EventListener> listenerType) {
+    public synchronized static void removeListeners(Object observable, Class <? extends EventListener > listenerType) {
 
-        for (Entry<EventListener, List<Class<? extends EventListener>>> entry : listeners.get(observable).entrySet()) {
+        for (Entry < EventListener, List < Class <? extends EventListener >>> entry : listeners.get(observable).entrySet()) {
             try {
                 entry.getValue().remove(listenerType);
             } catch (Exception e) {}
         }
     }
 
-    public synchronized static boolean hasListeners(Object observable, Class<? extends EventListener> listenerType) {
+    public synchronized static boolean hasListeners(Object observable, Class <? extends EventListener > listenerType) {
         if (!listeners.containsKey(observable)) {
             return false;
         }
-        for (Entry<EventListener, List<Class<? extends EventListener>>> entry : listeners.get(observable).entrySet()) {
+        for (Entry < EventListener, List < Class <? extends EventListener >>> entry : listeners.get(observable).entrySet()) {
             if (entry.getValue().contains(listenerType)) {
                 return true;
             }

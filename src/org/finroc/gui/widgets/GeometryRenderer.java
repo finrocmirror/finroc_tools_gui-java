@@ -200,7 +200,7 @@ public class GeometryRenderer extends Widget {
             widgetPropertiesChanged();
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public void actionPerformed(ActionEvent ae) {
             Enum e = ((MActionEvent)ae).getEnumID();
             if (e instanceof Mode) {

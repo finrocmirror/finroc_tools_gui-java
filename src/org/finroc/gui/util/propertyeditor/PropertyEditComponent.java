@@ -92,7 +92,7 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     public abstract T getCurEditorValue();
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static PropertyEditComponent<?> getInstance(Field f, Object tmp, PropertiesDialog parent) throws ClassNotFoundException {
         Class<?> type = f.getType();
         PropertyEditComponent wpec = null;

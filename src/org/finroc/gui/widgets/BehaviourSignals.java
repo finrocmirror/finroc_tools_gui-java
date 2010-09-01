@@ -97,7 +97,7 @@ public class BehaviourSignals extends Widget {
         return new BehaviourSignalsUI();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     class BehaviourSignalsUI extends WidgetUI implements PortListener {
 
         /** UID */
@@ -111,6 +111,7 @@ public class BehaviourSignals extends Widget {
         private Insets padInsets = new Insets(0, 0, 2, 0);
         int bbElemSize = -1;
 
+        @SuppressWarnings("unchecked")
         BehaviourSignalsUI() {
             super(RenderMode.Swing);
             signals.addChangeListener(this);

@@ -44,7 +44,7 @@ import org.finroc.core.FrameworkElement;
  *
  * Base class for all classes implementing the fingui data model
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > extends LogUser implements Serializable, TreeNode {
 
     /** UID */
@@ -78,6 +78,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     /**
      * Called during initialization (when all required values have been set)
      */
+    @SuppressWarnings("unchecked")
     public void restore(P parent) {
         this.parent = parent;
         if (children == null) {
@@ -180,6 +181,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
         return parent;
     }
 
+    @SuppressWarnings("unchecked")
     public R getRoot() {
         DataModelBase < R, ? , ? > dmbi = this;
         while (dmbi.getParent() != null) {
@@ -209,6 +211,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
         fireDataModelEvent(DataModelListener.Event.ChildRemoved, c);
     }
 
+    @SuppressWarnings("unchecked")
     public void replaceChild(C old, C newChild) {
         children.set(children.indexOf(old), newChild);
         old.dispose();

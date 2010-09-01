@@ -360,7 +360,7 @@ public class SelectionUI implements MouseInputListener, DataModelListener {
     public void mouseMoved(MouseEvent e) {  }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void dataModelChanged(DataModelBase caller, Event event, Object param) {
         if (caller != parent.getModel() && !parent.getModel().getChildren().contains(caller)) {
             caller.removeDataModelListener(this);

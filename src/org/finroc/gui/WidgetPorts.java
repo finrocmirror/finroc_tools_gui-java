@@ -37,7 +37,7 @@ import org.finroc.core.port.std.PortListener;
  * @author max
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener, CCPortListener {
 
     /** UID */
@@ -64,6 +64,7 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
         return hashDelegate.hashCode();
     }
 
+    @SuppressWarnings("unchecked")
     public void setSize(int newSize) {
 
         // re-register as listener after loading
