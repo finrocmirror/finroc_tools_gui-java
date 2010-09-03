@@ -824,6 +824,20 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             }
         }
     }
+
+    /**
+     * Background color for non-ports nodes
+     * (may be overridden)
+     *
+     * @param value Wrapped object
+     * @return Color - null, if default color
+     */
+    protected Color getBranchBackgroundColor(Object value) {
+        if (value instanceof Widget && ((Widget)value).getParent().getSelection().contains(value)) {
+            return Color.YELLOW;
+        }
+        return null;
+    }
 }
 
 /**
@@ -874,12 +888,13 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         if (!(value instanceof TreePortWrapper)) {
-            if (value instanceof Widget && ((Widget)value).getParent().getSelection().contains(value)) {
-                defaultRenderer.setBackgroundNonSelectionColor(Color.YELLOW);
+            Color bg = panel.getBranchBackgroundColor(value);
+            if (bg != null) {
+                defaultRenderer.setBackgroundNonSelectionColor(bg);
             } else {
                 defaultRenderer.setBackgroundNonSelectionColor(background);
             }
-            return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,   row, hasFocus);
+            return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
 
 
