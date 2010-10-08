@@ -40,8 +40,8 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.tree.TreeNode;
 
 import org.finroc.gui.FinrocGUI;
-import org.finroc.gui.util.ObjectCloner;
-import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
+import org.finroc.gui.util.propertyeditor.ObjectCloner;
+import org.finroc.gui.util.propertyeditor.gui.ResourcePathProvider;
 import org.finroc.log.LogLevel;
 import org.finroc.log.LogStream;
 

@@ -30,7 +30,9 @@ import javax.swing.JFrame;
 import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.abstractbase.DataModelListener;
 import org.finroc.gui.util.embeddedfiles.FileManager;
-import org.finroc.gui.util.propertyeditor.PropertiesDialog;
+import org.finroc.gui.util.propertyeditor.FieldAccessorFactory;
+import org.finroc.gui.util.propertyeditor.PropertyAccessor;
+import org.finroc.gui.util.propertyeditor.gui.PropertiesDialog;
 
 
 /**
@@ -51,22 +53,31 @@ public class WidgetPropertiesDialog extends PropertiesDialog {
         super(owner, new ArrayList<Object>(sel), efm, true);
     }
 
-    @Override
-    protected boolean ignoreField(Field f) {
-        if (WidgetPort.class.isAssignableFrom(f.getType())) {
-            return true;
-        }
-        if (WidgetPorts.class.isAssignableFrom(f.getType())) {
-            return true;
-        }
-        if (f.getDeclaringClass().equals(DataModelBase.class)) {
-            return true;
-        }
-        return false;
-    }
-
     protected void changed(Object o) {
         Widget w = (Widget)o;
         w.fireDataModelEvent(DataModelListener.Event.WidgetPropertiesChanged, w);
     }
+
+    @Override
+    protected List < PropertyAccessor<? >> getProperties(List<Object> o) {
+        return new WidgetFieldAccessorFactory().createAccessors(o);
+    }
+
+    private class WidgetFieldAccessorFactory extends FieldAccessorFactory {
+
+        @Override
+        protected boolean ignoreField(Field f) {
+            if (WidgetPort.class.isAssignableFrom(f.getType())) {
+                return true;
+            }
+            if (WidgetPorts.class.isAssignableFrom(f.getType())) {
+                return true;
+            }
+            if (f.getDeclaringClass().equals(DataModelBase.class)) {
+                return true;
+            }
+            return false;
+        }
+    }
+
 }

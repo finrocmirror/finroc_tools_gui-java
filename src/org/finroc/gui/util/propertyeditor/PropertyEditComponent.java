@@ -21,29 +21,12 @@
 package org.finroc.gui.util.propertyeditor;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
-import org.finroc.gui.commons.Util;
-import org.finroc.gui.util.ObjectCloner;
-import org.finroc.gui.util.embeddedfiles.AbstractFile;
-import org.finroc.gui.util.embeddedfiles.AbstractFiles;
-import org.finroc.gui.util.embeddedfiles.EmbeddedPaintable;
-import org.finroc.gui.util.embeddedfiles.ValidExtensions;
-import org.finroc.plugin.datatype.StringList;
-
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.log.LogDomain;
 
 /**
  * @author max
@@ -60,116 +43,79 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     protected final int LABELWIDTH = 150;
     protected final int TEXTFIELDWIDTH = 150;
 
+    /** Above than average character width */
+    protected final int CHAR_WIDTH = 11;
+
+    /** Property accessor */
+    private PropertyAccessor<T> property;
+
     /** current value */
     private T curValue;
 
-    /** Property that is changed */
-    Field property;
+    /** Log domain for this class */
+    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("property_editor");
 
-    /** Widgets that are edited */
-    private List<Object> widgets = new ArrayList<Object>();
+    public PropertyEditComponent() {
+        setLayout(new BorderLayout());
+    }
 
-    /** Reference to dialog */
-    private PropertiesDialog parent;
-
-    /** writes changes to widget
-     * @param curValue */
-    public void applyChanges() {
-        try {
-            T newValue = getCurEditorValue();
-            if (curValue == null || !curValue.equals(newValue)) {
-                for (Object o : widgets) {
-                    property.set(o, ObjectCloner.clone(newValue));
-                }
-            }
+    /**
+     * writes changes to widget
+     */
+    public void applyChanges() throws Exception {
+        T newValue = getCurEditorValue();
+        if (curValue == null || !curValue.equals(newValue)) {
+            property.set(ObjectCloner.clone(newValue));
             curValue = ObjectCloner.clone(newValue);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 
     /** get current value of component (for saving changes) */
-    public abstract T getCurEditorValue();
-
-
-    @SuppressWarnings("rawtypes")
-    public static PropertyEditComponent<?> getInstance(Field f, Object tmp, PropertiesDialog parent) throws ClassNotFoundException {
-        Class<?> type = f.getType();
-        PropertyEditComponent wpec = null;
-        if (type.equals(String.class)) {
-            wpec = new StringEditor();
-        } else if (Number.class.isAssignableFrom(type) || type.equals(int.class) || type.equals(double.class) || type.equals(float.class) || type.equals(long.class) || type.equals(short.class) || type.equals(byte.class)) {
-            wpec = new NumberEditor();
-        } else if (type.equals(Color.class)) {
-            wpec = new ColorEditor();
-        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            wpec = new BooleanEditor();
-        } else if (type.equals(Font.class)) {
-            wpec = new FontEditor();
-        } else if (type.equals(EmbeddedPaintable.class)) {
-            wpec = new AbstractFileEditor(EmbeddedPaintable.class, EmbeddedPaintable.SUPPORTED_EXTENSIONS);
-        } else if (AbstractFile.class.isAssignableFrom(type)) {
-
-            String[] extensions = null;
-
-            // Are valid extensions provided via annotation?
-            ValidExtensions ve = f.getAnnotation(ValidExtensions.class);
-            if (ve != null) {
-                extensions = ve.value();
-            }
-
-            wpec = new AbstractFileEditor((Class <? extends AbstractFile >)type, extensions);
-        } else if (AbstractFiles.class.isAssignableFrom(type)) {
-            wpec = new AbstractFilesEditor();
-        } else if (StringList.class.isAssignableFrom(type)) {
-            wpec = new StringListEditor();
-        } else if (PropertyList.class.isAssignableFrom(type)) {
-            wpec = new PropertyListEditor();
-        } else if (Enum.class.isAssignableFrom(type)) {
-            wpec = new EnumEditor();
-        }
-
-        if (wpec == null) {
-            throw new ClassNotFoundException("No WidgetPropertyEditComponent for Type " + type.getSimpleName() + " available");
-        }
-        wpec.property = f;
-        wpec.widgets.add(tmp);
-        wpec.parent = parent;
-        wpec.curValue = wpec.getCurWidgetValue();
-        wpec.createAndShow();
-        return wpec;
-    }
-
-    public void addObject(Object o) {
-        widgets.add(o);
-    }
+    public abstract T getCurEditorValue() throws Exception;
 
     protected Class<?> getPropertyType() {
         return property.getType();
     }
 
     /** create and init components */
-    protected abstract void createAndShow();
+    protected abstract void createAndShow() throws Exception;
 
+    /** update value (overwrites any changes in editor) */
+    public void updateValue() throws Exception {
+        curValue = property.get();
+        valueUpdated(property.get());
+    }
 
-    @SuppressWarnings("unchecked")
-    public T getCurWidgetValue() {
-        try {
-            return ObjectCloner.clone((T)property.get(widgets.get(0)));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * Called when curValue has been updated
+     * (change editor value to new value - overwrite any changes in editor)
+     */
+    protected abstract void valueUpdated(T t);
+
+    public T getCurWidgetValue() throws Exception {
+        return property.get();
     }
 
     public String getPropertyName() {
-        return Util.asWords(property.getName());
+        return property.getName();
     }
 
-    protected PropertiesDialog getParentDialog() {
-        return parent;
+    /**
+     * (may be overridden)
+     * @return Label of component - null if no label (then component occupies label space as well)
+     */
+    public String getLabel() {
+        return getPropertyName();
     }
 
-    protected void createStdLayoutWith(JComponent c) {
+    /**
+     * @return true, when vertical resizing makes sense
+     */
+    public boolean isResizable() {
+        return false;
+    }
+
+    /*protected void createStdLayoutWith(JComponent c) {
         JLabel label = new JLabel(getPropertyName());
         label.setMinimumSize(new Dimension(LABELWIDTH, 0));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -180,9 +126,20 @@ public abstract class PropertyEditComponent<T> extends JPanel {
         jp.setLayout(new BorderLayout());
         jp.add(c, BorderLayout.CENTER);
         add(jp);
-    }
+    }*/
 
     public void createAndShowMinimal(T object) throws OperationNotSupportedException {
         throw new OperationNotSupportedException();
+    }
+
+    /**
+     * (Needs to be called once initially)
+     *
+     * @param property Property accessor to use
+     */
+    public void init(PropertyAccessor<T> property) throws Exception {
+        assert(this.property == null);
+        this.property = property;
+        curValue = property.get();
     }
 }

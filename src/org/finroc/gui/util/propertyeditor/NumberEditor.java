@@ -20,6 +20,7 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.naming.OperationNotSupportedException;
@@ -32,18 +33,18 @@ public class NumberEditor extends PropertyEditComponent<Number> {
 
     private JTextField jtf;
 
-    protected void createAndShow() {
+    protected void createAndShow() throws Exception {
         jtf = new JTextField();
-        jtf.setText(getCurWidgetValue().toString());
+        valueUpdated(getCurWidgetValue());
         jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        createStdLayoutWith(jtf);
+        add(jtf, BorderLayout.WEST);
     }
 
 
     @Override
     public void createAndShowMinimal(Number number) throws OperationNotSupportedException {
         jtf = new JTextField();
-        jtf.setText(number.toString());
+        valueUpdated(number);
         jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH / 2, jtf.getPreferredSize().height));
         add(jtf);
     }
@@ -70,5 +71,11 @@ public class NumberEditor extends PropertyEditComponent<Number> {
             return Long.parseLong(jtf.getText());
         }
         throw new RuntimeException("This shouldn't happen");
+    }
+
+
+    @Override
+    protected void valueUpdated(Number t) {
+        jtf.setText(t.toString());
     }
 }

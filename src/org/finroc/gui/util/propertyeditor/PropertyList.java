@@ -22,13 +22,14 @@ package org.finroc.gui.util.propertyeditor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author max
  *
  * List of property entries (with possibly multiple attributes)
  */
-public class PropertyList<T extends Serializable> extends ArrayList<T> {
+public class PropertyList<T extends Serializable> extends ArrayList<T> implements PropertyListAccessor<T> {
 
     /** UID */
     private static final long serialVersionUID = 3604338104379425977L;
@@ -44,11 +45,32 @@ public class PropertyList<T extends Serializable> extends ArrayList<T> {
         this.maxEntries = maxEntries;
     }
 
-    public Class<T> getEntryClass() {
+    @Override
+    public int getMaxEntries() {
+        return maxEntries;
+    }
+
+    @Override
+    public Class<T> getElementType() {
         return entryClass;
     }
 
-    public int getMaxEntries() {
-        return maxEntries;
+    @Override
+    public List < PropertyAccessor<? >> getElementAccessors(T element) {
+        return FieldAccessorFactory.getInstance().createAccessors(element);
+    }
+
+    @Override
+    public void addElement() {
+        try {
+            add(entryClass.newInstance());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void removeElement(int index) {
+        remove(index);
     }
 }

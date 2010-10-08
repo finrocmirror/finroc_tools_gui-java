@@ -73,7 +73,7 @@ import org.finroc.gui.util.embeddedfiles.EmbeddedFile;
 import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.gui.IconManager;
 import org.finroc.gui.util.gui.MToolBar;
-import org.finroc.gui.util.propertyeditor.PropertiesDialog;
+import org.finroc.gui.util.propertyeditor.gui.PropertiesDialog;
 import org.finroc.log.LogLevel;
 
 import org.finroc.core.RuntimeEnvironment;
@@ -859,7 +859,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             this.ioInterface = ioInterface;
             this.disconnect = disconnect;
             this.reconnect = reconnect;
-            putValue(Action.NAME, ioInterface.getClass().getSimpleName());
+            putValue(Action.NAME, ioInterface.getName());
         }
 
         public void actionPerformed(ActionEvent e) {

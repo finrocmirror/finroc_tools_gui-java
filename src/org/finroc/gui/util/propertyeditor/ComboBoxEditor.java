@@ -20,8 +20,8 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.lang.reflect.Method;
 
 import javax.naming.OperationNotSupportedException;
 import javax.swing.JComboBox;
@@ -32,51 +32,53 @@ import org.finroc.log.LogLevel;
 /**
  * @author max
  *
+ * Editor with ComboBox
  */
-@SuppressWarnings("rawtypes")
-public class EnumEditor extends PropertyEditComponent<Enum> {
+public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
 
     /** UID */
     private static final long serialVersionUID = -6118534525281404885L;
 
     JComboBox jcmb;
 
+    /** Possible values */
+    private final T[] values;
+
+    public ComboBoxEditor(T[] values) {
+        this.values = values;
+    }
+
     @Override
     protected void createAndShow() {
         try {
-            Method m = property.getType().getMethod("values");
-            m.setAccessible(true);
-            Enum[] values = (Enum[])m.invoke(null);
             jcmb = new JComboBox(values);
-            jcmb.setSelectedItem(getCurWidgetValue());
+            valueUpdated(getCurWidgetValue());
         } catch (Exception e) {
             FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         jcmb.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jcmb.getPreferredSize().height));
-        createStdLayoutWith(jcmb);
+        add(jcmb, BorderLayout.WEST);
     }
 
-
-
     @Override
-    public void createAndShowMinimal(Enum object) throws OperationNotSupportedException {
+    public void createAndShowMinimal(T object) throws OperationNotSupportedException {
         try {
-            Method m = property.getType().getMethod("values");
-            m.setAccessible(true);
-            Enum[] values = (Enum[])m.invoke(null);
             jcmb = new JComboBox(values);
-            jcmb.setSelectedItem(object);
+            valueUpdated(object);
         } catch (Exception e) {
             FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         add(jcmb);
     }
 
-
-
+    @SuppressWarnings("unchecked")
     @Override
-    public Enum getCurEditorValue() {
-        return (Enum)jcmb.getSelectedItem();
+    public T getCurEditorValue() {
+        return (T)jcmb.getSelectedItem();
     }
 
+    @Override
+    protected void valueUpdated(T t) {
+        jcmb.setSelectedItem(t);
+    }
 }

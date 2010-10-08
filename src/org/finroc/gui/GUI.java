@@ -29,7 +29,7 @@ import javax.swing.JLabel;
 import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
-import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
+import org.finroc.gui.util.propertyeditor.gui.ResourcePathProvider;
 
 import org.finroc.core.FrameworkElement;
 

@@ -18,33 +18,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.gui.util.propertyeditor;
+package org.finroc.gui.util.propertyeditor.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.finroc.gui.FinrocGUI;
-import org.finroc.gui.commons.reflection.ReflectionCallback;
-import org.finroc.gui.commons.reflection.ReflectionHelper;
 import org.finroc.gui.util.embeddedfiles.FileManager;
-import org.finroc.log.LogLevel;
-
+import org.finroc.gui.util.propertyeditor.FieldAccessorFactory;
+import org.finroc.gui.util.propertyeditor.PropertiesPanel;
+import org.finroc.gui.util.propertyeditor.PropertyAccessor;
+import org.finroc.gui.util.propertyeditor.PropertyEditComponent;
+import org.finroc.gui.util.propertyeditor.StandardComponentFactory;
 
 /**
  * @author max
@@ -57,8 +52,11 @@ public class PropertiesDialog extends JDialog implements ActionListener {
     /** UID */
     private static final long serialVersionUID = -3537793359933146900L;
 
-    private Map < Field, PropertyEditComponent<? >> components;
-    private List < PropertyEditComponent<? >> componentsList;  // for constant order
+    //private Map < Field, PropertyEditComponent<? >> components;
+    //private List < PropertyEditComponent<? >> componentsList;  // for constant order
+
+    /** Embedded properties panel */
+    private PropertiesPanel propertyPanel;
 
     private JButton btnOkay, btnCancel, btnApply;
 
@@ -98,44 +96,14 @@ public class PropertiesDialog extends JDialog implements ActionListener {
         this.objects = o;
         this.efm = efm;
 
-        // inspect widget and create components
-        components = new HashMap < Field, PropertyEditComponent<? >> ();
-        componentsList = new ArrayList < PropertyEditComponent<? >> ();
-        try {
-            for (final Object x : o) {
-                ReflectionHelper.visitAllFields(x.getClass(), true, true, new ReflectionCallback<Field>() {
-                    public void reflectionCallback(Field f, int id) throws Exception {
-                        if (!components.containsKey(f)) {
-                            if (!Modifier.isTransient(f.getModifiers())) {
-                                if (!ignoreField(f) && f.getAnnotation(NotInPropertyEditor.class) == null) {
-                                    try {
-                                        PropertyEditComponent<?> pec = PropertyEditComponent.getInstance(f, x, PropertiesDialog.this);
-                                        components.put(f, pec);
-                                        componentsList.add(pec);
-                                    } catch (ClassNotFoundException e) {
-                                        FinrocGUI.logDomain.log(LogLevel.LL_WARNING, toString(), e); // skip this property
-                                    }
-                                }
-                            }
-                        } else {
-                            components.get(f).addObject(x);
-                        }
-                    }
-                }, 0);
-            }
-        } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
-        }
+        List < PropertyAccessor<? >> properties = getProperties(o);
 
         // create content pane
         JPanel main = new JPanel();
         main.setLayout(new BorderLayout());
-        JPanel propertyPanel = new JPanel();
+        propertyPanel = new PropertiesPanel(new StandardComponentFactory(), new GuiComponentFactory(this));
+        propertyPanel.init(properties, false);
         propertyPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
-        propertyPanel.setLayout(new BoxLayout(propertyPanel, BoxLayout.PAGE_AXIS));
-        for (PropertyEditComponent<?> wpec : componentsList) {
-            propertyPanel.add(wpec);
-        }
         JScrollPane jsp = new JScrollPane(propertyPanel);
         main.add(jsp, BorderLayout.CENTER);
 
@@ -161,21 +129,25 @@ public class PropertiesDialog extends JDialog implements ActionListener {
     }
 
     /**
-     * may be overridden for specific editors
+     * Get properties (may be overridden)
      *
-     * @param f Field
-     * @return Should field not be editable?
+     * @param o Objects
+     * @return Properties
      */
-    protected boolean ignoreField(Field f) {
-        return false;
+    protected List < PropertyAccessor<? >> getProperties(List<Object> o) {
+        return new FieldAccessorFactory().createAccessors(o);
     }
 
     public void actionPerformed(ActionEvent e) {
 
         // save changes ?
         if (e.getSource() == btnOkay || e.getSource() == btnApply) {
-            for (PropertyEditComponent<?> wpec : componentsList) {
-                wpec.applyChanges();
+            for (PropertyEditComponent<?> wpec : propertyPanel.getComponentList()) {
+                try {
+                    wpec.applyChanges();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
             for (Object o : objects) {
                 changed(o);

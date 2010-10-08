@@ -21,17 +21,16 @@
 package org.finroc.gui.util.propertyeditor;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -41,43 +40,147 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.finroc.gui.commons.Util;
-import org.finroc.gui.commons.reflection.ReflectionCallback;
-import org.finroc.gui.commons.reflection.ReflectionHelper;
-import org.finroc.gui.util.ObjectCloner;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 @SuppressWarnings("rawtypes")
-public class PropertyListEditor extends PropertyEditComponent<PropertyList> implements ChangeListener, ReflectionCallback<Field> {
+public class PropertyListEditor extends PropertyEditComponent < PropertyListAccessor<? >> implements ChangeListener {
 
     /** UID */
     private static final long serialVersionUID = 7101918838675494068L;
 
     JPanel listPanel;
 
-    List<Field> attributes = new ArrayList<Field>();
     List<PropertyEditComponent[]> guielems = new ArrayList<PropertyEditComponent[]>();
     GridBagConstraints gbc = new GridBagConstraints();
     JSpinner spinner;
 
+    /** Log domain for this class */
+    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("property_editor");
+
+    /** Factories to use to create components from accessors */
+    private final ComponentFactory[] componentFactories;
+
+    /** Current value */
+    private PropertyListAccessor list;
+
+    public PropertyListEditor(ComponentFactory... componentFactories) {
+        this.componentFactories = componentFactories;
+    }
+
     @Override
-    protected void createAndShow() {
-        setBorder(BorderFactory.createTitledBorder(getPropertyName()));
+    protected void createAndShow() throws Exception {
+        setBorder(BorderFactory.createTitledBorder(""/*getPropertyName()*/));
         setMinimumSize(new Dimension(200, 100));
         setLayout(new BorderLayout());
+        valueUpdated(getCurWidgetValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createComponents(Object object) {
+        try {
+            gbc.gridy = guielems.size() + 1;
+            assert(object.getClass().equals(list.getElementType()));
+            List < PropertyAccessor<? >> attributes = list.getElementAccessors(object);
+            PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
+            for (int i = 0; i < attributes.size(); i++) {
+                PropertyAccessor property = attributes.get(i);
+                PropertyEditComponent wpec = null;
+                for (ComponentFactory cf : componentFactories) {
+                    wpec = cf.createComponent(property, null);
+                    if (wpec != null) {
+                        break;
+                    }
+                }
+                if (wpec != null) {
+                    try {
+                        wpec.createAndShowMinimal(property.get());
+                    } catch (Exception e) {
+                        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
+                        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e); // skip this property
+                    }
+                    pecs[i] = wpec;
+                    gbc.gridx = i;
+                    listPanel.add(wpec, gbc);
+                } else {
+                    logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
+                }
+            }
+
+            guielems.add(pecs);
+        } catch (Exception e) {
+            PropertiesPanel.logDomain.log(LogLevel.LL_ERROR, "PropertyListEditor", e);
+            JOptionPane.showMessageDialog(null, e.getClass().getName() + "\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * @return log description
+     */
+    private String getLogDescription() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public PropertyListAccessor<?> getCurEditorValue() throws Exception {
+        for (PropertyEditComponent[] pecs : guielems) {
+            for (PropertyEditComponent pec : pecs) {
+                pec.applyChanges();
+            }
+        }
+        return list;
+    }
+
+    public void stateChanged(ChangeEvent ce) {
+        try {
+            assert(guielems.size() == list.size());
+            while (list.size() < (Integer)spinner.getValue()) {
+                list.addElement();
+                createComponents(list.get(list.size() - 1));
+            }
+            while (list.size() > (Integer)spinner.getValue()) {
+                list.removeElement(list.size() - 1);
+                PropertyEditComponent[] pecs = guielems.get(guielems.size() - 1);
+                for (PropertyEditComponent pec : pecs) {
+                    listPanel.remove(pec);
+                }
+                guielems.remove(guielems.size() - 1);
+            }
+            assert(guielems.size() == list.size());
+            validate();
+            repaint();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected void valueUpdated(PropertyListAccessor<?> t) {
+        removeAll();
         listPanel = new JPanel();
-        PropertyList pl = getCurWidgetValue();
-        SpinnerNumberModel snm = new SpinnerNumberModel(pl.size(), 0, pl.getMaxEntries(), 1);
+        list = t;
+        SpinnerNumberModel snm = new SpinnerNumberModel(list.size(), 0, list.getMaxEntries(), 1);
         spinner = new JSpinner(snm);
         spinner.addChangeListener(this);
         JPanel spinnerPanel = new JPanel();
         spinnerPanel.add(spinner);
         add(spinnerPanel, BorderLayout.LINE_START);
-        add(new JScrollPane(listPanel), BorderLayout.CENTER);
+        JPanel helper = new JPanel();
+        helper.setLayout(new BorderLayout());
+        helper.add(listPanel, BorderLayout.NORTH);
+        add(new JScrollPane(helper), BorderLayout.CENTER);
 
         // create attribute list
-        try {
-            ReflectionHelper.visitAllFields(pl.getEntryClass(), true, true, this, 0);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        boolean tempSizeIncrease = false;
+        if (list.size() == 0) {
+            tempSizeIncrease = true;
+            list.addElement();
+        }
+        @SuppressWarnings("unchecked")
+        List < PropertyAccessor<? >> attributes = list.getElementAccessors(list.get(0));
+        if (tempSizeIncrease) {
+            list.removeElement(0);
         }
 
         // create list with controls
@@ -90,7 +193,7 @@ public class PropertyListEditor extends PropertyEditComponent<PropertyList> impl
         gbc.weighty = 0.00000001;
         for (int i = 0; i < attributes.size(); i++) {
             gbc.gridx = i;
-            Field attr = attributes.get(i);
+            PropertyAccessor<?> attr = attributes.get(i);
             JLabel lbl = new JLabel(Util.asWords(attr.getName()));
             lbl.setVerticalAlignment(SwingConstants.TOP);
             lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN));
@@ -101,89 +204,16 @@ public class PropertyListEditor extends PropertyEditComponent<PropertyList> impl
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.weighty = 0.2;
         gbc.fill = GridBagConstraints.NONE;
-        for (int i = 0; i < pl.size(); i++) {
-            createComponents(pl.get(i));
+        for (int i = 0; i < list.size(); i++) {
+            createComponents(list.get(i));
         }
+        assert(guielems.size() == list.size());
         validate();
         repaint();
     }
 
-    @SuppressWarnings("unchecked")
-    private void createComponents(Object object) {
-        gbc.gridy = guielems.size() + 1;
-        PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
-        for (int i = 0; i < attributes.size(); i++) {
-            Field attr = attributes.get(i);
-            Class type = attr.getType();
-            PropertyEditComponent pec = null;
-            if (attr.getType().equals(String.class)) {
-                pec = new StringEditor();
-            } else if (type.equals(Color.class)) {
-                pec = new ColorEditor();
-            } else if (Number.class.isAssignableFrom(type) || type.equals(int.class) || type.equals(double.class) || type.equals(float.class) || type.equals(long.class) || type.equals(short.class) || type.equals(byte.class)) {
-                pec = new NumberEditor();
-            } else if (Enum.class.isAssignableFrom(type)) {
-                pec = new EnumEditor();
-            } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-                pec = new BooleanEditor();
-            } else {
-                throw new RuntimeException("Type not supported");
-            }
-            pec.property = attr;
-            try {
-                pec.createAndShowMinimal(attr.get(object));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            pecs[i] = pec;
-            gbc.gridx = i;
-            listPanel.add(pec, gbc);
-        }
-        guielems.add(pecs);
-    }
-
-    public void reflectionCallback(Field f, int id) throws Exception {
-        // attribute list creation
-        attributes.add(f);
-    }
-
-
-    @SuppressWarnings("unchecked")
     @Override
-    public PropertyList getCurEditorValue() {
-        PropertyList newList = ObjectCloner.clone(getCurWidgetValue());
-        newList.clear();
-        for (PropertyEditComponent[] pecs : guielems) {
-            try {
-                Object obj = newList.getEntryClass().newInstance();
-                for (int i = 0; i < attributes.size(); i++) {
-                    Field attr = attributes.get(i);
-                    attr.set(obj, pecs[i].getCurEditorValue());
-                }
-                newList.add(obj);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return newList;
-    }
-
-    public void stateChanged(ChangeEvent ce) {
-        try {
-            while (guielems.size() < (Integer)spinner.getValue()) {
-                createComponents(getCurWidgetValue().getEntryClass().newInstance());
-            }
-            while (guielems.size() > (Integer)spinner.getValue()) {
-                PropertyEditComponent[] pecs = guielems.get(guielems.size() - 1);
-                for (PropertyEditComponent pec : pecs) {
-                    listPanel.remove(pec);
-                }
-                guielems.remove(guielems.size() - 1);
-            }
-            validate();
-            repaint();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public boolean isResizable() {
+        return true;
     }
 }

@@ -20,10 +20,16 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.naming.OperationNotSupportedException;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 
 /**
  * @author max
@@ -34,28 +40,73 @@ public class StringEditor extends PropertyEditComponent<String> {
     /** UID */
     private static final long serialVersionUID = 2486687318726499512L;
 
-    private JTextField jtf;
+    private JTextComponent jtc;
 
-    protected void createAndShow() {
-        jtf = new JTextField();
-        jtf.setText(getCurWidgetValue());
-        jtf.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        //jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        createStdLayoutWith(jtf);
+    /**
+     * Maximum string length
+     *
+     * values > 0 are fixed number of characters
+     * value = 0 is normal (single-line editor)
+     * value = -1 is long (multi-line text editor)
+     */
+    private int maxStringLength;
+
+    public StringEditor() {
+        this(0);
+    }
+
+    public StringEditor(int maxStringLength) {
+        this.maxStringLength = maxStringLength;
+    }
+
+    protected void createAndShow() throws Exception {
+        if (maxStringLength >= 0) {
+            jtc = new JTextField();
+            jtc.setText(getCurWidgetValue());
+            jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
+            if (maxStringLength > 0) {
+                Dimension d = new Dimension(Math.max(TEXTFIELDWIDTH, CHAR_WIDTH * maxStringLength), jtc.getPreferredSize().height);
+                jtc.setMinimumSize(d);
+                jtc.setPreferredSize(d);
+                add(jtc, BorderLayout.WEST);
+            } else {
+                jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
+                add(jtc, BorderLayout.CENTER);
+            }
+        } else {
+            jtc = new JTextArea();
+            jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, 100));
+            valueUpdated(getCurWidgetValue());
+            JPanel jp = new JPanel();
+            jp.setBorder(BorderFactory.createTitledBorder(getPropertyName()));
+            jp.setLayout(new BorderLayout());
+            //jp.setPreferredSize(new Dimension(LABELWIDTH + TEXTFIELDWIDTH, 128));
+            jp.add(new JScrollPane(jtc), BorderLayout.CENTER);
+            add(jp, BorderLayout.CENTER);
+        }
     }
 
     @Override
     public void createAndShowMinimal(String s) throws OperationNotSupportedException {
-        jtf = new JTextField();
-        jtf.setText(s);
-        jtf.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
-        add(jtf);
+        jtc = new JTextField();
+        jtc.setText(s);
+        jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
+        jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
+        add(jtc);
     }
 
     @Override
     public String getCurEditorValue() {
-        return jtf.getText();
+        return jtc.getText();
     }
 
+    @Override
+    protected void valueUpdated(String t) {
+        jtc.setText(t);
+    }
+
+    @Override
+    public boolean isResizable() {
+        return jtc instanceof JTextArea;
+    }
 }

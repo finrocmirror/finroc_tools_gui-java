@@ -20,40 +20,25 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
-import java.awt.BorderLayout;
+/**
+ * @author max
+ *
+ * Handler for cloning objects
+ * (related to ObjectCloner class)
+ */
+public interface CloneHandler {
 
-import javax.naming.OperationNotSupportedException;
-import javax.swing.JCheckBox;
+    /**
+     * Does handler clone specified object?
+     *
+     * @param o Object
+     * @return Answer
+     */
+    public boolean handles(Object o);
 
-public class BooleanEditor extends PropertyEditComponent<Boolean> {
-
-    /** UID */
-    private static final long serialVersionUID = 7615759489323538266L;
-
-    private JCheckBox chk;
-
-    @Override
-    protected void createAndShow() throws Exception {
-        chk = new JCheckBox();
-        valueUpdated(getCurWidgetValue());
-        add(chk, BorderLayout.WEST);
-    }
-
-    @Override
-    public void createAndShowMinimal(Boolean b) throws OperationNotSupportedException {
-        chk = new JCheckBox();
-        valueUpdated(b);
-        add(chk);
-    }
-
-    @Override
-    public Boolean getCurEditorValue() {
-        return chk.isSelected();
-    }
-
-    @Override
-    protected void valueUpdated(Boolean t) {
-        chk.setSelected(t);
-    }
-
+    /**
+     * @param t Object to clone
+     * @return Cloned object
+     */
+    public <T> T clone(T t);
 }

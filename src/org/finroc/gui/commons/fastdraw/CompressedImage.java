@@ -36,9 +36,11 @@ import org.finroc.core.port.std.PortDataManager;
 import org.finroc.core.port.std.PortDataReference;
 import org.finroc.core.portdatabase.DataType;
 import org.finroc.core.portdatabase.DataTypeRegister;
+import org.finroc.core.portdatabase.SerializationHelper;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.plugin.datatype.Blittable;
 import org.finroc.plugin.datatype.HasBlittable;
+import org.finroc.xml.XMLNode;
 
 public class CompressedImage extends Blittable implements HasBlittable {
 
@@ -118,6 +120,26 @@ public class CompressedImage extends Blittable implements HasBlittable {
     public void serialize(CoreOutput os) {
         os.writeInt(dataSize);
         os.write(compressedData, 0, dataSize);
+    }
+
+    @Override
+    public String serialize() {
+        return SerializationHelper.serializeToHexString(this);
+    }
+
+    @Override
+    public void deserialize(String s) throws Exception {
+        SerializationHelper.deserializeFromHexString(this, s);
+    }
+
+    @Override @JavaOnly
+    public void serialize(XMLNode node) throws Exception {
+        node.setTextContent(serialize());
+    }
+
+    @Override @JavaOnly
+    public void deserialize(XMLNode node) throws Exception {
+        deserialize(node.getTextContent());
     }
 
     @Override

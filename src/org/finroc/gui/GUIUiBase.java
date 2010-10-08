@@ -51,7 +51,7 @@ import org.finroc.gui.abstractbase.UIBase;
 import org.finroc.gui.commons.EventRouter;
 import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.gui.IconManager;
-import org.finroc.gui.util.propertyeditor.ResourcePathProvider;
+import org.finroc.gui.util.propertyeditor.gui.ResourcePathProvider;
 import org.finroc.gui.util.treemodel.PortWrapper;
 
 import org.finroc.core.plugin.ConnectionListener;

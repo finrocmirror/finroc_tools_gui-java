@@ -20,6 +20,7 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,11 +42,11 @@ public class FontEditor extends PropertyEditComponent<Font> implements ActionLis
 
     private Font curFont;
 
-    protected void createAndShow() {
+    protected void createAndShow() throws Exception {
         curFont = getCurWidgetValue();
         button = new JButton(curFont.getFontName());
         button.addActionListener(this);
-        createStdLayoutWith(button);
+        add(button, BorderLayout.WEST);
     }
 
     @Override
@@ -62,5 +63,10 @@ public class FontEditor extends PropertyEditComponent<Font> implements ActionLis
             curFont = jf.getFont();
             button.setText(curFont.getFontName());
         }
+    }
+
+    @Override
+    protected void valueUpdated(Font t) {
+        button.setText(curFont.getFontName());
     }
 }

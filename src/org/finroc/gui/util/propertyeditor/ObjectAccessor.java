@@ -2,7 +2,7 @@
  * You received this file as part of FinGUI - a universal
  * (Web-)GUI editor for Robotic Systems.
  *
- * Copyright (C) 2007-2010 Max Reichardt
+ * Copyright (C) 2010 Max Reichardt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,40 +20,39 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
-import java.awt.BorderLayout;
+import java.lang.annotation.Annotation;
 
-import javax.naming.OperationNotSupportedException;
-import javax.swing.JCheckBox;
+/**
+ * @author max
+ *
+ * Property accessor for single object.
+ * (Kind of a loopback accessor wrapper)
+ *
+ * Note, that writing changes back to object (set() method) is difficult to generalize.
+ * Therefore, this class is abstract.
+ */
+public abstract class ObjectAccessor<T> implements PropertyAccessor<T> {
 
-public class BooleanEditor extends PropertyEditComponent<Boolean> {
+    /** Wrapped */
+    protected final T wrapped;
 
-    /** UID */
-    private static final long serialVersionUID = 7615759489323538266L;
+    public ObjectAccessor(T wrapped) {
+        this.wrapped = wrapped;
+    }
 
-    private JCheckBox chk;
-
+    @SuppressWarnings("unchecked")
     @Override
-    protected void createAndShow() throws Exception {
-        chk = new JCheckBox();
-        valueUpdated(getCurWidgetValue());
-        add(chk, BorderLayout.WEST);
+    public Class<T> getType() {
+        return (Class<T>)wrapped.getClass();
     }
 
     @Override
-    public void createAndShowMinimal(Boolean b) throws OperationNotSupportedException {
-        chk = new JCheckBox();
-        valueUpdated(b);
-        add(chk);
+    public T get() throws Exception {
+        return ObjectCloner.clone(wrapped);
     }
 
     @Override
-    public Boolean getCurEditorValue() {
-        return chk.isSelected();
+    public <A extends Annotation> A getAnnotation(Class<A> ann) {
+        return null;
     }
-
-    @Override
-    protected void valueUpdated(Boolean t) {
-        chk.setSelected(t);
-    }
-
 }

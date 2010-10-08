@@ -2,7 +2,7 @@
  * You received this file as part of FinGUI - a universal
  * (Web-)GUI editor for Robotic Systems.
  *
- * Copyright (C) 2007-2010 Max Reichardt
+ * Copyright (C) 2010 Max Reichardt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,40 +20,42 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
-import java.awt.BorderLayout;
+import java.lang.annotation.Annotation;
 
-import javax.naming.OperationNotSupportedException;
-import javax.swing.JCheckBox;
+/**
+ * @author max
+ *
+ * Base class for adapter classes that allow using type A
+ * in Editor for class B.
+ *
+ * Since values are cloned in wrapped accessor, adapter doesn't need
+ * to clone values again.
+ */
+public abstract class PropertyAccessorAdapter<A, B> implements PropertyAccessor<B> {
 
-public class BooleanEditor extends PropertyEditComponent<Boolean> {
+    /** Wrapped type A accessor */
+    protected PropertyAccessor<A> wrapped;
 
-    /** UID */
-    private static final long serialVersionUID = 7615759489323538266L;
+    /** Type that editor accepts */
+    private Class<B> editorClass;
 
-    private JCheckBox chk;
-
-    @Override
-    protected void createAndShow() throws Exception {
-        chk = new JCheckBox();
-        valueUpdated(getCurWidgetValue());
-        add(chk, BorderLayout.WEST);
+    public PropertyAccessorAdapter(PropertyAccessor<A> wrapped, Class<B> editorClass) {
+        this.wrapped = wrapped;
+        this.editorClass = editorClass;
     }
 
     @Override
-    public void createAndShowMinimal(Boolean b) throws OperationNotSupportedException {
-        chk = new JCheckBox();
-        valueUpdated(b);
-        add(chk);
+    public Class<B> getType() {
+        return editorClass;
     }
 
     @Override
-    public Boolean getCurEditorValue() {
-        return chk.isSelected();
+    public String getName() {
+        return wrapped.getName();
     }
 
     @Override
-    protected void valueUpdated(Boolean t) {
-        chk.setSelected(t);
+    public <C extends Annotation> C getAnnotation(Class<C> ann) {
+        return wrapped.getAnnotation(ann);
     }
-
 }

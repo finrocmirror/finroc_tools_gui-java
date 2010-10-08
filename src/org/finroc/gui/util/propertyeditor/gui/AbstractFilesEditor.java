@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.gui.util.propertyeditor;
+package org.finroc.gui.util.propertyeditor.gui;
 
 import java.awt.BorderLayout;
 import java.io.File;
@@ -31,6 +31,7 @@ import org.finroc.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.gui.util.embeddedfiles.EmbeddedFile;
 import org.finroc.gui.util.gui.FileDialog;
 import org.finroc.gui.util.gui.ListWithNewAndDeleteButton;
+import org.finroc.gui.util.propertyeditor.PropertyEditComponent;
 import org.finroc.log.LogLevel;
 
 
@@ -41,10 +42,16 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
 
     AbstractFiles<AbstractFile> list;
 
+    /** reference to properties dialog */
+    private final PropertiesDialog parent;
+
+    public AbstractFilesEditor(PropertiesDialog parent) {
+        this.parent = parent;
+    }
+
     @Override
-    protected void createAndShow() {
-        list = getCurWidgetValue();
-        add(new EmbeddedFilesEditorList(list, "Edit...", list.getExtensions()));
+    protected void createAndShow() throws Exception {
+        valueUpdated(getCurWidgetValue());
     }
 
     @Override
@@ -52,18 +59,25 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
         return list;
     }
 
+    @Override
+    protected void valueUpdated(AbstractFiles<AbstractFile> t) {
+        list = t;
+        removeAll();
+        add(new EmbeddedFilesEditorList(list, "Edit...", list.getExtensions()));
+    }
+
+
     class EmbeddedFilesEditorList extends ListWithNewAndDeleteButton<AbstractFile> {
-
-        private String[] extensions;
-
-
-        EmbeddedFilesEditorList(AbstractFiles<AbstractFile> files, String editButtonText, String[] extensions) {
-            super(files, getPropertyName(), false, BorderLayout.SOUTH, editButtonText, true);
-            this.extensions = extensions;
-        }
 
         /** UID */
         private static final long serialVersionUID = 3305138623569659819L;
+
+        private String[] extensions;
+
+        EmbeddedFilesEditorList(AbstractFiles<AbstractFile> files, String editButtonText, String[] extensions) {
+            super(files, ""/*getPropertyName()*/, false, BorderLayout.SOUTH, editButtonText, true);
+            this.extensions = extensions;
+        }
 
         @Override
         public void elementSelected(AbstractFile t) {}
@@ -74,7 +88,7 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
             File f = FileDialog.showOpenDialog("Choose File", extensions);
             if (f != null) {
                 try {
-                    EmbeddedFile ef = getParentDialog().getEmbeddedFileManager().loadFile(f, list.getFileClass());
+                    EmbeddedFile ef = parent.getEmbeddedFileManager().loadFile(f, list.getFileClass());
                     return ef;
                 } catch (Exception ex) {
                     FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), ex);
@@ -87,9 +101,14 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
         @Override
         public void editPressed(AbstractFile t) {
             if (t != null) {
-                new PropertiesDialog(AbstractFilesEditor.this.getParentDialog(), t, getParentDialog().getEmbeddedFileManager(), false);
+                new PropertiesDialog(parent, t, parent.getEmbeddedFileManager(), false);
                 repaint();
             }
         }
+    }
+
+    @Override
+    public boolean isResizable() {
+        return true;
     }
 }

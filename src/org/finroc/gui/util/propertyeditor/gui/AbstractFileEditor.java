@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.gui.util.propertyeditor;
+package org.finroc.gui.util.propertyeditor.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -35,6 +35,7 @@ import org.finroc.gui.FinrocGUI;
 import org.finroc.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.gui.util.embeddedfiles.ExternalFolder;
 import org.finroc.gui.util.gui.FileDialog;
+import org.finroc.gui.util.propertyeditor.PropertyEditComponent;
 import org.finroc.log.LogLevel;
 
 
@@ -57,28 +58,28 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
     private Class <? extends AbstractFile > clazz;
     private String[] extensions;
 
-    public AbstractFileEditor(Class <? extends AbstractFile > clazz, String[] extensions) {
+    /** reference to properties dialog */
+    private final PropertiesDialog parent;
+
+    public AbstractFileEditor(Class <? extends AbstractFile > clazz, String[] extensions, PropertiesDialog parent) {
         this.clazz = clazz;
         this.extensions = extensions;
+        this.parent = parent;
     }
 
-    protected void createAndShow() {
+    protected void createAndShow() throws Exception {
         button = new JButton("Change...");
-        embeddedFile = getCurWidgetValue();
         curFileText = new JTextField();
         curFileText.setMinimumSize(new Dimension(100, curFileText.getPreferredSize().height));
-        if (embeddedFile != null) {
-            curFileText.setText(embeddedFile.toString());
-        } else {
-            curFileText.setText("");
-        }
+        curFileText.setPreferredSize(curFileText.getMinimumSize());
         curFileText.setEnabled(false);
+        valueUpdated(getCurWidgetValue());
         button.addActionListener(this);
         JPanel jp = new JPanel();
         jp.setLayout(new BorderLayout());
         jp.add(curFileText, BorderLayout.CENTER);
         jp.add(button, BorderLayout.EAST);
-        createStdLayoutWith(jp);
+        add(jp, BorderLayout.CENTER);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
         File f = folder() ? FileDialog.showOpenPathDialog("Choose Path") : FileDialog.showOpenDialog("Choose File", extensions);
         if (f != null) {
             try {
-                embeddedFile = getParentDialog().getEmbeddedFileManager().loadFile(f, clazz);
+                embeddedFile = parent.getEmbeddedFileManager().loadFile(f, clazz);
                 curFileText.setText(embeddedFile.toString());
                 return;
             } catch (Exception ex) {
@@ -108,5 +109,15 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
      */
     private boolean folder() {
         return ExternalFolder.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    protected void valueUpdated(AbstractFile t) {
+        embeddedFile = t;
+        if (embeddedFile != null) {
+            curFileText.setText(embeddedFile.toString());
+        } else {
+            curFileText.setText("");
+        }
     }
 }

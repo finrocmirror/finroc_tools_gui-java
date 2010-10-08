@@ -20,6 +20,7 @@
  */
 package org.finroc.gui.util.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,19 +48,19 @@ public class ColorEditor extends PropertyEditComponent<Color> implements ActionL
 
     private Color curColor;
 
-    protected void createAndShow() {
+    protected void createAndShow() throws Exception {
         button = new JButton("");
         icon = new BufferedImageRGB(10, 10);
-        setButtonColor(getCurWidgetValue());
+        valueUpdated(getCurWidgetValue());
         button.addActionListener(this);
-        createStdLayoutWith(button);
+        add(button, BorderLayout.WEST);
     }
 
     @Override
     public void createAndShowMinimal(Color c) throws OperationNotSupportedException {
         button = new JButton("");
         icon = new BufferedImageRGB(10, 10);
-        setButtonColor(c);
+        valueUpdated(c);
         button.addActionListener(this);
         add(button);
     }
@@ -84,5 +85,10 @@ public class ColorEditor extends PropertyEditComponent<Color> implements ActionL
         if (c != null) {
             setButtonColor(c);
         }
+    }
+
+    @Override
+    protected void valueUpdated(Color t) {
+        setButtonColor(t);
     }
 }
