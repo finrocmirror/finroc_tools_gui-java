@@ -95,7 +95,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                 }
                 if (wpec != null) {
                     try {
-                        wpec.createAndShowMinimal(property.get());
+                        wpec.createAndShowMinimal(wpec.getCurWidgetValue());
                     } catch (Exception e) {
                         logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
                         logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e); // skip this property
