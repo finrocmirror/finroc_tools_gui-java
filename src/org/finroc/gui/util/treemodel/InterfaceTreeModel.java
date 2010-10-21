@@ -30,6 +30,7 @@ import org.finroc.core.FrameworkElement;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeListener;
 import org.finroc.core.plugin.ExternalConnection;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.net.RemoteCoreRegister;
 import org.finroc.gui.FinrocGUI;
@@ -163,6 +164,11 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
                 }
             }
         }
+    }
+
+    @Override
+    public void runtimeEdgeChange(byte changeType, AbstractPort source, AbstractPort target) {
+        // do nothing at the moment
     }
 
     public PortWrapper getInputPort(String uid) {
