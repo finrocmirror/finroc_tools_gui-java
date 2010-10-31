@@ -54,4 +54,9 @@ public interface PropertyAccessor<T> {
      * @return Does property have specified annotation?
      */
     public <A extends Annotation> A getAnnotation(Class<A> ann);
+
+    /**
+     * @return Is property modifiable? (Usually true - otherwise editor is disabled and only shows value)
+     */
+    public boolean isModifiable();
 }

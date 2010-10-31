@@ -46,6 +46,7 @@ public class FontEditor extends PropertyEditComponent<Font> implements ActionLis
         curFont = getCurWidgetValue();
         button = new JButton(curFont.getFontName());
         button.addActionListener(this);
+        button.setEnabled(isModifiable());
         add(button, BorderLayout.WEST);
     }
 

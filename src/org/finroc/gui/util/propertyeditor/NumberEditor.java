@@ -35,6 +35,7 @@ public class NumberEditor extends PropertyEditComponent<Number> {
 
     protected void createAndShow() throws Exception {
         jtf = new JTextField();
+        jtf.setEnabled(isModifiable());
         valueUpdated(getCurWidgetValue());
         jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtf.getPreferredSize().height));
         add(jtf, BorderLayout.WEST);
@@ -44,6 +45,7 @@ public class NumberEditor extends PropertyEditComponent<Number> {
     @Override
     public void createAndShowMinimal(Number number) throws OperationNotSupportedException {
         jtf = new JTextField();
+        jtf.setEnabled(isModifiable());
         valueUpdated(number);
         jtf.setPreferredSize(new Dimension(TEXTFIELDWIDTH / 2, jtf.getPreferredSize().height));
         add(jtf);

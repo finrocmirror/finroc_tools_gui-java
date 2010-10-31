@@ -77,6 +77,7 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
         EmbeddedFilesEditorList(AbstractFiles<AbstractFile> files, String editButtonText, String[] extensions) {
             super(files, ""/*getPropertyName()*/, false, BorderLayout.SOUTH, editButtonText, true);
             this.extensions = extensions;
+            setControlsEnabled(AbstractFilesEditor.this.isModifiable());
         }
 
         @Override

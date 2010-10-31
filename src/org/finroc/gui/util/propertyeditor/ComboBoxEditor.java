@@ -58,6 +58,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
         }
         jcmb.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jcmb.getPreferredSize().height));
         add(jcmb, BorderLayout.WEST);
+        jcmb.setEnabled(isModifiable());
     }
 
     @Override
@@ -69,6 +70,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
             FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         add(jcmb);
+        jcmb.setEnabled(isModifiable());
     }
 
     @SuppressWarnings("unchecked")

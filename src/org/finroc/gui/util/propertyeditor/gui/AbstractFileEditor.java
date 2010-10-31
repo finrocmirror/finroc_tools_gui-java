@@ -69,6 +69,7 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
 
     protected void createAndShow() throws Exception {
         button = new JButton("Change...");
+        button.setEnabled(isModifiable());
         curFileText = new JTextField();
         curFileText.setMinimumSize(new Dimension(100, curFileText.getPreferredSize().height));
         curFileText.setPreferredSize(curFileText.getMinimumSize());

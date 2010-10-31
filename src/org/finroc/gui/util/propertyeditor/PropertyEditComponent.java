@@ -64,7 +64,7 @@ public abstract class PropertyEditComponent<T> extends JPanel {
      */
     public void applyChanges() throws Exception {
         T newValue = getCurEditorValue();
-        if (curValue == null || !curValue.equals(newValue)) {
+        if (isModifiable() && (curValue == null || !curValue.equals(newValue))) {
             property.set(ObjectCloner.clone(newValue));
             curValue = ObjectCloner.clone(newValue);
         }
@@ -141,5 +141,12 @@ public abstract class PropertyEditComponent<T> extends JPanel {
         assert(this.property == null);
         this.property = property;
         curValue = property.get();
+    }
+
+    /**
+     * @return Is property modifiable?
+     */
+    protected boolean isModifiable() {
+        return property.isModifiable();
     }
 }

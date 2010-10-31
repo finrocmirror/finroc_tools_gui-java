@@ -58,4 +58,9 @@ public abstract class PropertyAccessorAdapter<A, B> implements PropertyAccessor<
     public <C extends Annotation> C getAnnotation(Class<C> ann) {
         return wrapped.getAnnotation(ann);
     }
+
+    @Override
+    public boolean isModifiable() {
+        return wrapped.isModifiable();
+    }
 }

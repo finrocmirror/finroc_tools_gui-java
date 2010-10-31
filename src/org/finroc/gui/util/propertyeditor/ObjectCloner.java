@@ -88,6 +88,9 @@ public class ObjectCloner {
 
     @SuppressWarnings("unchecked")
     private static <T> T cloneImpl(T t) {
+        if (t == null) {
+            return null;
+        }
         if (t instanceof String || t instanceof Number) { // directly return immutable objects
             return t;
         }

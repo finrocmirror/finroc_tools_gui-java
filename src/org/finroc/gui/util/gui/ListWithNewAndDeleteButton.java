@@ -38,6 +38,9 @@ import javax.swing.event.ListSelectionListener;
 
 public abstract class ListWithNewAndDeleteButton<T> extends JPanel implements ActionListener, ListSelectionListener {
 
+    /** UID */
+    private static final long serialVersionUID = 5158799572411302270L;
+
     List<T> curList;
     private JButton newButton, delButton, editButton;
     private JButton upButton, downButton;
@@ -150,4 +153,13 @@ public abstract class ListWithNewAndDeleteButton<T> extends JPanel implements Ac
     public abstract T newPressed();
     public abstract void elementSelected(T t);
     public abstract void editPressed(T t);
+
+    public void setControlsEnabled(boolean e) {
+        delButton.setEnabled(e);
+        downButton.setEnabled(e);
+        editButton.setEnabled(e);
+        listUI.setEnabled(e);
+        newButton.setEnabled(e);
+        upButton.setEnabled(e);
+    }
 }

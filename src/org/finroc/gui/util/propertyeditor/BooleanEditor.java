@@ -35,6 +35,7 @@ public class BooleanEditor extends PropertyEditComponent<Boolean> {
     @Override
     protected void createAndShow() throws Exception {
         chk = new JCheckBox();
+        chk.setEnabled(isModifiable());
         valueUpdated(getCurWidgetValue());
         add(chk, BorderLayout.WEST);
     }
@@ -42,6 +43,7 @@ public class BooleanEditor extends PropertyEditComponent<Boolean> {
     @Override
     public void createAndShowMinimal(Boolean b) throws OperationNotSupportedException {
         chk = new JCheckBox();
+        chk.setEnabled(isModifiable());
         valueUpdated(b);
         add(chk);
     }

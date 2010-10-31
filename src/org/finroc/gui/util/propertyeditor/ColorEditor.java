@@ -50,6 +50,7 @@ public class ColorEditor extends PropertyEditComponent<Color> implements ActionL
 
     protected void createAndShow() throws Exception {
         button = new JButton("");
+        button.setEnabled(isModifiable());
         icon = new BufferedImageRGB(10, 10);
         valueUpdated(getCurWidgetValue());
         button.addActionListener(this);
@@ -59,6 +60,7 @@ public class ColorEditor extends PropertyEditComponent<Color> implements ActionL
     @Override
     public void createAndShowMinimal(Color c) throws OperationNotSupportedException {
         button = new JButton("");
+        button.setEnabled(isModifiable());
         icon = new BufferedImageRGB(10, 10);
         valueUpdated(c);
         button.addActionListener(this);

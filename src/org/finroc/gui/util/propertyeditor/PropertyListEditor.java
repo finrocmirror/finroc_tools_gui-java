@@ -86,6 +86,9 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
             PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
             for (int i = 0; i < attributes.size(); i++) {
                 PropertyAccessor property = attributes.get(i);
+                if ((!isModifiable()) && property.isModifiable()) {
+                    property = new ReadOnlyAdapter(property);
+                }
                 PropertyEditComponent wpec = null;
                 for (ComponentFactory cf : componentFactories) {
                     wpec = cf.createComponent(property, null);
@@ -163,6 +166,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
         SpinnerNumberModel snm = new SpinnerNumberModel(list.size(), 0, list.getMaxEntries(), 1);
         spinner = new JSpinner(snm);
         spinner.addChangeListener(this);
+        spinner.setEnabled(isModifiable());
         JPanel spinnerPanel = new JPanel();
         spinnerPanel.add(spinner);
         add(spinnerPanel, BorderLayout.LINE_START);

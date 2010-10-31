@@ -28,15 +28,19 @@ import java.lang.annotation.Annotation;
  * Property accessor for single object.
  * (Kind of a loopback accessor wrapper)
  *
- * Note, that writing changes back to object (set() method) is difficult to generalize.
- * Therefore, this class is abstract.
+ * (Note, that writing changes back to object (set() method) is difficult to generalize.
+ *  Therefore, this accessor is unmodifiable by default. Override for different behaviour)
  */
-public abstract class ObjectAccessor<T> implements PropertyAccessor<T> {
+public class ObjectAccessor<T> implements PropertyAccessor<T> {
 
     /** Wrapped */
     protected final T wrapped;
 
-    public ObjectAccessor(T wrapped) {
+    /** Name of property */
+    protected final String name;
+
+    public ObjectAccessor(String name, T wrapped) {
+        this.name = name;
         this.wrapped = wrapped;
     }
 
@@ -54,5 +58,20 @@ public abstract class ObjectAccessor<T> implements PropertyAccessor<T> {
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> ann) {
         return null;
+    }
+
+    @Override
+    public void set(T newValue) throws Exception {
+        throw new Exception("Unsupported");
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isModifiable() {
+        return false;
     }
 }

@@ -22,6 +22,7 @@ package org.finroc.gui.util.propertyeditor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,5 +92,10 @@ public class FieldAccessor implements PropertyAccessor {
     @Override
     public Annotation getAnnotation(Class ann) {
         return property.getAnnotation(ann);
+    }
+
+    @Override
+    public boolean isModifiable() {
+        return !Modifier.isFinal(property.getModifiers());
     }
 }

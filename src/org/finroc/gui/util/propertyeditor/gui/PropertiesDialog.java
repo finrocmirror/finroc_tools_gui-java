@@ -24,17 +24,16 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.finroc.gui.util.embeddedfiles.FileManager;
+import org.finroc.gui.util.gui.MDialog;
 import org.finroc.gui.util.propertyeditor.FieldAccessorFactory;
 import org.finroc.gui.util.propertyeditor.PropertiesPanel;
 import org.finroc.gui.util.propertyeditor.PropertyAccessor;
@@ -47,7 +46,7 @@ import org.finroc.gui.util.propertyeditor.StandardComponentFactory;
  * Dialog to edit widget properties. Ultra-generic...
  * GUI elements are automatically created.
  */
-public class PropertiesDialog extends JDialog implements ActionListener {
+public class PropertiesDialog extends MDialog {
 
     /** UID */
     private static final long serialVersionUID = -3537793359933146900L;
@@ -109,18 +108,13 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 
         // create buttons
         JPanel buttonPanel = new JPanel();
-        btnOkay = new JButton("Okay");
-        btnCancel = new JButton("Cancel");
-        btnApply = new JButton("Apply");
-        btnOkay.addActionListener(this);
-        btnCancel.addActionListener(this);
-        btnApply.addActionListener(this);
-        buttonPanel.add(btnOkay);
+        btnOkay = createButton("Okay", buttonPanel);
         if (applyButton) {
-            buttonPanel.add(btnApply);
+            btnApply = createButton("Apply", buttonPanel);
         }
-        buttonPanel.add(btnCancel);
+        btnCancel = createButton("Cancel", buttonPanel);
         main.add(buttonPanel, BorderLayout.SOUTH);
+
         //main.add(new JComboBox(new String[]{"test1", "test2"}), BorderLayout.NORTH);
         //main.add(new JButton("test"), BorderLayout.CENTER);
         getContentPane().add(main, BorderLayout.CENTER);

@@ -84,6 +84,7 @@ public class StringEditor extends PropertyEditComponent<String> {
             jp.add(new JScrollPane(jtc), BorderLayout.CENTER);
             add(jp, BorderLayout.CENTER);
         }
+        jtc.setEnabled(isModifiable());
     }
 
     @Override
@@ -93,6 +94,7 @@ public class StringEditor extends PropertyEditComponent<String> {
         jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
         jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
         add(jtc);
+        jtc.setEnabled(isModifiable());
     }
 
     @Override
