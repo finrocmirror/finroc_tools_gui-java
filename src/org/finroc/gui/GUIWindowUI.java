@@ -153,7 +153,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         //miDisconnectMenu = new JMenu("Disconnect");
         //miReconnectMenu = new JMenu("Reconnect");
         for (CreateExternalConnectionAction ioi : Plugins.getInstance().getExternalConnections().getBackend()) {
-            miConnectMenu.add(new ConnectAction(ioi, false, false));
+            if ((ioi.getFlags() & CreateExternalConnectionAction.REMOTE_EDGE_INFO) == 0) {
+                miConnectMenu.add(new ConnectAction(ioi, false, false));
+            }
             //miDisconnectMenu.add(new ConnectAction(ioi, true, false));
             //miReconnectMenu.add(new ConnectAction(ioi, false, true));
         }

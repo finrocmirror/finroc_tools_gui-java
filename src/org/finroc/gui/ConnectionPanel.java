@@ -33,6 +33,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -68,6 +69,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.finroc.core.port.PortFlags;
 import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.abstractbase.DataModelListener;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
@@ -360,8 +362,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         r.x += tree.getLocationOnScreen().x - getLocationOnScreen().x;  // Koordinaten im ConnectionPanel
         r.y += tree.getLocationOnScreen().y - getLocationOnScreen().y;
-        int offset = (!p.isInputPort()) ? r.height / 2 - 1 : 0;  // An Spitze oder in Vertiefung ansetzen?
-        int xpos = selFromRight ? r.x + offset : r.x + r.width - offset - 4; // Linker oder rechter Baum
+        int offset = ((GuiTreeCellRenderer)tree.getCellRenderer()).getIcon(p, false, false, GuiTreeCellRenderer.color).inset;
+        //int offset = (!p.isInputPort()) ? r.height / 2 - 1 : 0;  // An Spitze oder in Vertiefung ansetzen?
+        //int xpos = selFromRight ? r.x + offset : r.x + r.width - offset - 4; // Linker oder rechter Baum
+        int xpos = tree == leftTree ? (r.x + r.width + offset) : (r.x - offset);
 
         // xpos an den Rand setzen, falls es Baum sonst überschreitet
         if (tree == leftTree) {
@@ -847,6 +851,21 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
  */
 class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListener {
 
+    /** Tree icon */
+    class TreeIcon {
+
+        /** offset for line start */
+        final int inset;
+
+        /** actual Icon */
+        final Icon icon;
+
+        public TreeIcon(int inset, ImageIcon imageIcon) {
+            this.inset = inset;
+            this.icon = imageIcon;
+        }
+    }
+
     public static final Color color = new Color(100, 100, 200);
     private Color background;
     //private static Color selectedBorder = new Color(240, 140, 20);
@@ -854,7 +873,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     public static final Color connected = new Color(30, 200, 30);
     public static final Color connectionPartnerMissing = new Color(120, 10, 10);
 
-    private static Map<String, Icon> iconCache = new HashMap<String, Icon>();
+    private static Map<String, TreeIcon> iconCache = new HashMap<String, TreeIcon>();
     private boolean rightTree;
 
     /** for showing selection after some time */
@@ -923,7 +942,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         //setOpaque(true);
         /*result.setFont(c.getFont());
         result.setForeground(sel ? selected : background);*/
-        setIcon(createInputIcon(getPreferredSize().height, !port.isInputPort(), rightTree, portSelected, c));
+        setIcon(getIcon(port, rightTree, portSelected, c).icon);
         /*return result;*/
         return this;
     }
@@ -938,9 +957,14 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         g.setColor(temp);
     }
 
-    private Icon createInputIcon(int height, boolean input, boolean front, boolean sel, Color c) {
-        String key = new Boolean(input).toString() + new Boolean(front).toString() + c.getRGB() + height;
-        Icon temp = iconCache.get(key);
+    TreeIcon getIcon(TreePortWrapper port, boolean rightTree, boolean sel, Color c) {
+        int height = getPreferredSize().height;
+        boolean input = !port.isInputPort();
+        boolean front = rightTree;
+        boolean proxy = port.getPort().getFlag(PortFlags.PROXY);
+        boolean isInterface = port.getPort().getDataType().isMethodType();
+        String key = (input ? "t" : "f") + (front ? "t" : "f") + (proxy ? "t" : "f") + (isInterface ? "t" : "f") + c.getRGB() + "," + height;
+        TreeIcon temp = iconCache.get(key);
         if (temp != null) {
             return temp;
         }
@@ -948,30 +972,61 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         int backgroundTemp = background.getRGB();
         int colorTemp = c.getRGB();
 
-        BufferedImageRGB img = new BufferedImageRGB(height / 2 + 1, height);
-        img.drawFilledRectangle(img.getBounds(), input ? colorTemp : backgroundTemp);
-
-        // Dreieck malen
+        BufferedImageRGB img = new BufferedImageRGB(isInterface ? (input ? 12 : 13) : (height / 2 + 1), height);
+        img.drawFilledRectangle(img.getBounds(), input && (!isInterface) ? colorTemp : backgroundTemp);
         int[] buffer = img.getBuffer();
-        int top = 0;
-        int bottom = (img.getHeight() - 1) * img.getWidth();
-        int count = 1;
-        while (top <= bottom) {
-            for (int i = 0; i < count; i++) {
-                buffer[top + i] = input ? backgroundTemp : colorTemp;
-                buffer[bottom + i] = input ? backgroundTemp : colorTemp;
+
+        int inset = 0;
+        if (!isInterface) {
+
+            // draw triangle
+            int top = 0;
+            int bottom = (img.getHeight() - 1) * img.getWidth();
+            int count = 1;
+            while (top <= bottom) {
+                for (int i = 0; i < count; i++) {
+                    buffer[top + i] = input ? backgroundTemp : colorTemp;
+                    buffer[bottom + i] = input ? backgroundTemp : colorTemp;
+                }
+                top += img.getWidth();
+                bottom -= img.getWidth();
+                count++;
             }
-            top += img.getWidth();
-            bottom -= img.getWidth();
-            count++;
+            inset = input ? (1 - count) : -1;
+
+            // Possibly mirror image
+            if (front != input) {
+                img.mirrorLeftRight();
+            }
+        } else {
+
+            int middle = height / 2;
+            for (int y = 0; y < height; y++) {
+                img.setPixel(0, y, colorTemp);
+            }
+            for (int x = 0; x < 4; x++) {
+                img.setPixel(x, middle - 1, colorTemp);
+                img.setPixel(x, middle, colorTemp);
+                img.setPixel(x, middle + 1, colorTemp);
+            }
+
+            Graphics2D g = img.getBufferedImage().createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setColor(c);
+            if (input) {
+                g.drawOval(4, middle - 6, 13, 13);
+            } else {
+                g.fillOval(4, middle - 4, 9, 9);
+            }
+            inset = -3;
+
+            // Possibly mirror image
+            if (front) {
+                img.mirrorLeftRight();
+            }
         }
 
-        // Bei Bedarf spiegeln
-        if (front != input) {
-            img.mirrorLeftRight();
-        }
-
-        ImageIcon ii = new ImageIcon(img.getBufferedImage());
+        TreeIcon ii = new TreeIcon(inset, new ImageIcon(img.getBufferedImage()));
         iconCache.put(key, ii);
         return ii;
     }
