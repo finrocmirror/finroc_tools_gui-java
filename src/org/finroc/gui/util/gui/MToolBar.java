@@ -153,4 +153,14 @@ public class MToolBar extends JToolBar {
     public void startNextButtonGroup() {
         buttonGroup = new ButtonGroup();
     }
+
+    /**
+     * Clear toolbar
+     */
+    public void clear() {
+        actionRegister.clear();
+        startNextButtonGroup();
+        buttonRegister.clear();
+        super.removeAll();
+    }
 }
