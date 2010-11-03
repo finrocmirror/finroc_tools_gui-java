@@ -73,7 +73,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
      * @param element Framework Element to get node for
      * @return Node
      */
-    public synchronized InterfaceNode getInterfaceNode(FrameworkElement element) {
+    public InterfaceNode getInterfaceNode(FrameworkElement element) {
 
         assert(element.isInitialized());
         InterfaceNode node = element.isPort() ? ports.get(element.getHandle()) : elements.get(-element.getHandle());
@@ -117,53 +117,43 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
     }
 
     @Override
-    public synchronized void runtimeChange(byte changeType, FrameworkElement element) {
+    public void runtimeChange(final byte changeType, final FrameworkElement element) {
         if (!element.isChildOf(root.wrapped.getChild(), true)) {
             return; // not of interest
         }
 
-
-        if (changeType == ADD) {
-            final InterfaceNode in = getInterfaceNode(element);
-            //super.nodesWereInserted(in.getParent(), new int[]{in.getParent().getIndex(in)});
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (changeType == ADD) {
+                    final InterfaceNode in = getInterfaceNode(element);
                     InterfaceTreeModel.this.nodeStructureChanged(in.getParent());
-                }
-            });
-        } else if (changeType == REMOVE) {
-            if (element.isPort()) {
-                InterfaceNode in = ports.get(element.getHandle());
-                ports.remove(element.getHandle());
-                while (in != null) { // remove all links
-                    final InterfaceNode parent = (InterfaceNode)in.getParent();
-                    final int idx = parent.getIndex(in);
-                    final InterfaceNode inCopy = in;
-                    parent.remove(in);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                } else if (changeType == REMOVE) {
+                    if (element.isPort()) {
+                        InterfaceNode in = ports.get(element.getHandle());
+                        ports.remove(element.getHandle());
+                        while (in != null) { // remove all links
+                            final InterfaceNode parent = (InterfaceNode)in.getParent();
+                            final int idx = parent.getIndex(in);
+                            final InterfaceNode inCopy = in;
+                            parent.remove(in);
                             InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                            in = in.next;
                         }
-                    });
-                    in = in.next;
-                }
-            } else {
-                InterfaceNode in = elements.get(-element.getHandle());;
-                elements.remove(-element.getHandle());
-                while (in != null) { // remove all links
-                    final InterfaceNode parent = (InterfaceNode)in.getParent();
-                    final int idx = parent.getIndex(in);
-                    final InterfaceNode inCopy = in;
-                    parent.remove(in);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                    } else {
+                        InterfaceNode in = elements.get(-element.getHandle());;
+                        elements.remove(-element.getHandle());
+                        while (in != null) { // remove all links
+                            final InterfaceNode parent = (InterfaceNode)in.getParent();
+                            final int idx = parent.getIndex(in);
+                            final InterfaceNode inCopy = in;
+                            parent.remove(in);
                             InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                            in = in.next;
                         }
-                    });
-                    in = in.next;
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override

@@ -76,18 +76,16 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
     @SuppressWarnings("unchecked")
     public List<T> getSelectedObjects() {
-        synchronized (getModel()) {
-            List<T> result = new ArrayList<T>();
-            TreePath[] tps = getSelectionPaths();
-            if (tps != null) {
-                for (TreePath tp : tps) {
-                    if (hasCorrectType(tp.getLastPathComponent())) {
-                        result.add((T)tp.getLastPathComponent());
-                    }
+        List<T> result = new ArrayList<T>();
+        TreePath[] tps = getSelectionPaths();
+        if (tps != null) {
+            for (TreePath tp : tps) {
+                if (hasCorrectType(tp.getLastPathComponent())) {
+                    result.add((T)tp.getLastPathComponent());
                 }
             }
-            return result;
         }
+        return result;
     }
 
     private boolean hasCorrectType(Object o) {
@@ -95,32 +93,28 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     }
 
     public void setSelectedObjects(List<T> objects, boolean overwriteMouseRelease) {
-        synchronized (getModel()) {
-            if (objects == null) {
-                setSelectionPaths(null);
-                newSelection = overwriteMouseRelease ? null : newSelection;
-                return;
-            }
-            TreePath[] temp = new TreePath[objects.size()];
-            for (int i = 0; i < temp.length; i++) {
-                temp[i] = getTreePathFor(objects.get(i));
-            }
-            setSelectionPaths(temp);
-            newSelection = overwriteMouseRelease ? temp : newSelection;
+        if (objects == null) {
+            setSelectionPaths(null);
+            newSelection = overwriteMouseRelease ? null : newSelection;
+            return;
         }
+        TreePath[] temp = new TreePath[objects.size()];
+        for (int i = 0; i < temp.length; i++) {
+            temp[i] = getTreePathFor(objects.get(i));
+        }
+        setSelectionPaths(temp);
+        newSelection = overwriteMouseRelease ? temp : newSelection;
     }
 
     public TreePath getTreePathFor(TreeNode object) {
-        synchronized (getModel()) {
-            LinkedList<TreeNode> temp = new LinkedList<TreeNode>();
-            temp.add(object);
-            TreeNode temp2 = object;
-            while (temp2 != getModel().getRoot()) {
-                temp2 = temp2.getParent();
-                temp.addFirst(temp2);
-            }
-            return new TreePath(temp.toArray());
+        LinkedList<TreeNode> temp = new LinkedList<TreeNode>();
+        temp.add(object);
+        TreeNode temp2 = object;
+        while (temp2 != getModel().getRoot()) {
+            temp2 = temp2.getParent();
+            temp.addFirst(temp2);
         }
+        return new TreePath(temp.toArray());
     }
 
     public void setModel(TreeModel tm) {
@@ -130,34 +124,28 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         if (getModel() == tm) {
             return;
         }
-        synchronized (tm) {
-            super.setModel(tm);
-            collapseAll();
-            expandAll(newModelExpandLevel);  // expand model by default
-            repaint();
-        }
+        super.setModel(tm);
+        collapseAll();
+        expandAll(newModelExpandLevel);  // expand model by default
+        repaint();
     }
 
     public List<T> getObjects() {
-        synchronized (getModel()) {
-            List<T> result = new ArrayList<T>();
-            if (getModel().getRoot() != null) {
-                getObjectsHelper(result, (TreeNode)getModel().getRoot());
-            }
-            return result;
+        List<T> result = new ArrayList<T>();
+        if (getModel().getRoot() != null) {
+            getObjectsHelper(result, (TreeNode)getModel().getRoot());
         }
+        return result;
     }
 
     public List<T> getVisibleObjects() {
-        synchronized (getModel()) {
-            List<T> result = getObjects();
-            for (Iterator<T> i = result.iterator(); i.hasNext();) {
-                if (!isVisible(getTreePathFor(i.next()))) {
-                    i.remove();
-                }
+        List<T> result = getObjects();
+        for (Iterator<T> i = result.iterator(); i.hasNext();) {
+            if (!isVisible(getTreePathFor(i.next()))) {
+                i.remove();
             }
-            return result;
         }
+        return result;
     }
 
 
@@ -173,13 +161,11 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     }
 
     public Rectangle getObjectBounds(T object, boolean visiblePart) {
-        synchronized (getModel()) {
-            Rectangle r = getPathBounds(getTreePathFor(object));
-            if (visiblePart) {
-                return r.intersection(getVisibleRect());
-            }
-            return r;
+        Rectangle r = getPathBounds(getTreePathFor(object));
+        if (visiblePart) {
+            return r.intersection(getVisibleRect());
         }
+        return r;
     }
 
     public void addMouseListener(MouseListener ml) {
@@ -211,33 +197,31 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     }
 
     public void mousePressed(MouseEvent e) {
-        synchronized (getModel()) {
-            TreePath[] temp = getSelectionPaths();
+        TreePath[] temp = getSelectionPaths();
 
-            // Is complete new selection contained in old selection? If yes, make selection smaller at mouse release
-            boolean keep = true;
-            if (temp != null && newSelection != null) {
-                for (TreePath tp1 : temp) {
-                    boolean inSelection = false;
-                    for (TreePath tp2 : newSelection) {
-                        if (tp1.getLastPathComponent() == (tp2.getLastPathComponent())) {
-                            inSelection = true;
-                            break;
-                        }
+        // Is complete new selection contained in old selection? If yes, make selection smaller at mouse release
+        boolean keep = true;
+        if (temp != null && newSelection != null) {
+            for (TreePath tp1 : temp) {
+                boolean inSelection = false;
+                for (TreePath tp2 : newSelection) {
+                    if (tp1.getLastPathComponent() == (tp2.getLastPathComponent())) {
+                        inSelection = true;
+                        break;
                     }
-                    keep &= inSelection;
                 }
-            } else {
-                keep = false;
+                keep &= inSelection;
             }
+        } else {
+            keep = false;
+        }
 
-            if (keep) {
-                setSelectionPaths(newSelection);
-                newSelection = temp;
-            } else {
-                setSelectedObjects(getSelectedObjects(), false);
-                newSelection = getSelectionPaths();
-            }
+        if (keep) {
+            setSelectionPaths(newSelection);
+            newSelection = temp;
+        } else {
+            setSelectedObjects(getSelectedObjects(), false);
+            newSelection = getSelectionPaths();
         }
 
         EventRouter.fireMousePressedEvent(this, e);
@@ -245,22 +229,16 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
     public void mouseReleased(MouseEvent e) {
         EventRouter.fireMouseReleasedEvent(this, e);
-        synchronized (getModel()) {
-            setSelectionPaths(newSelection);
-        }
+        setSelectionPaths(newSelection);
     }
 
     public boolean isVisible(T object) {
-        synchronized (getModel()) {
-            return isVisible(getTreePathFor(object));
-        }
+        return isVisible(getTreePathFor(object));
     }
 
     public void expandRoot() {
         TreeModel tm = getModel();
-        synchronized (tm) {
-            expandPath(new TreePath(new Object[] {tm.getRoot()}));
-        }
+        expandPath(new TreePath(new Object[] {tm.getRoot()}));
     }
 
     public void setRepaintDelegate(JComponent jc) {
@@ -322,19 +300,17 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         if (levelsLeft == 0) {
             return;
         }
-        synchronized (getModel()) {
-            curPath.add(tn);
-            if (!tn.isLeaf()) {
-                for (int i = 0; i < tn.getChildCount(); i++) {
-                    expandAllHelper(tn.getChildAt(i), expand, curPath, levelsLeft - 1);
-                }
-                if (expand || curPath.size() > 1) {
-                    setExpandedState(new TreePath(curPath.toArray()), expand);
-                }
+        curPath.add(tn);
+        if (!tn.isLeaf()) {
+            for (int i = 0; i < tn.getChildCount(); i++) {
+                expandAllHelper(tn.getChildAt(i), expand, curPath, levelsLeft - 1);
             }
-            curPath.remove(tn);
-            repaint();
+            if (expand || curPath.size() > 1) {
+                setExpandedState(new TreePath(curPath.toArray()), expand);
+            }
         }
+        curPath.remove(tn);
+        repaint();
     }
 
     @Override
@@ -346,27 +322,11 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
         @Override
         public void treeNodesInserted(TreeModelEvent e) {
-            synchronized (getModel()) {
-                //setExpandedState(e.getTreePath(), true);
-                TreePath p = e.getTreePath();
-                for (int i : e.getChildIndices()) {
-                    setExpandedState(p.pathByAddingChild(((TreeNode)p.getLastPathComponent()).getChildAt(i)), true);
-                }
+            //setExpandedState(e.getTreePath(), true);
+            TreePath p = e.getTreePath();
+            for (int i : e.getChildIndices()) {
+                setExpandedState(p.pathByAddingChild(((TreeNode)p.getLastPathComponent()).getChildAt(i)), true);
             }
-        }
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        synchronized (getModel()) {
-            super.paint(g);
-        }
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        synchronized (getModel()) {
-            return super.getPreferredSize();
         }
     }
 
@@ -376,12 +336,10 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
      * @param tn TreeNode
      */
     public void expandToElement(TreeNode tn) {
-        synchronized (getModel()) {
-            TreePath tp = getTreePathFor(tn);
-            while (tp != null && tp.getPath().length > 0) {
-                expandPath(tp);
-                tp = tp.getParentPath();
-            }
+        TreePath tp = getTreePathFor(tn);
+        while (tp != null && tp.getPath().length > 0) {
+            expandPath(tp);
+            tp = tp.getParentPath();
         }
     }
 }
