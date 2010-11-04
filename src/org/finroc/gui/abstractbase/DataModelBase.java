@@ -67,7 +67,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     protected transient FrameworkElement frameworkElement = null;
 
     /** log domain for gui */
-    public final LogDomain logDomain = FinrocGUI.logDomain;
+    public transient final LogDomain logDomain = FinrocGUI.logDomain;
 
     public DataModelBase(P parent) {
         if (parent != null) {
