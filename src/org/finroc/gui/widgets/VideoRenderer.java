@@ -22,8 +22,13 @@ package org.finroc.gui.widgets;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
 
 
+import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
 
 import org.finroc.gui.Widget;
@@ -31,6 +36,8 @@ import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
+import org.finroc.gui.util.gui.FileDialog;
+import org.finroc.plugin.datatype.Blittable;
 import org.finroc.plugin.datatype.HasBlittable;
 
 import org.finroc.core.port.PortCreationInfo;
@@ -55,11 +62,12 @@ public class VideoRenderer extends Widget {
         return suggestion.derive(HasBlittable.TYPE);
     }
 
-    class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable> {
+    class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseListener {
 
         public VideoWindowUI() {
             super(RenderMode.Cached);
             videoInput.addChangeListener(this);
+            addMouseListener(this);
         }
 
         /** UID */
@@ -82,5 +90,40 @@ public class VideoRenderer extends Widget {
             this.setChanged();
             repaint();
         }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {}
+        @Override
+        public void mousePressed(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON2) {
+                HasBlittable b = videoInput.getAutoLocked();
+                if (b == null) {
+                    releaseAllLocks();
+                    return;
+                }
+
+                Blittable bl = b.getBlittable();
+                BufferedImageRGB image = new BufferedImageRGB(bl.getWidth(), bl.getHeight());
+                bl.blitTo(image);
+                File f = FileDialog.showSaveDialog("Save Image as...", "png");
+                if (f != null) {
+                    try {
+                        ImageIO.write(image.getBufferedImage(), "png", f);
+                    } catch (IOException e1) {
+                        getRoot().getFingui().showErrorMessage(e1);
+                    }
+                }
+
+                releaseAllLocks();
+            }
+        }
+
     }
 }

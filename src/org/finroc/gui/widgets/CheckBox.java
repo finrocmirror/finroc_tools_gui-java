@@ -31,6 +31,7 @@ import org.finroc.gui.WidgetOutput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 
+import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
@@ -50,6 +51,9 @@ public class CheckBox extends Widget {
     /** CheckBox output port */
     private WidgetOutput.Numeric value;
 
+    /** Boolean output */
+    private WidgetOutput.CC<CoreBoolean> boolValue;
+
     /** CheckBox text */
     private String text = "CheckBox";
 
@@ -60,6 +64,9 @@ public class CheckBox extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
+        if (forPort == boolValue) {
+            suggestion = suggestion.derive(CoreBoolean.TYPE);
+        }
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
@@ -89,11 +96,17 @@ public class CheckBox extends Widget {
 
         public void actionPerformed(ActionEvent e) {
             value.publish(checkBox.isSelected() ? 1 : 0);
+            boolValue.getPort().publish(CoreBoolean.getInstance(checkBox.isSelected()));
         }
 
         @Override
         public void portChanged(CCPortBase origin, CoreNumber value2) {
-            checkBox.setSelected(value.getDouble() != 0);
+            if (value.getPort().isConnected()) {
+                checkBox.setSelected(value.getDouble() != 0);
+            } else if (boolValue.getPort().isConnected()) {
+                checkBox.setSelected(boolValue.getPort().getAutoLocked().get());
+                releaseAllLocks();
+            }
         }
     }
 }
