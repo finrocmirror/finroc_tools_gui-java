@@ -67,7 +67,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     protected transient FrameworkElement frameworkElement = null;
 
     /** log domain for gui */
-    public transient final LogDomain logDomain = FinrocGUI.logDomain;
+    public transient LogDomain logDomain = FinrocGUI.logDomain;
 
     public DataModelBase(P parent) {
         if (parent != null) {
@@ -89,6 +89,9 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
         }
         for (C child : children) {
             child.restore(this);
+        }
+        if (logDomain == null) {
+            logDomain = FinrocGUI.logDomain;
         }
         initialized = true;
     }
