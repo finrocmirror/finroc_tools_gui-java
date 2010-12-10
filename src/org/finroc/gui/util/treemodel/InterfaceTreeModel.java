@@ -56,7 +56,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
     private final RemoteCoreRegister<InterfaceNode> elements = new RemoteCoreRegister<InterfaceNode>();
 
     public InterfaceTreeModel() {
-        super(new InterfaceNode(new FrameworkElement("Interfaces", RuntimeEnvironment.getInstance()).getLink(0)));
+        super(new InterfaceNode(new FrameworkElement(RuntimeEnvironment.getInstance(), "Interfaces").getLink(0)));
         root = (InterfaceNode)this.getRoot();
         RuntimeEnvironment.getInstance().addListener(this);
         elements.put(-getRootFrameworkElement().getHandle(), root);
