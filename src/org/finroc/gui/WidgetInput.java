@@ -22,13 +22,12 @@ package org.finroc.gui;
 
 import org.finroc.gui.commons.EventRouter;
 
-import org.finroc.core.FrameworkElement;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.cc.CCPort;
 import org.finroc.core.port.cc.CCPortData;
 import org.finroc.core.port.cc.CCPortListener;
-import org.finroc.core.port.cc.NumberPort;
+import org.finroc.core.port.cc.PortNumeric;
 import org.finroc.core.port.std.Port;
 import org.finroc.core.port.std.PortData;
 import org.finroc.core.port.std.PortListener;
@@ -47,19 +46,19 @@ public class WidgetInput {
         private static final long serialVersionUID = 4446496337106684704L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
+        protected Port<T> createPort() {
             return new Port<T>(getPci());
         }
 
         public void addChangeListener(PortListener<T> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public T getAutoLocked() {
             if ((super.defaultFlags & PortFlags.PUSH_STRATEGY) != 0 && (!getPort().pushStrategy())) {
                 getPort().setPushStrategy(true); // we still/soon seem to need push strategy
             }
-            return getPort().getAutoLocked();
+            return asPort().getAutoLocked();
         }
     }
 
@@ -69,43 +68,43 @@ public class WidgetInput {
         private static final long serialVersionUID = 2195466520164567898L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
+        protected CCPort<T> createPort() {
             return new CCPort<T>(getPci());
         }
 
         public void addChangeListener(CCPortListener<T> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public T getAutoLocked() {
-            return getPort().getAutoLocked();
+            return asPort().getAutoLocked();
         }
     }
 
-    public static class Numeric extends WidgetInputPort<NumberPort> {
+    public static class Numeric extends WidgetInputPort<PortNumeric> {
 
         /** UID */
         private static final long serialVersionUID = 2771906075250045196L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
-            return new NumberPort(getPci());
+        protected PortNumeric createPort() {
+            return new PortNumeric(getPci());
         }
 
         public void addChangeListener(CCPortListener<CoreNumber> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public int getInt() {
-            return getPort().getIntRaw();
+            return asPort().getIntRaw();
         }
 
         public double getDouble() {
-            return getPort().getDoubleRaw();
+            return asPort().getDoubleRaw();
         }
 
         public CoreNumber getAutoLocked() {
-            return getPort().getAutoLocked();
+            return asPort().getAutoLocked();
         }
     }
 

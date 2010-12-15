@@ -22,7 +22,6 @@ package org.finroc.gui;
 
 import org.finroc.gui.commons.EventRouter;
 
-import org.finroc.core.FrameworkElement;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.plugin.blackboard.BlackboardBuffer;
 import org.finroc.plugin.blackboard.RawBlackboardClient;
@@ -30,7 +29,7 @@ import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.cc.CCPort;
 import org.finroc.core.port.cc.CCPortData;
 import org.finroc.core.port.cc.CCPortListener;
-import org.finroc.core.port.cc.NumberPort;
+import org.finroc.core.port.cc.PortNumeric;
 import org.finroc.core.port.std.Port;
 import org.finroc.core.port.std.PortData;
 import org.finroc.core.port.std.PortListener;
@@ -49,20 +48,20 @@ public class WidgetOutput {
         private static final long serialVersionUID = 6646515051948353004L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
+        protected Port<T> createPort() {
             return new Port<T>(getPci());
         }
 
         public void addChangeListener(PortListener<T> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public T getUnusedBuffer() {
-            return getPort().getUnusedBuffer();
+            return asPort().getUnusedBuffer();
         }
 
         public void publish(T buffer) {
-            getPort().publish(buffer);
+            asPort().publish(buffer);
         }
     }
 
@@ -72,47 +71,47 @@ public class WidgetOutput {
         private static final long serialVersionUID = -6522086680079332096L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
+        protected CCPort<T> createPort() {
             return new CCPort<T>(getPci());
         }
 
         public void addChangeListener(CCPortListener<T> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
     }
 
-    public static class Numeric extends WidgetOutputPort<NumberPort> {
+    public static class Numeric extends WidgetOutputPort<PortNumeric> {
 
         /** UID */
         private static final long serialVersionUID = 8765896513368994897L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
-            return new NumberPort(getPci());
+        protected PortNumeric createPort() {
+            return new PortNumeric(getPci());
         }
 
         public void addChangeListener(CCPortListener<CoreNumber> listener) {
-            EventRouter.addListener(getPort(), "addPortListener", listener);
+            EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public void publish(int val) {
-            getPort().publish(val);
+            asPort().publish(val);
         }
 
         public void publish(double val) {
-            getPort().publish(val);
+            asPort().publish(val);
         }
 
         public int getInt() {
-            return getPort().getIntRaw();
+            return asPort().getIntRaw();
         }
 
         public double getDouble() {
-            return getPort().getDoubleRaw();
+            return asPort().getDoubleRaw();
         }
 
         public CoreNumber getAutoLocked() {
-            return getPort().getAutoLocked();
+            return asPort().getAutoLocked();
         }
     }
 
@@ -122,7 +121,7 @@ public class WidgetOutput {
         private static final long serialVersionUID = 2712886077657464267L;
 
         @Override
-        protected FrameworkElement createFrameworkElement() {
+        protected RawBlackboardClient.WritePort createPort() {
             PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
             PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
             RawBlackboardClient c = new RawBlackboardClient(pci == null ? def : pci, false, -1);
@@ -134,7 +133,7 @@ public class WidgetOutput {
         }
 
         public RawBlackboardClient getClient() {
-            return getPort().getBBClient();
+            return asPort().getBBClient();
         }
 
         @SuppressWarnings("unchecked")

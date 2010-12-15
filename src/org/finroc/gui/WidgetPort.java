@@ -31,10 +31,12 @@ import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.util.treemodel.PortWrapper;
 import org.finroc.gui.util.treemodel.TreePortWrapper;
 
+import org.finroc.core.FrameworkElement;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortFlags;
+import org.finroc.core.port.PortWrapperBase;
 
-public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
+public abstract class WidgetPort < P extends PortWrapperBase<? >> extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;
@@ -48,11 +50,27 @@ public abstract class WidgetPort<P extends AbstractPort> extends DataModelBase <
     /** Default flags of port - stored to restore original strategies */
     protected transient int defaultFlags;
 
-    //protected P port;
+    /** Wrapped port */
+    protected transient P port;
 
-    @SuppressWarnings("unchecked")
-    public P getPort() {
-        return (P)frameworkElement;
+    @Override
+    protected FrameworkElement createFrameworkElement() {
+        port = createPort();
+        return port.getWrapped();
+    }
+
+    /**
+     * @return Created port
+     */
+    protected abstract P createPort();
+
+    public P asPort() {
+        return port;
+    }
+
+    @Override
+    public AbstractPort getPort() {
+        return (AbstractPort)frameworkElement;
     }
 
     public WidgetPort() {

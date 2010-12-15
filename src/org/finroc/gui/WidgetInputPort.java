@@ -20,16 +20,16 @@
  */
 package org.finroc.gui;
 
-import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
+import org.finroc.core.port.PortWrapperBase;
 
 /**
  * @author max
  *
  * This class is a input port for a widget
  */
-public abstract class WidgetInputPort<P extends AbstractPort> extends WidgetPort<P> { /*implements InputPort<T>, PortListener*/
+public abstract class WidgetInputPort < P extends PortWrapperBase<? >> extends WidgetPort<P> { /*implements InputPort<T>, PortListener*/
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 8596177899211743789L;

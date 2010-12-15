@@ -96,7 +96,7 @@ public class CheckBox extends Widget {
 
         public void actionPerformed(ActionEvent e) {
             value.publish(checkBox.isSelected() ? 1 : 0);
-            boolValue.getPort().publish(CoreBoolean.getInstance(checkBox.isSelected()));
+            boolValue.asPort().publish(CoreBoolean.getInstance(checkBox.isSelected()));
         }
 
         @Override
@@ -104,7 +104,7 @@ public class CheckBox extends Widget {
             if (value.getPort().isConnected()) {
                 checkBox.setSelected(value.getDouble() != 0);
             } else if (boolValue.getPort().isConnected()) {
-                checkBox.setSelected(boolValue.getPort().getAutoLocked().get());
+                checkBox.setSelected(boolValue.asPort().getAutoLocked().get());
                 releaseAllLocks();
             }
         }
