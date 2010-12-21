@@ -489,9 +489,11 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 RuntimeEnvironment.getInstance().printStructure();
             } else if (src == miChangePanelName || src == pmiChangePanelName) {
                 String name = JOptionPane.showInputDialog("Please enter new name for panel", getCurPanel().getModel().toString());
-                GUIPanel panel = (src == miChangePanelName) ? getCurPanel().getModel() : getModel().getChildAt(clickedOnTab);
-                panel.setName(name);
-                arrangePanels(getCurPanel());
+                if (name != null) {
+                    GUIPanel panel = (src == miChangePanelName) ? getCurPanel().getModel() : getModel().getChildAt(clickedOnTab);
+                    panel.setName(name);
+                    arrangePanels(getCurPanel());
+                }
             } else if (src == miGuiSettings) {
                 new PropertiesDialog((JFrame)ui, getModel().getParent(), getModel().getRoot().getEmbeddedFileManager(), false);
                 addUndoBufferEntry("Change GUI Settings");
