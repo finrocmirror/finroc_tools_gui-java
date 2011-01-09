@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Vector;
 
 
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -134,6 +135,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
             return;
         }
 
+        assert SwingUtilities.isEventDispatchThread();
         JmcaguiEventRouter.fireDataModelEvent(this, ev, param);
 
         // fire events for TreeModel that may exist
