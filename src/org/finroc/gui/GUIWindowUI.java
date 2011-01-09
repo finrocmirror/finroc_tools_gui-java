@@ -74,6 +74,7 @@ import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.gui.IconManager;
 import org.finroc.gui.util.gui.MToolBar;
 import org.finroc.gui.util.propertyeditor.gui.PropertiesDialog;
+import org.finroc.gui.util.treemodel.TreePortWrapper;
 import org.finroc.log.LogLevel;
 
 import org.finroc.core.RuntimeEnvironment;
@@ -103,7 +104,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     private static final String TITLE = "FinGUI";
 
     /** Reference to ConnectionPanel */
-    private transient ConnectionPanel connectionPanel;
+    protected transient ConnectionPanel connectionPanel;
 
     /** reference to undo buffer */
     private transient UndoBuffer<GUIWindow> undoBuffer;
@@ -465,7 +466,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } else if (src == miCopy || src == tbCopy) {
                 copy(new ArrayList<Widget>(getCurPanel().getModel().getSelection()), false);
             } else if (src == miDelete) {
+                connectionPanel.rightTree.storeExpandedElements();
                 getCurPanel().getModel().remove(new ArrayList<Widget>(getCurPanel().getModel().getSelection()));
+                connectionPanel.rightTree.restoreExpandedElements();
                 addUndoBufferEntry("Delete Widgets");
             } else if (src == miSelectAll) {
                 getCurPanel().getModel().selectAll();
@@ -720,7 +723,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     public void copy(List<Widget> sel, boolean cutElements) {
         new ClipboardContent(sel, this).toClipboard(this);
         if (cutElements) {
+            connectionPanel.rightTree.storeExpandedElements();
             getCurPanel().getModel().remove(new ArrayList<Widget>(sel));
+            connectionPanel.rightTree.restoreExpandedElements();
             addUndoBufferEntry("Cut");
         }
     }

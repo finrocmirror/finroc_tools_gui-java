@@ -347,7 +347,9 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
 
         // cut/copy/delete
         if (o == miDelete) {
+            ((GUIWindowUI)getParent()).connectionPanel.rightTree.storeExpandedElements();
             model.remove(sel);
+            ((GUIWindowUI)getParent()).connectionPanel.rightTree.restoreExpandedElements();
             parent.addUndoBufferEntry("Delete Widgets");
         } else if (o == miCopy || o == miCut) {
             parent.copy(sel, o == miCut);

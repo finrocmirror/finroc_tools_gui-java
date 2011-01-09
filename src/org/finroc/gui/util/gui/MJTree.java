@@ -20,8 +20,6 @@
  */
 package org.finroc.gui.util.gui;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -65,6 +63,9 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
     /** Up to which level should new model be expanded by default? */
     private int newModelExpandLevel;
+
+    /** Expanded elements stored by storeExpandedElement() */
+    private List<T> storedExpandedElements = null;
 
     @SuppressWarnings("unchecked")
     public MJTree(Class<?> selectableObjectType, int newModelExpandLevel) {
@@ -342,4 +343,27 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
             tp = tp.getParentPath();
         }
     }
+
+    /**
+     * Stores currently expanded elements
+     * (expansion state can be restored by calling restoreExpandedElements() )
+     */
+    public void storeExpandedElements() {
+        storedExpandedElements = getVisibleObjects();
+    }
+
+    /**
+     * Restore previously stored expanded elements
+     * (Ignores missing elements)
+     * (Clears stored element list)
+     */
+    public void restoreExpandedElements() {
+        for (T t : storedExpandedElements) {
+            try {
+                expandToElement(t);
+            } catch (Exception e) {}
+        }
+        storedExpandedElements.clear();
+    }
+
 }
