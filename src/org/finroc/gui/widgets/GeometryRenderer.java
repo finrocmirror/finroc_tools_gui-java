@@ -510,7 +510,7 @@ public class GeometryRenderer extends Widget {
                     int index = mapObjects.indexOf(trackObject) * MAP_OBJECT_EDGE_COUNT;
                     if (index >= 0) {
                         translationX = -GetObjectXCoordinate(index);
-                        translationY = GetObjectYCoordinate(index);
+                        translationY = GetObjectYCoordinate(index + 1);
                     } else {
                         stopTracking();
                     }
