@@ -69,10 +69,19 @@ import org.finroc.plugin.datatype.PaintablePortData;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.cc.CCPortBase;
+import org.finroc.core.port.cc.CCPortData;
 import org.finroc.core.port.cc.CCPortListener;
 import org.finroc.core.port.std.PortBase;
 import org.finroc.core.port.std.PortListener;
+import org.finroc.plugin.datatype.Pose3D;
 
+import org.finroc.jc.annotation.Const;
+import org.finroc.jc.annotation.DefaultType;
+import org.finroc.jc.annotation.IncludeClass;
+import org.finroc.jc.annotation.Inline;
+import org.finroc.jc.annotation.NoCpp;
+import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.annotation.RawTypeArgs;
 
 public class GeometryRenderer extends Widget {
 
@@ -85,6 +94,7 @@ public class GeometryRenderer extends Widget {
     /** Geometry to render */
     public WidgetPorts<WidgetInput.Std<PaintablePortData>> geometry;
     public WidgetPorts<WidgetInput.Numeric> objectCoordinates;
+    public WidgetPorts<WidgetInput.CC<Pose3D>> objectPoses;
     public WidgetOutput.Numeric clickX;
     public WidgetOutput.Numeric clickY;
     public WidgetOutput.Numeric clickCounter;
@@ -108,6 +118,7 @@ public class GeometryRenderer extends Widget {
     public GeometryRenderer() {
         geometry = new WidgetPorts<WidgetInput.Std<PaintablePortData>>("geometry", 3, WidgetInput.Std.class, this);
         objectCoordinates = new WidgetPorts<WidgetInput.Numeric>("", 0, WidgetInput.Numeric.class, this);
+        objectPoses = new WidgetPorts<WidgetInput.CC<Pose3D>>("", 0, WidgetInput.CC.class, this);
     }
 
     @Override
@@ -127,6 +138,8 @@ public class GeometryRenderer extends Widget {
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
+        } else if (objectPoses != null && objectPoses.contains(forPort)) {
+            return suggestion.derive(Pose3D.TYPE);
         }
         return suggestion;
     }
@@ -240,7 +253,7 @@ public class GeometryRenderer extends Widget {
                     trackObject = mapObject;
                     renderer.repaint();
                 }
-            } else if (e == Action.Deselect) {  // Deselect button (when PopupMenu was cancelled)
+            } else if (e == Action.Deselect) { // Deselect button (when PopupMenu was cancelled)
                 Enum o = (Enum)((MActionEvent)ae).getCustomData();
                 toolbar.setSelected(o, false);
                 if (o == Action.Watch) {
@@ -374,6 +387,7 @@ public class GeometryRenderer extends Widget {
             return transform.transform(temp, null);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void widgetPropertiesChanged() {
             setBackground(GeometryRenderer.this.getBackground());
@@ -392,8 +406,14 @@ public class GeometryRenderer extends Widget {
             while (objectCoordinates.size() / MAP_OBJECT_EDGE_COUNT < mapObjects.size()) {
                 objectCoordinates.add(new WidgetInput.Numeric());
             }
+            while (objectPoses.size() < mapObjects.size()) {
+                objectPoses.add(new WidgetInput.CC<Pose3D>());
+            }
             while ((objectCoordinates.size() + 2) / MAP_OBJECT_EDGE_COUNT > mapObjects.size()) {
                 objectCoordinates.remove(objectCoordinates.size() - 1);
+            }
+            while (objectPoses.size() > mapObjects.size()) {
+                objectPoses.remove(objectPoses.size() - 1);
             }
             // update port names
             for (int i = 0; i < mapObjects.size(); i++) {
@@ -402,6 +422,7 @@ public class GeometryRenderer extends Widget {
                 objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT + 1).setDescription(name + " y");
                 objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT + 2).setDescription(name + " yaw");
                 objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT + 3).setDescription(name + " hidden");
+                objectPoses.get(i).setDescription(name + " pose");
             }
 
             try {
@@ -415,6 +436,9 @@ public class GeometryRenderer extends Widget {
                 wp.addChangeListener(this);
             }
             for (WidgetInput.Numeric wp : objectCoordinates) {
+                wp.addChangeListener(renderer);
+            }
+            for (WidgetInput.CC<Pose3D> wp : objectPoses) {
                 wp.addChangeListener(renderer);
             }
 
@@ -431,6 +455,7 @@ public class GeometryRenderer extends Widget {
             renderer.repaint();
         }
 
+
         /*@Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
             Paintable p = geometry.getValue();
@@ -441,8 +466,9 @@ public class GeometryRenderer extends Widget {
         }*/
 
 
-
-        class Renderer extends JPanel implements CCPortListener<CoreNumber> {
+        @DefaultType("CCPortData") @Ptr @RawTypeArgs
+        @IncludeClass(CCPortData.class) @Inline @NoCpp
+        class Renderer<T extends CCPortData> extends JPanel implements CCPortListener<T> {
 
             /** UID */
             private static final long serialVersionUID = -6466458277650614547L;
@@ -450,6 +476,27 @@ public class GeometryRenderer extends Widget {
             public Renderer() {
                 setOpaque(true);
 
+            }
+
+            double GetObjectXCoordinate(int index) {
+                if (objectCoordinates.get(index).asPort().isConnected()) {
+                    return objectCoordinates.get(index).getDouble();
+                } else
+                    return objectPoses.get(index / MAP_OBJECT_EDGE_COUNT).getAutoLocked().x * 1000.; //FIXME: m->mm
+            }
+
+            double GetObjectYCoordinate(int index) {
+                if (objectCoordinates.get(index).asPort().isConnected()) {
+                    return objectCoordinates.get(index).getDouble();
+                } else
+                    return objectPoses.get((index - 1) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().y * 1000.; //FIXME: m->mm
+            }
+
+            double GetObjectYawAngle(int index) {
+                if (objectCoordinates.get(index).asPort().isConnected()) {
+                    return objectCoordinates.get(index).getDouble();
+                } else
+                    return objectPoses.get((index - 2) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().yaw;
             }
 
             @Override
@@ -462,8 +509,8 @@ public class GeometryRenderer extends Widget {
                 if (toolbar.isSelected(Action.Watch) && trackObject != null) {
                     int index = mapObjects.indexOf(trackObject) * MAP_OBJECT_EDGE_COUNT;
                     if (index >= 0) {
-                        translationX = -objectCoordinates.get(index).getDouble();
-                        translationY = objectCoordinates.get(index + 1).getDouble();
+                        translationX = -GetObjectXCoordinate(index);
+                        translationY = GetObjectYCoordinate(index);
                     } else {
                         stopTracking();
                     }
@@ -506,8 +553,8 @@ public class GeometryRenderer extends Widget {
                     }
                     Graphics2D temp = ((Graphics2D)g2d.create());
                     double yFactor = invertObjectYInput ? -1 : 1;
-                    temp.translate(objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT).getDouble(), yFactor * objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT + 1).getDouble());
-                    temp.rotate(-objectCoordinates.get(i * MAP_OBJECT_EDGE_COUNT + 2).getDouble());
+                    temp.translate(GetObjectXCoordinate(i * MAP_OBJECT_EDGE_COUNT), yFactor * GetObjectYCoordinate(i * MAP_OBJECT_EDGE_COUNT + 1));
+                    temp.rotate(-GetObjectYawAngle(i * MAP_OBJECT_EDGE_COUNT + 2));
                     p.paintToCenter(temp, getRoot().getEmbeddedFileManager());
                     temp.dispose();
                 }
@@ -534,9 +581,11 @@ public class GeometryRenderer extends Widget {
             }
 
             @Override
-            public void portChanged(CCPortBase origin, CoreNumber value) {
+            public void portChanged(CCPortBase origin, @Const @Ptr T value) {
                 repaint();
             }
+
+
         }
 
         public void componentHidden(ComponentEvent e) {     }
