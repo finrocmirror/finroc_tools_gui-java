@@ -74,7 +74,6 @@ import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.gui.IconManager;
 import org.finroc.gui.util.gui.MToolBar;
 import org.finroc.gui.util.propertyeditor.gui.PropertiesDialog;
-import org.finroc.gui.util.treemodel.TreePortWrapper;
 import org.finroc.log.LogLevel;
 
 import org.finroc.core.RuntimeEnvironment;
@@ -883,7 +882,13 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     GUIWindowUI.this.getParent().ioInterface.getRootFrameworkElement().addChild(ec);
                     ec.init();
                     ec.addConnectionListener(GUIWindowUI.this);
+                    if (getParent().getPersistentSettings().lastConnectionAddress != null) {
+                        ec.setDefaultAddress(getParent().getPersistentSettings().lastConnectionAddress);
+                    }
                     ec.connect(null);
+                    if (ec.isConnected()) {
+                        getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
+                    }
                     //parent.ioInterface.addModule(ioInterface.createModule());
                 }
                 parent.updateInterface();

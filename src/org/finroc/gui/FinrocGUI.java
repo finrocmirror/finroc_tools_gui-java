@@ -435,6 +435,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
 
         private StringList resourceFolders;
 
+        public String lastConnectionAddress;
+
         private Settings() {
             recentFiles = new ArrayList<File>();
             resourceFolders = new StringList("$MCAHOME\n.");
