@@ -394,6 +394,10 @@ public class GeometryRenderer extends Widget {
             renderer.setBackground(GeometryRenderer.this.getBackground());
             toolbar.setVisible(!hideToolbar);
 
+            if (objectPoses == null) {
+                objectPoses = new WidgetPorts<WidgetInput.CC<Pose3D>>("", 0, WidgetInput.CC.class, GeometryRenderer.this);
+            }
+
             // Init Input Ports
             while (geometry.size() < numberOfGeometries) {
                 WidgetInput.Std<PaintablePortData> p = new WidgetInput.Std<PaintablePortData>();
