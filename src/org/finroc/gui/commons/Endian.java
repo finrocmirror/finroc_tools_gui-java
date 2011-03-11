@@ -30,6 +30,7 @@ public class Endian {
     /** is data transferred in big endian format ? */
     public final static boolean MCA_BIG_ENDIAN = false;
 
+    @SuppressWarnings("unused")
     public static int correct(int i) {
         if (!MCA_BIG_ENDIAN) {
             return i;
@@ -37,6 +38,7 @@ public class Endian {
         return Integer.reverseBytes(i);
     }
 
+    @SuppressWarnings("unused")
     public static short correct(short i) {
         if (!MCA_BIG_ENDIAN) {
             return i;

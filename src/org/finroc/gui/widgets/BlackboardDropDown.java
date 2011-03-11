@@ -32,9 +32,9 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 import org.finroc.plugin.datatype.mca.StringBlackboardBuffer;
 
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 /**
  * @author Patrick Fleischmann
@@ -95,7 +95,7 @@ public class BlackboardDropDown extends Widget {
         }
 
         @Override
-        public void portChanged(PortBase origin, StringBlackboardBuffer value) {
+        public void portChanged(AbstractPort origin, StringBlackboardBuffer value) {
             comboBox.removeAllItems();
             if (value != null && value.stringCount() > 0) {
                 for (int i = 0; i < value.stringCount(); i++) {

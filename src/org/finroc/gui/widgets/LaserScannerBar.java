@@ -32,9 +32,9 @@ import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 
 import org.finroc.plugin.datatype.Function;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 
 public class LaserScannerBar extends Widget {
@@ -98,7 +98,7 @@ public class LaserScannerBar extends Widget {
         }
 
         @Override
-        public void portChanged(PortBase origin, Function value) {
+        public void portChanged(AbstractPort origin, Function value) {
             this.setChanged();
             repaint();
         }

@@ -40,14 +40,15 @@ import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
 import org.finroc.gui.util.gui.RulerOfTheForest;
 import org.finroc.gui.util.propertyeditor.PropertyList;
+import org.finroc.jc.annotation.Const;
 import org.finroc.jc.thread.LoopThread;
 import org.finroc.log.LogLevel;
 
 import org.finroc.plugin.datatype.PartWiseLinearFunction;
+import org.finroc.serialization.DataType;
+import org.finroc.serialization.DataTypeBase;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
 
 public class Oscilloscope extends Widget {
 
@@ -335,5 +336,6 @@ public class Oscilloscope extends Widget {
         }
     }
 
-    static DataType FUNCTION_TYPE = DataTypeRegister.getInstance().getDataType(OscilloscopeUI.OscilloscopeFunction.class);
+    /** Data type of this class */
+    @Const public final static DataTypeBase TYPE = new DataType<OscilloscopeUI.OscilloscopeFunction>(OscilloscopeUI.OscilloscopeFunction.class);
 }

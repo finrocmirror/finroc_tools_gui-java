@@ -70,6 +70,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.finroc.core.port.PortFlags;
+import org.finroc.core.portdatabase.FinrocTypeInfo;
 import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.abstractbase.DataModelListener;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
@@ -962,7 +963,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         boolean input = !port.isInputPort();
         boolean front = rightTree;
         boolean proxy = port.getPort().getFlag(PortFlags.PROXY);
-        boolean isInterface = port.getPort().getDataType().isMethodType();
+        boolean isInterface = FinrocTypeInfo.isMethodType(port.getPort().getDataType());
         String key = (input ? "t" : "f") + (front ? "t" : "f") + (proxy ? "t" : "f") + (isInterface ? "t" : "f") + c.getRGB() + "," + height;
         TreeIcon temp = iconCache.get(key);
         if (temp != null) {

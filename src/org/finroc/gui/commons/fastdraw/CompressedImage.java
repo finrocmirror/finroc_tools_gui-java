@@ -29,17 +29,15 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.finroc.core.buffer.CoreInput;
-import org.finroc.core.buffer.CoreOutput;
-import org.finroc.core.port.std.PortDataDelegate;
-import org.finroc.core.port.std.PortDataManager;
-import org.finroc.core.port.std.PortDataReference;
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
-import org.finroc.core.portdatabase.SerializationHelper;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.plugin.datatype.Blittable;
 import org.finroc.plugin.datatype.HasBlittable;
+import org.finroc.serialization.DataType;
+import org.finroc.serialization.InputStreamBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
+import org.finroc.serialization.Serialization;
+import org.finroc.serialization.StringInputStream;
+import org.finroc.serialization.StringOutputStream;
 import org.finroc.xml.XMLNode;
 
 public class CompressedImage extends Blittable implements HasBlittable {
@@ -47,7 +45,7 @@ public class CompressedImage extends Blittable implements HasBlittable {
     private byte[] compressedData;
     private int dataSize;
 
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(CompressedImage.class);
+    public final static DataType<CompressedImage> TYPE = new DataType<CompressedImage>(CompressedImage.class);
 
     private transient BufferedImage uncompressedImage;
 
@@ -107,7 +105,7 @@ public class CompressedImage extends Blittable implements HasBlittable {
     }
 
     @Override
-    public void deserialize(CoreInput is) {
+    public void deserialize(InputStreamBuffer is) {
         int size = is.readInt();
         if (compressedData.length < size) {
             compressedData = new byte[size * 2]; // keep some bytes for reserve...
@@ -117,47 +115,33 @@ public class CompressedImage extends Blittable implements HasBlittable {
     }
 
     @Override
-    public void serialize(CoreOutput os) {
+    public void serialize(OutputStreamBuffer os) {
         os.writeInt(dataSize);
         os.write(compressedData, 0, dataSize);
     }
 
     @Override
-    public String serialize() {
-        return SerializationHelper.serializeToHexString(this);
+    public void serialize(StringOutputStream os) {
+        Serialization.serializeToHexString(this, os);
     }
 
     @Override
-    public void deserialize(String s) throws Exception {
-        SerializationHelper.deserializeFromHexString(this, s);
+    public void deserialize(StringInputStream is) throws Exception {
+        Serialization.deserializeFromHexString(this, is);
     }
 
     @Override @JavaOnly
     public void serialize(XMLNode node) throws Exception {
-        node.setTextContent(serialize());
+        node.setContent(Serialization.serialize(this));
     }
 
     @Override @JavaOnly
     public void deserialize(XMLNode node) throws Exception {
-        deserialize(node.getTextContent());
+        deserialize(new StringInputStream(node.getTextContent()));
     }
 
     @Override
     public Blittable getBlittable() {
         return this;
     }
-
-    // stuff to make this valid port data
-
-    @JavaOnly private PortDataDelegate delegate = new PortDataDelegate(this);
-    @Override @JavaOnly public PortDataReference getCurReference() {
-        return delegate.getCurReference();
-    }
-    @Override @JavaOnly public PortDataManager getManager() {
-        return delegate.getManager();
-    }
-    @Override @JavaOnly public DataType getType() {
-        return delegate.getType();
-    }
-    @Override public void handleRecycle() {}
 }

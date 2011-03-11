@@ -38,9 +38,9 @@ import org.finroc.gui.WidgetUI;
 
 import org.finroc.plugin.datatype.ContainsStrings;
 import org.finroc.plugin.datatype.mca.StringBlackboardBuffer;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 
 /**
@@ -133,7 +133,7 @@ public class TextEditor extends Widget {
 
 
         @Override
-        public void portChanged(PortBase origin, ContainsStrings value) {
+        public void portChanged(AbstractPort origin, ContainsStrings value) {
             ContainsStrings cs = textInput.getAutoLocked();
             if (cs != null) {
                 textArea.setText(ContainsStrings.Util.toSingleString(cs).toString());

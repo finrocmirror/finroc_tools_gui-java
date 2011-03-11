@@ -35,6 +35,7 @@ import org.finroc.core.FrameworkElement;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortWrapperBase;
+import org.finroc.core.portdatabase.FinrocTypeInfo;
 
 public abstract class WidgetPort < P extends PortWrapperBase<? >> extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
 
@@ -236,7 +237,7 @@ public abstract class WidgetPort < P extends PortWrapperBase<? >> extends DataMo
      */
     public void updateStrategy(boolean push) {
         AbstractPort p = getPort();
-        if (p.getDataType().isCCType()) { // not worth changing strategies for cc types
+        if (FinrocTypeInfo.isCCType(p.getDataType())) { // not worth changing strategies for cc types
             return;
         }
         if (p.getFlag(PortFlags.ACCEPTS_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY) != 0) {

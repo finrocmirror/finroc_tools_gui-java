@@ -25,12 +25,9 @@ import java.util.ArrayList;
 import org.finroc.gui.commons.EventRouter;
 
 import org.finroc.core.port.AbstractPort;
+import org.finroc.core.port.PortListener;
 import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
 import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
 
 
 /**
@@ -38,7 +35,7 @@ import org.finroc.core.port.std.PortListener;
  *
  */
 @SuppressWarnings("rawtypes")
-public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener, CCPortListener {
+public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener {
 
     /** UID */
     private static final long serialVersionUID = 3502191793248052616L;
@@ -107,12 +104,7 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
     }
 
     @Override
-    public void portChanged(PortBase origin, PortData value) {
-        EventRouter.fireChangeEvent(this, origin, value);
-    }
-
-    @Override
-    public void portChanged(CCPortBase origin, CCPortData value) {
+    public void portChanged(AbstractPort origin, Object value) {
         EventRouter.fireChangeEvent(this, origin, value);
     }
 

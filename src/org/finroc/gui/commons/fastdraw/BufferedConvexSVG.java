@@ -36,10 +36,9 @@ import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGElement;
 import com.kitfox.svg.SVGElementException;
 
-import org.finroc.core.portdatabase.DataType;
-import org.finroc.core.portdatabase.DataTypeRegister;
 import org.finroc.gui.FinrocGUI;
 import org.finroc.log.LogLevel;
+import org.finroc.serialization.DataType;
 
 /**
  * @author max
@@ -51,7 +50,7 @@ public class BufferedConvexSVG extends BufferedImageRGBConvexShape {
     /** UID */
     private static final long serialVersionUID = -1740092106641062565L;
 
-    public static DataType TYPE = DataTypeRegister.getInstance().getDataType(BufferedConvexSVG.class);
+    public final static DataType<BufferedConvexSVG> TYPE = new DataType<BufferedConvexSVG>(BufferedConvexSVG.class);
 
     /** xOffset and yOffset scaled */
     private int xOffset, yOffset;

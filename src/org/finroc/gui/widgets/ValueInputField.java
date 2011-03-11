@@ -32,10 +32,10 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 
 /**
@@ -61,7 +61,7 @@ public class ValueInputField extends Widget {
     }
 
 
-    class ValueInputFieldUI extends WidgetUI implements CaretListener, CCPortListener<CoreNumber> {
+    class ValueInputFieldUI extends WidgetUI implements CaretListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -3628234631895609L;
@@ -100,7 +100,7 @@ public class ValueInputField extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             ignoreUpdate = true;
             textfield.setText(value == null ? "" : ("" + value.toString()));
             ignoreUpdate = false;

@@ -40,9 +40,9 @@ import org.finroc.gui.util.gui.FileDialog;
 import org.finroc.plugin.datatype.Blittable;
 import org.finroc.plugin.datatype.HasBlittable;
 
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 
 public class VideoRenderer extends Widget {
@@ -86,7 +86,7 @@ public class VideoRenderer extends Widget {
         }
 
         @Override
-        public void portChanged(PortBase origin, HasBlittable value) {
+        public void portChanged(AbstractPort origin, HasBlittable value) {
             this.setChanged();
             repaint();
         }

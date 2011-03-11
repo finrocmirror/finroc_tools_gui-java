@@ -33,11 +33,10 @@ import org.finroc.gui.WidgetUI;
 
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
-
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -70,7 +69,7 @@ public class CheckBox extends Widget {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
-    private class CheckBoxUI extends WidgetUI implements ActionListener, CCPortListener<CoreNumber> {
+    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -5106178045019582395L;
@@ -100,7 +99,7 @@ public class CheckBox extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value2) {
+        public void portChanged(AbstractPort origin, CoreNumber value2) {
             if (value.getPort().isConnected()) {
                 checkBox.setSelected(value.getDouble() != 0);
             } else if (boolValue.getPort().isConnected()) {

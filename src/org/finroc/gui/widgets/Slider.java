@@ -38,10 +38,10 @@ import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 
 /**
@@ -75,7 +75,7 @@ public class Slider extends Widget {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
-    class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, CCPortListener<CoreNumber> {
+    class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -226842649519588097L;
@@ -120,7 +120,7 @@ public class Slider extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             slider.setValue(Slider.this.value.getDouble());
         }
     }

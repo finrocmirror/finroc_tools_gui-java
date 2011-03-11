@@ -31,14 +31,11 @@ import org.finroc.gui.WidgetInput;
 import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 import org.finroc.gui.themes.Themes;
+import org.finroc.serialization.RRLibSerializable;
 
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 
 public class Label extends Widget {
@@ -46,8 +43,7 @@ public class Label extends Widget {
     /** UID */
     private static final long serialVersionUID = -1817091621155537442L;
 
-    WidgetInput.Std<PortData> text;
-    WidgetInput.CC<CCPortData> cctext;
+    WidgetInput.Std<RRLibSerializable> text;
 
     Color textColor = Themes.getCurTheme().standardLabel();
 
@@ -66,16 +62,18 @@ public class Label extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(forPort == text ? PortData.TYPE : CCPortData.TYPE);
+        return suggestion.derive(RRLibSerializable.TYPE);
     }
 
-    class LabelWidgetUI extends WidgetUI implements PortListener<PortData>, CCPortListener<CCPortData> {
+    @SuppressWarnings("rawtypes")
+    class LabelWidgetUI extends WidgetUI implements PortListener {
 
         /** UID */
         private static final long serialVersionUID = 1643584696919287207L;
 
         JLabel label;
 
+        @SuppressWarnings("unchecked")
         LabelWidgetUI() {
             super(RenderMode.Swing);
             setLayout(new BorderLayout());
@@ -83,7 +81,6 @@ public class Label extends Widget {
             label.setHorizontalAlignment(SwingConstants.CENTER);
             add(label, BorderLayout.CENTER);
             text.addChangeListener(this);
-            cctext.addChangeListener(this);
             widgetPropertiesChanged();
         }
 
@@ -94,12 +91,7 @@ public class Label extends Widget {
         }
 
         @Override
-        public void portChanged(PortBase origin, PortData value) {
-            label.setText(value == null ? "null" : value.toString());
-        }
-
-        @Override
-        public void portChanged(CCPortBase origin, CCPortData value) {
+        public void portChanged(AbstractPort origin, Object value) {
             label.setText(value == null ? "null" : value.toString());
         }
     }

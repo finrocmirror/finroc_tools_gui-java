@@ -52,13 +52,12 @@ import org.finroc.plugin.datatype.BehaviourInfo;
 import org.finroc.plugin.datatype.mca.BehaviourInfoBlackboard;
 import org.finroc.plugin.datatype.ContainsStrings;
 import org.finroc.plugin.datatype.mca.MCA;
-import org.finroc.plugin.blackboard.BlackboardBuffer;
+import org.finroc.serialization.PortDataList;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
+import org.finroc.core.port.PortListener;
 import org.finroc.core.port.rpc.MethodCallException;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
 
 
 /**
@@ -171,9 +170,10 @@ public class BehaviourSignals extends Widget {
         }
 
         @Override
-        public void portChanged(PortBase origin, PortData value) {
+        public void portChanged(AbstractPort origin, Object value) {
 
-            BehaviourInfoBlackboard bil = signals.readAutoLocked();
+            PortDataList<BehaviourInfoBlackboard> bill = signals.readAutoLocked();
+            BehaviourInfoBlackboard bil = bill.size() > 0 ? bill.get(0) : null;
             ContainsStrings strings = names.getAutoLocked();
             if (bil != null) {
                 bbElemSize = bil.getElementSize();
@@ -275,11 +275,12 @@ public class BehaviourSignals extends Widget {
                 assert(bbElemSize > 0);
                 int offset = bbElemSize * index + (e.getSource() == enable ? MCA.tBehaviourInfo._enabled.getOffset() : MCA.tBehaviourInfo._auto_mode.getOffset());
                 byte b = ((JCheckBox)e.getSource()).isSelected() ? (byte)1 : 0;
-                BlackboardBuffer buf = signals.getClient().getUnusedBuffer();
-                buf.resize(1, 1, 1, false);
-                buf.getBuffer().putByte(0, b);
+                PortDataList<BehaviourInfoBlackboard> buf = signals.getClient().getUnusedChangeBuffer();
+                buf.resize(1);
+                buf.get(0).resize(1, 1, 1, false);
+                buf.get(0).getBuffer().putByte(0, b);
                 try {
-                    signals.getClient().commitAsynchChange(offset, buf);
+                    signals.getClient().commitAsynchChange(buf, 0, offset);
                 } catch (MethodCallException e1) {
                     log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
                 }

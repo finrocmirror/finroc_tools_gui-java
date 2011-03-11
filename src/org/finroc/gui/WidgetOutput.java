@@ -24,15 +24,16 @@ import org.finroc.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.plugin.blackboard.BlackboardBuffer;
+import org.finroc.plugin.blackboard.BlackboardClient;
 import org.finroc.plugin.blackboard.RawBlackboardClient;
+import org.finroc.serialization.PortDataList;
+import org.finroc.serialization.RRLibSerializable;
+import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.cc.CCPort;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
+import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.PortNumeric;
-import org.finroc.core.port.std.Port;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.std.PortDataManager;
 
 /**
  * @author max
@@ -42,7 +43,7 @@ import org.finroc.core.port.std.PortListener;
  */
 public class WidgetOutput {
 
-    public static class Std<T extends PortData> extends WidgetOutputPort<Port<T>> {
+    public static class Std<T extends RRLibSerializable> extends WidgetOutputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 6646515051948353004L;
@@ -65,21 +66,22 @@ public class WidgetOutput {
         }
     }
 
-    public static class CC<T extends CCPortData> extends WidgetOutputPort<CCPort<T>> {
+    public static class CC<T extends RRLibSerializable> extends WidgetOutputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = -6522086680079332096L;
 
         @Override
-        protected CCPort<T> createPort() {
-            return new CCPort<T>(getPci());
+        protected Port<T> createPort() {
+            return new Port<T>(getPci());
         }
 
-        public void addChangeListener(CCPortListener<T> listener) {
+        public void addChangeListener(PortListener<T> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static class Numeric extends WidgetOutputPort<PortNumeric> {
 
         /** UID */
@@ -90,7 +92,7 @@ public class WidgetOutput {
             return new PortNumeric(getPci());
         }
 
-        public void addChangeListener(CCPortListener<CoreNumber> listener) {
+        public void addChangeListener(PortListener<CoreNumber> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
@@ -111,7 +113,7 @@ public class WidgetOutput {
         }
 
         public CoreNumber getAutoLocked() {
-            return asPort().getAutoLocked();
+            return (CoreNumber)asPort().getAutoLocked();
         }
     }
 
@@ -120,25 +122,28 @@ public class WidgetOutput {
         /** UID */
         private static final long serialVersionUID = 2712886077657464267L;
 
+        private transient BlackboardClient<T> c;
+
         @Override
         protected RawBlackboardClient.WritePort createPort() {
             PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
             PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
-            RawBlackboardClient c = new RawBlackboardClient(pci == null ? def : pci, false, -1);
-            return c.getWritePort();
+            c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
+            return c.getWrapped().getWritePort();
         }
 
         public void addChangeListener(PortListener<T> listener) {
-            EventRouter.addListener(getClient().getReadPort(), "addPortListenerRaw", listener);
+            EventRouter.addListener(getClient().getWrapped().getReadPort(), "addPortListenerRaw", listener);
         }
 
-        public RawBlackboardClient getClient() {
-            return asPort().getBBClient();
+        public BlackboardClient<T> getClient() {
+            return c;
         }
 
-        @SuppressWarnings("unchecked")
-        public T readAutoLocked() {
-            return (T)getClient().readAutoLocked();
+        public PortDataList<T> readAutoLocked() {
+            PortDataList<T> result = c.read();
+            ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
+            return result;
         }
     }
 

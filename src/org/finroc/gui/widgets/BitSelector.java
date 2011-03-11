@@ -45,11 +45,10 @@ import org.finroc.gui.themes.Themes;
 import org.finroc.plugin.datatype.StringList;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
-
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -84,7 +83,7 @@ public class BitSelector extends Widget {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
-    class BitSelectorUI extends WidgetUI implements ActionListener, ComponentListener, CCPortListener<CoreNumber> {
+    class BitSelectorUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -720131048479825628L;
@@ -184,7 +183,7 @@ public class BitSelector extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             int mask = 1;
             int curValue = BitSelector.this.value.getInt();
             for (JCheckBox jcb : checkboxes) {

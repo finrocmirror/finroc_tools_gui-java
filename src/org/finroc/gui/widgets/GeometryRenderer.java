@@ -66,22 +66,10 @@ import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.Paintable;
 import org.finroc.plugin.datatype.PaintablePortData;
 
-import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 import org.finroc.plugin.datatype.Pose3D;
-
-import org.finroc.jc.annotation.Const;
-import org.finroc.jc.annotation.DefaultType;
-import org.finroc.jc.annotation.IncludeClass;
-import org.finroc.jc.annotation.Inline;
-import org.finroc.jc.annotation.NoCpp;
-import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.annotation.RawTypeArgs;
 
 public class GeometryRenderer extends Widget {
 
@@ -455,11 +443,12 @@ public class GeometryRenderer extends Widget {
         private static final long serialVersionUID = -922703839059777637L;
 
         @Override
-        public void portChanged(PortBase origin, PaintablePortData value) {
+        public void portChanged(AbstractPort origin, PaintablePortData value) {
             renderer.repaint();
         }
 
 
+        @SuppressWarnings("rawtypes")
         /*@Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
             Paintable p = geometry.getValue();
@@ -469,10 +458,7 @@ public class GeometryRenderer extends Widget {
             b.blitTo(cache, new Rectangle(renderSize));
         }*/
 
-
-        @DefaultType("CCPortData") @Ptr @RawTypeArgs
-        @IncludeClass(CCPortData.class) @Inline @NoCpp
-        class Renderer<T extends CCPortData> extends JPanel implements CCPortListener<T> {
+        class Renderer extends JPanel implements PortListener {
 
             /** UID */
             private static final long serialVersionUID = -6466458277650614547L;
@@ -585,11 +571,9 @@ public class GeometryRenderer extends Widget {
             }
 
             @Override
-            public void portChanged(CCPortBase origin, @Const @Ptr T value) {
+            public void portChanged(AbstractPort origin, Object value) {
                 repaint();
             }
-
-
         }
 
         public void componentHidden(ComponentEvent e) {     }

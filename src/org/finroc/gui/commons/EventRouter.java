@@ -38,12 +38,7 @@ import org.finroc.gui.WidgetPortsListener;
 import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.port.AbstractPort;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -65,7 +60,7 @@ import org.finroc.core.port.std.PortListener;
  * classes.
  */
 @SuppressWarnings("rawtypes")
-public class EventRouter implements PortListener, CCPortListener, ConnectionListener {
+public class EventRouter implements PortListener, ConnectionListener {
 
     /** Map for storing connections: Observable, listener, Listener type */
     private static Map < Object, Map < EventListener, List < Class <? extends EventListener >>> > listeners = new WeakHashMap < Object, Map < EventListener, List < Class <? extends EventListener >>> > ();
@@ -96,6 +91,7 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
         }
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized static void addListener(Object observable, String addMethodName, EventListener observer) {
         if (observable == null || observer == null || addMethodName == null) {
             return;
@@ -175,6 +171,7 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
     }
 
 
+    @SuppressWarnings("unchecked")
     public synchronized static <T extends EventListener> Collection<T> getListeners(Object caller, Class<T> listenerType) {
         List<T> result = new ArrayList<T>();
         try {
@@ -211,12 +208,7 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
     // Below: only stuff for specific Listeners
 
     @Override
-    public void portChanged(PortBase origin, PortData value) {
-        fireChangeEvent(origin, value);
-    }
-
-    @Override
-    public void portChanged(CCPortBase origin, CCPortData value) {
+    public void portChanged(AbstractPort origin, Object value) {
         fireChangeEvent(origin, value);
     }
 
@@ -230,14 +222,9 @@ public class EventRouter implements PortListener, CCPortListener, ConnectionList
         }
     }
 
-    public static void fireChangeEvent(PortBase source, PortData value) {
+    @SuppressWarnings("unchecked")
+    public static void fireChangeEvent(AbstractPort source, Object value) {
         for (PortListener el : getListeners(source, PortListener.class)) {
-            el.portChanged(source, value);
-        }
-    }
-
-    public static void fireChangeEvent(CCPortBase source, CCPortData value) {
-        for (CCPortListener el : getListeners(source, CCPortListener.class)) {
             el.portChanged(source, value);
         }
     }

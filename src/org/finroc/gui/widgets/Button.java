@@ -36,11 +36,10 @@ import org.finroc.gui.WidgetPort;
 import org.finroc.gui.WidgetUI;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
-
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -78,7 +77,7 @@ public class Button extends Widget {
         return "Button" + (text.length() == 0 ? "" : (" (\"" + text + "\")"));
     }
 
-    class ButtonUI extends WidgetUI implements ActionListener, MouseListener, CCPortListener<CoreNumber> {
+    class ButtonUI extends WidgetUI implements ActionListener, MouseListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -9876567882234222L;
@@ -139,7 +138,7 @@ public class Button extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             if (toggleButton) {
                 double val = emitValue.getDouble();
                 button.setSelected(Math.abs(val - emitValuePush) < Math.abs(val - emitValueRelease));

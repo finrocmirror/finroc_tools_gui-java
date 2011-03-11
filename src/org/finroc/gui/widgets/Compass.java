@@ -37,9 +37,9 @@ import org.finroc.gui.commons.fastdraw.SVG;
 import org.finroc.log.LogLevel;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -91,7 +91,7 @@ public class Compass extends Widget {
         }
     }
 
-    private class CompassUI extends WidgetUI implements CCPortListener<CoreNumber> {
+    private class CompassUI extends WidgetUI implements PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -5577967894215832L;
@@ -109,7 +109,7 @@ public class Compass extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             setChanged();
             repaint();
         }

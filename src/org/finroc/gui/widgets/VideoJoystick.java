@@ -33,9 +33,9 @@ import org.finroc.gui.WidgetUI;
 import org.finroc.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.plugin.datatype.HasBlittable;
 
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.std.PortBase;
-import org.finroc.core.port.std.PortListener;
+import org.finroc.core.port.PortListener;
 
 public class VideoJoystick extends VirtualJoystick {
 
@@ -94,7 +94,7 @@ public class VideoJoystick extends VirtualJoystick {
         }
 
         @Override
-        public void portChanged(PortBase origin, HasBlittable value) {
+        public void portChanged(AbstractPort origin, HasBlittable value) {
             setChanged();
             repaint();
         }

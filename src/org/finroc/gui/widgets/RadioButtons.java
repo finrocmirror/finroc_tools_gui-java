@@ -40,10 +40,10 @@ import org.finroc.gui.themes.Themes;
 import org.finroc.plugin.datatype.StringList;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 
 /**
@@ -77,7 +77,7 @@ public class RadioButtons extends Widget {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
-    class RadioButtonsUI extends WidgetUI implements ActionListener, ComponentListener, CCPortListener<CoreNumber> {
+    class RadioButtonsUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -720131048479825628L;
@@ -147,7 +147,7 @@ public class RadioButtons extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             double curValue = selected.getDouble();
             double bestDiff = Double.MAX_VALUE;
             JRadioButton bestSelection = null;

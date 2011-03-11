@@ -34,10 +34,10 @@ import org.finroc.gui.WidgetUI;
 import org.finroc.gui.util.propertyeditor.PropertyList;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 
 public class ComboBox extends Widget {
@@ -87,7 +87,7 @@ public class ComboBox extends Widget {
         }
     }
 
-    class ComboBoxUI extends WidgetUI implements CCPortListener<CoreNumber>, ActionListener {
+    class ComboBoxUI extends WidgetUI implements PortListener<CoreNumber>, ActionListener {
 
         /** UID */
         private static final long serialVersionUID = -8663762048760660960L;
@@ -124,7 +124,7 @@ public class ComboBox extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             for (ComboBoxElement cbe : choices) {
                 if (output1.getDouble() == cbe.output1 &&
                         output2.getDouble() == cbe.output2 &&

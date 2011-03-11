@@ -43,9 +43,9 @@ import org.finroc.gui.themes.Themes;
 import org.finroc.log.LogLevel;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.cc.CCPortBase;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 
 /**
  * @author max
@@ -113,7 +113,7 @@ public class LCD extends Widget {
         return new Color(all, 0, 0);
     }
 
-    private class LCDUI extends WidgetUI implements CCPortListener<CoreNumber> {
+    private class LCDUI extends WidgetUI implements PortListener<CoreNumber> {
 
         /** UID */
         private static final long serialVersionUID = -5577318403814215832L;
@@ -248,7 +248,7 @@ public class LCD extends Widget {
         }
 
         @Override
-        public void portChanged(CCPortBase origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, CoreNumber value) {
             //if (oldNumber != null) {
             //System.out.println(oldNumber.toString() + " " + value.toString() + " " + value.equals(oldNumber));
             //}

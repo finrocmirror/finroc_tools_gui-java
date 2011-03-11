@@ -21,16 +21,13 @@
 package org.finroc.gui;
 
 import org.finroc.gui.commons.EventRouter;
+import org.finroc.serialization.RRLibSerializable;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.port.Port;
 import org.finroc.core.port.PortFlags;
-import org.finroc.core.port.cc.CCPort;
-import org.finroc.core.port.cc.CCPortData;
-import org.finroc.core.port.cc.CCPortListener;
+import org.finroc.core.port.PortListener;
 import org.finroc.core.port.cc.PortNumeric;
-import org.finroc.core.port.std.Port;
-import org.finroc.core.port.std.PortData;
-import org.finroc.core.port.std.PortListener;
 
 /**
  * @author max
@@ -40,7 +37,7 @@ import org.finroc.core.port.std.PortListener;
  */
 public class WidgetInput {
 
-    public static class Std<T extends PortData> extends WidgetInputPort<Port<T>> {
+    public static class Std<T extends RRLibSerializable> extends WidgetInputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 4446496337106684704L;
@@ -62,17 +59,17 @@ public class WidgetInput {
         }
     }
 
-    public static class CC<T extends CCPortData> extends WidgetInputPort<CCPort<T>> {
+    public static class CC<T extends RRLibSerializable> extends WidgetInputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 2195466520164567898L;
 
         @Override
-        protected CCPort<T> createPort() {
-            return new CCPort<T>(getPci());
+        protected Port<T> createPort() {
+            return new Port<T>(getPci());
         }
 
-        public void addChangeListener(CCPortListener<T> listener) {
+        public void addChangeListener(PortListener<T> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
@@ -81,6 +78,7 @@ public class WidgetInput {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static class Numeric extends WidgetInputPort<PortNumeric> {
 
         /** UID */
@@ -91,7 +89,7 @@ public class WidgetInput {
             return new PortNumeric(getPci());
         }
 
-        public void addChangeListener(CCPortListener<CoreNumber> listener) {
+        public void addChangeListener(PortListener<CoreNumber> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
@@ -104,7 +102,7 @@ public class WidgetInput {
         }
 
         public CoreNumber getAutoLocked() {
-            return asPort().getAutoLocked();
+            return (CoreNumber)asPort().getAutoLocked();
         }
     }
 
