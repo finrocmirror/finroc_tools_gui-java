@@ -128,7 +128,8 @@ public class WidgetOutput {
         protected RawBlackboardClient.WritePort createPort() {
             PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
             PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
-            c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
+            c = new BlackboardClient<T>(pci.toString(), null, pci.dataType);
+            //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
             return c.getWrapped().getWritePort();
         }
 
