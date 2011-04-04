@@ -82,7 +82,7 @@ public class WidgetOutput {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class Numeric extends WidgetOutputPort<PortNumeric> {
+    public static class Numeric extends WidgetOutputPort<PortNumeric<Double>> {
 
         /** UID */
         private static final long serialVersionUID = 8765896513368994897L;

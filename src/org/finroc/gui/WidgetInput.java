@@ -79,7 +79,7 @@ public class WidgetInput {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class Numeric extends WidgetInputPort<PortNumeric> {
+    public static class Numeric extends WidgetInputPort<PortNumeric<Double>> {
 
         /** UID */
         private static final long serialVersionUID = 2771906075250045196L;
