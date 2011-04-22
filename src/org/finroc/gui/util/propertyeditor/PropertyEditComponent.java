@@ -83,7 +83,7 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     /** update value (overwrites any changes in editor) */
     public void updateValue() throws Exception {
         curValue = property.get();
-        valueUpdated(property.get());
+        valueUpdated(ObjectCloner.clone(curValue));
     }
 
     /**
