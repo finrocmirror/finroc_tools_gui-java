@@ -23,13 +23,12 @@ package org.finroc.gui.widgets;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 
-
 import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
+import javax.swing.event.MouseInputListener;
 
 import org.finroc.gui.Widget;
 import org.finroc.gui.WidgetInput;
@@ -62,12 +61,13 @@ public class VideoRenderer extends Widget {
         return suggestion.derive(HasBlittable.TYPE);
     }
 
-    class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseListener {
+    class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseInputListener {
 
         public VideoWindowUI() {
             super(RenderMode.Cached);
             videoInput.addChangeListener(this);
             addMouseListener(this);
+            addMouseMotionListener(this);
         }
 
         /** UID */
@@ -99,12 +99,16 @@ public class VideoRenderer extends Widget {
         public void mouseEntered(MouseEvent e) {}
         @Override
         public void mouseExited(MouseEvent e) {}
+        @Override
+        public void mouseDragged(MouseEvent e) {}
+        @Override
+        public void mouseMoved(MouseEvent e) {}
 
         @Override
         public void mouseReleased(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON2) {
                 HasBlittable b = videoInput.getAutoLocked();
-                if (b == null) {
+                if (b == null || (b.getBlittable().getHeight() <= 0 && b.getBlittable().getWidth() <= 0)) {
                     releaseAllLocks();
                     return;
                 }
