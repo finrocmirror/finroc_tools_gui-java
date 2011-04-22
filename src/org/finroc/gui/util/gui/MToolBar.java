@@ -124,7 +124,11 @@ public class MToolBar extends JToolBar {
      * @return Is button associated with specified enum selected?
      */
     public boolean isSelected(Enum<?> e) {
-        return buttonRegister.get(e).isSelected();
+        AbstractButton btn = buttonRegister.get(e);
+        if (btn == null) {
+            return false;
+        }
+        return btn.isSelected();
     }
 
     /**
