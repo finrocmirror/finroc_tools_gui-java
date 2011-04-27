@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -47,8 +48,6 @@ import org.finroc.log.LogDomain;
 import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.StringList;
 
-import org.finroc.core.plugin.CreateExternalConnectionAction;
-import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.util.Files;
 
 /**
@@ -371,12 +370,17 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
         for (String arg : args) {
             if (arg.startsWith("--connect=")) {
                 connectTasks.add(arg.substring(10));
+            } else if (arg.equals("-h") || arg.equals("--help")) {
+                printHelp();
+                return;
             } else if (arg.startsWith("-")) {
                 System.out.println("Unsupported option: " + arg);
+                printHelp();
                 return;
             } else { // gui file to load
                 if (loadTasks.size() >= 1) {
                     System.out.println("Syntax: fingui <options> guifile");
+                    printHelp();
                     return;
                 }
                 loadTasks.add(arg);
@@ -422,6 +426,20 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
             }
         });
     }
+
+    /**
+     * Prints help
+     */
+    private static void printHelp() {
+        try {
+            for (String s : Files.readLines(FinrocGUI.class.getResourceAsStream("help.txt"))) {
+                System.out.println(s);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void closeWindow(GUIWindow window) {
         if (children.size() <= 1) {
