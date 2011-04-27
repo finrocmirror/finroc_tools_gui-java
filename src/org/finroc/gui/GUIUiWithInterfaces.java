@@ -31,9 +31,12 @@ import org.finroc.gui.abstractbase.UIBase;
 import org.finroc.gui.util.PackageContentEnumerator;
 import org.finroc.gui.util.treemodel.InterfaceTreeModel;
 import org.finroc.gui.util.treemodel.PortWrapper;
+import org.finroc.plugin.tcp.TCP;
 
 import org.finroc.core.plugin.ConnectionListener;
+import org.finroc.core.plugin.CreateExternalConnectionAction;
 import org.finroc.core.plugin.ExternalConnection;
+import org.finroc.core.plugin.Plugins;
 
 public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends GUIUiBase<P, C> implements ConnectionListener {
 
@@ -189,16 +192,49 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
     public void connect(String address) throws Exception {
         String interfaceName = address.substring(0, address.indexOf(":"));
         String actualAddress = address.substring(interfaceName.length() + 1);
-        for (ExternalConnection io : getActiveInterfaces()) {
-            if (io.getClass().getSimpleName().equalsIgnoreCase(interfaceName)) {
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+            if (io.getName().equalsIgnoreCase(interfaceName)) {
                 try {
-                    io.connect(actualAddress);
+                    connectImpl(io, actualAddress);
                 } catch (Exception e) {
                     throw new Exception("Couldn't connect to " + address + ".", e);
                 }
                 return;
             }
         }
-        throw new Exception("Couldn't find robot interface " + interfaceName);
+
+        // try default interface
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+            if (io.getName().equalsIgnoreCase(TCP.TCP_PORTS_ONLY_NAME)) {
+                try {
+                    connectImpl(io, address);
+                } catch (Exception e) {
+                    throw new Exception("Couldn't connect to " + address + ".", e);
+                }
+                return;
+            }
+        }
+
+        throw new Exception("Couldn't find robot interface to connect to '" + address + "'");
+    }
+
+    /**
+     * Connect to robot control
+     *
+     * @param action CreateExternalConnectionAction to instantiate connection with
+     * @param address Address to connect to
+     */
+    public void connectImpl(CreateExternalConnectionAction action, String address) throws Exception {
+        ExternalConnection ec = action.createExternalConnection();
+        ioInterface.getRootFrameworkElement().addChild(ec);
+        ec.init();
+        ec.addConnectionListener(this);
+        ec.connect(address);
+        if (ec.isConnected()) {
+            if (this instanceof FinrocGUI) {
+                ((FinrocGUI)this).getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
+            }
+            getModel().addConnectionAddress(action.getName() + ":" + ec.getConnectionAddress());
+        }
     }
 }

@@ -888,6 +888,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     ec.connect(null);
                     if (ec.isConnected()) {
                         getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
+                        getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());
                     }
                     //parent.ioInterface.addModule(ioInterface.createModule());
                 }
@@ -897,8 +898,6 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             }
         }
     }
-
-
 
     public boolean snapToGrid() {
         return miSnapToGrid.isSelected();

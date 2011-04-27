@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -46,6 +47,8 @@ import org.finroc.log.LogDomain;
 import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.StringList;
 
+import org.finroc.core.plugin.CreateExternalConnectionAction;
+import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.util.Files;
 
 /**
@@ -366,10 +369,10 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
         final List<String> loadTasks = new ArrayList<String>();
         final List<String> connectTasks = new ArrayList<String>();
         for (String arg : args) {
-            if (arg.startsWith("-connect:")) {
-                connectTasks.add(arg.substring(9));
+            if (arg.startsWith("--connect=")) {
+                connectTasks.add(arg.substring(10));
             } else if (arg.startsWith("-")) {
-                System.out.println("Unsupported option " + arg);
+                System.out.println("Unsupported option: " + arg);
                 return;
             } else { // gui file to load
                 if (loadTasks.size() >= 1) {
@@ -393,10 +396,22 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
                     }
 
                     // connect at startup?
+                    boolean connected = false;
                     for (String ct : connectTasks) {
                         fingui.connect(ct);
+                        connected = true;
                     }
-                    if (connectTasks.size() > 0) {
+
+                    // Show dialog for choosing connection?
+                    if (connectTasks.size() == 0 && loadTasks.size() > 0 && fingui.getModel().getConnectionList().size() > 0 && (fingui.children.get(0).asComponent() instanceof JFrame)) {
+                        String connect = new ConnectDialog((JFrame)fingui.children.get(0).asComponent(), true).show(fingui.getModel().getConnectionList());
+                        if (connect != null) {
+                            fingui.connect(connect);
+                            connected = true;
+                        }
+                    }
+
+                    if (connected) {
                         fingui.updateInterface();
                     }
                 } catch (Exception e) {

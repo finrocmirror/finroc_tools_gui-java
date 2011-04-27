@@ -30,6 +30,7 @@ import org.finroc.gui.abstractbase.DataModelBase;
 import org.finroc.gui.util.embeddedfiles.FileManager;
 import org.finroc.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.gui.util.propertyeditor.gui.ResourcePathProvider;
+import org.finroc.plugin.datatype.StringList;
 
 import org.finroc.core.FrameworkElement;
 
@@ -59,6 +60,9 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
     /** Edit Mode saved in GUI file */
     @NotInPropertyEditor
     private int editMode = GUIWindowUIBase.EditMode.editObject.ordinal();
+
+    /** List of connections that should be displayed as options for connecting GUI - usually the list is filled with past connections */
+    private StringList connectionList;
 
     public GUI(GUIUiBase <? , ? > fingui) {
         super(null);
@@ -115,6 +119,9 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
     @Override
     public void restore(GUI parent) {
         super.restore(parent);
+        if (connectionList == null) {
+            connectionList = new StringList();
+        }
         frameworkElement.init();
     }
 
@@ -124,5 +131,23 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
 
     public void setEditMode(int editMode) {
         this.editMode = editMode;
+    }
+
+    /**
+     * @return List of connections that should be displayed as options for connecting GUI
+     */
+    public StringList getConnectionList() {
+        return connectionList;
+    }
+
+    /**
+     * Add new connection address to list of connections that should be displayed as options for connecting GUI
+     *
+     * @param connectionAddress new connection address
+     */
+    public void addConnectionAddress(String connectionAddress) {
+        if (!connectionList.contains(connectionAddress)) {
+            connectionList.add(connectionAddress);
+        }
     }
 }
