@@ -9,7 +9,7 @@ available options:
 --connect=[<connection type>:]<address>
 
    Connect to specified address using specified connection type. If no
-   connection type is specified "TCP ports only" is used.
+   connection type is specified, "TCP ports only" is used.
    Example: fingui --connect=TCP:localhost:4444
 
   
