@@ -23,7 +23,6 @@ package org.finroc.gui;
 import org.finroc.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
-import org.finroc.plugin.blackboard.BlackboardBuffer;
 import org.finroc.plugin.blackboard.BlackboardClient;
 import org.finroc.plugin.blackboard.RawBlackboardClient;
 import org.finroc.serialization.PortDataList;
@@ -117,7 +116,7 @@ public class WidgetOutput {
         }
     }
 
-    public static class Blackboard<T extends BlackboardBuffer> extends WidgetOutputPort<RawBlackboardClient.WritePort> {
+    public static class Blackboard<T> extends WidgetOutputPort<RawBlackboardClient.WritePort> {
 
         /** UID */
         private static final long serialVersionUID = 2712886077657464267L;
