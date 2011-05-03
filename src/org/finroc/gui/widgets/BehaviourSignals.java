@@ -176,7 +176,7 @@ public class BehaviourSignals extends Widget {
             BehaviourInfoBlackboard bil = bill.size() > 0 ? bill.get(0) : null;
             ContainsStrings strings = names.getAutoLocked();
             if (bil != null) {
-                bbElemSize = bil.getElementSize();
+                bbElemSize = bil.getBuffer().getElementSize();
             }
 
             // no data ?
@@ -269,18 +269,19 @@ public class BehaviourSignals extends Widget {
                 remove(rating);
             }
 
+            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
 
                 // hehe... we only send one byte... asynchronously
                 assert(bbElemSize > 0);
                 int offset = bbElemSize * index + (e.getSource() == enable ? MCA.tBehaviourInfo._enabled.getOffset() : MCA.tBehaviourInfo._auto_mode.getOffset());
                 byte b = ((JCheckBox)e.getSource()).isSelected() ? (byte)1 : 0;
-                PortDataList<BehaviourInfoBlackboard> buf = signals.getClient().getUnusedChangeBuffer();
+                BehaviourInfoBlackboard buf = (BehaviourInfoBlackboard)(PortDataList)signals.getClient().getUnusedChangeBuffer();
                 buf.resize(1);
-                buf.get(0).resize(1, 1, 1, false);
-                buf.get(0).getBuffer().putByte(0, b);
+                buf.resize(1, 1, 1, false);
+                buf.getBuffer().getBuffer().putByte(0, b);
                 try {
-                    signals.getClient().commitAsynchChange(buf, 0, offset);
+                    signals.getClient().commitAsynchChange((PortDataList)buf, 0, offset);
                 } catch (MethodCallException e1) {
                     log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
                 }
