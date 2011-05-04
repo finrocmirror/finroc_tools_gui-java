@@ -29,6 +29,7 @@ import org.finroc.serialization.PortDataList;
 import org.finroc.serialization.RRLibSerializable;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
+import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.PortNumeric;
@@ -127,7 +128,7 @@ public class WidgetOutput {
         protected RawBlackboardClient.WritePort createPort() {
             PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
             PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
-            c = new BlackboardClient<T>(pci.toString(), null, pci.dataType);
+            c = new BlackboardClient<T>(pci.toString(), null, pci.getFlag(PortFlags.PUSH_STRATEGY), pci.dataType);
             //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
             return c.getWrapped().getWritePort();
         }

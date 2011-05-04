@@ -49,9 +49,7 @@ import org.finroc.gui.themes.Themes;
 
 import org.finroc.log.LogLevel;
 import org.finroc.plugin.datatype.BehaviourInfo;
-import org.finroc.plugin.datatype.mca.BehaviourInfoBlackboard;
 import org.finroc.plugin.datatype.ContainsStrings;
-import org.finroc.plugin.datatype.mca.MCA;
 import org.finroc.serialization.PortDataList;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -71,17 +69,21 @@ public class BehaviourSignals extends Widget {
 
     /** Blackboards */
     public WidgetInput.Std<ContainsStrings> names;
-    public WidgetOutput.Blackboard<BehaviourInfoBlackboard> signals;
+    public WidgetOutput.Blackboard<BehaviourInfo> signals;
+    //public WidgetInput.Std<PortDataList<BehaviourInfo>> signalsTest;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == names) {
             return suggestion.derive(ContainsStrings.TYPE);
         } else if (forPort == signals) {
-            PortCreationInfo pci = suggestion.derive(BehaviourInfoBlackboard.TYPE);
+            PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE);
             pci.setFlag(PortFlags.PUSH_STRATEGY, true);
             return pci;
-        }
+        } /*else if (forPort == signalsTest) {
+            PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE.getListType());
+            return pci;
+        }*/
         return null;
     }
 
@@ -115,6 +117,7 @@ public class BehaviourSignals extends Widget {
             super(RenderMode.Swing);
             signals.addChangeListener(this);
             names.addChangeListener(this);
+            //signalsTest.addChangeListener(this);
             setLayout(new GridBagLayout());
 
             // create Titlebar
@@ -172,12 +175,9 @@ public class BehaviourSignals extends Widget {
         @Override
         public void portChanged(AbstractPort origin, Object value) {
 
-            PortDataList<BehaviourInfoBlackboard> bill = signals.readAutoLocked();
-            BehaviourInfoBlackboard bil = bill.size() > 0 ? bill.get(0) : null;
+            PortDataList<BehaviourInfo> bil = signals.readAutoLocked();
+            //PortDataList<BehaviourInfo> bil = signalsTest.getAutoLocked();
             ContainsStrings strings = names.getAutoLocked();
-            if (bil != null) {
-                bbElemSize = bil.getBuffer().getElementSize();
-            }
 
             // no data ?
             if (bil == null || strings == null || bil.size() <= 0 || strings.stringCount() <= 0) {
@@ -198,7 +198,7 @@ public class BehaviourSignals extends Widget {
 
             // update values
             for (int i = 0; i < entries.size(); i++) {
-                BehaviourInfo.Entry bi = bil.getEntry(i);
+                BehaviourInfo bi = bil.get(i);
                 //entries.get(i).update(bi, (bi.beh_id >= strings.size()) ? "" : strings.get(bi.beh_id));
 
                 // Rand unter letzter Zeile sicherstellen
@@ -251,13 +251,13 @@ public class BehaviourSignals extends Widget {
                 add(rating, gbc);
             }
 
-            public void update(BehaviourInfo.Entry bi, String descr) {
+            public void update(BehaviourInfo bi, String descr) {
                 label.setText(descr);
-                auto.setSelected(bi.getAutoMode());
-                enable.setSelected(bi.isEnabled());
-                activation.setValue(bi.getActivation());
-                activity.setValue(bi.getActivity());
-                rating.setValue(bi.getTargetRating());
+                auto.setSelected(bi.auto_mode);
+                enable.setSelected(bi.enabled);
+                activation.setValue(bi.activation);
+                activity.setValue(bi.activity);
+                rating.setValue(bi.target_rating);
             }
 
             public void clear() {
@@ -273,15 +273,12 @@ public class BehaviourSignals extends Widget {
             public void actionPerformed(ActionEvent e) {
 
                 // hehe... we only send one byte... asynchronously
-                assert(bbElemSize > 0);
-                int offset = bbElemSize * index + (e.getSource() == enable ? MCA.tBehaviourInfo._enabled.getOffset() : MCA.tBehaviourInfo._auto_mode.getOffset());
-                byte b = ((JCheckBox)e.getSource()).isSelected() ? (byte)1 : 0;
-                BehaviourInfoBlackboard buf = (BehaviourInfoBlackboard)(PortDataList)signals.getClient().getUnusedChangeBuffer();
+                PortDataList<BehaviourInfo> buf = (PortDataList<BehaviourInfo>)signals.getClient().getUnusedChangeBuffer();
                 buf.resize(1);
-                buf.resize(1, 1, 1, false);
-                buf.getBuffer().getBuffer().putByte(0, b);
+                buf.get(0).enabled = enable.isSelected();
+                buf.get(0).auto_mode = auto.isSelected();
                 try {
-                    signals.getClient().commitAsynchChange((PortDataList)buf, 0, offset);
+                    signals.getClient().commitAsynchChange((PortDataList)buf, index, 0);
                 } catch (MethodCallException e1) {
                     log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
                 }
