@@ -72,7 +72,7 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
 
     public GUIUiBase() {
         super(null, null, null);
-        IconManager.getInstance().setResourceFolder(GUIUiBase.class, "icons");
+        IconManager.getInstance().addResourceFolder(GUIUiBase.class, "icons");
     }
 
     /**

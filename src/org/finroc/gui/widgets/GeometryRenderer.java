@@ -69,6 +69,7 @@ import org.finroc.plugin.datatype.PaintablePortData;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.plugin.datatype.Pose3D;
 
 public class GeometryRenderer extends Widget {
@@ -90,8 +91,8 @@ public class GeometryRenderer extends Widget {
     /** Parameters */
     public int numberOfGeometries = 3;
     public double zoom = 1;
-    private double translationX = 0;
-    private double translationY = 0;
+    public double translationX = 0;
+    public double translationY = 0;
     private double rotation = 0;
     private boolean antialiasing = false;
     private double lineWidth = 1;
@@ -132,7 +133,20 @@ public class GeometryRenderer extends Widget {
         return suggestion;
     }
 
-    class GeometryRendererUI extends WidgetUI implements PortListener<PaintablePortData>, ActionListener, MouseEventListener<Action>, ComponentListener {
+    public void drawGeometries(Graphics2D g2d) {
+
+        // Draw geometries
+        for (WidgetInput.Std<PaintablePortData> wip : geometry) {
+            Paintable p = wip.getAutoLocked();
+            if (p == null) {
+                continue;
+            }
+            p.paint(g2d);
+        }
+        ThreadLocalCache.get().releaseAllLocks();
+    }
+
+    protected class GeometryRendererUI extends WidgetUI implements PortListener<PaintablePortData>, ActionListener, MouseEventListener<Action>, ComponentListener {
 
         Renderer renderer;
         AdvancedMouseListener<Mode, Action> listener;
@@ -555,19 +569,6 @@ public class GeometryRenderer extends Widget {
                 }
 
                 g2d.dispose();
-            }
-
-            public void drawGeometries(Graphics2D g2d) {
-
-                // Draw geometries
-                for (WidgetInput.Std<PaintablePortData> wip : geometry) {
-                    Paintable p = wip.getAutoLocked();
-                    if (p == null) {
-                        continue;
-                    }
-                    p.paint(g2d);
-                }
-                releaseAllLocks();
             }
 
             @Override

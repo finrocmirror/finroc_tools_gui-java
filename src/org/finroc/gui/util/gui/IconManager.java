@@ -20,7 +20,9 @@
  */
 package org.finroc.gui.util.gui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -35,8 +37,8 @@ public class IconManager {
 
     private static IconManager instance;
     private Map<String, Icon> lookup = new HashMap<String, Icon>();
-    private Class<?> caller;
-    private String folder;
+    private List < Class<? >> caller = new ArrayList < Class<? >> ();
+    private List<String> folder = new ArrayList<String>();
 
     public static IconManager getInstance() {
         if (instance == null) {
@@ -45,9 +47,9 @@ public class IconManager {
         return instance;
     }
 
-    public void setResourceFolder(Class<?> caller, String folder) {
-        this.caller = caller;
-        this.folder = folder;
+    public void addResourceFolder(Class<?> caller, String folder) {
+        this.caller.add(caller);
+        this.folder.add(folder);
     }
 
     public Icon getIcon(String filename) {
@@ -58,13 +60,17 @@ public class IconManager {
         if (lookup.containsKey(filename)) {
             return lookup.get(filename);
         }
-        ImageIcon ii = null;
-        try {
-            ii = new ImageIcon(caller.getResource(folder + "/" + filename));
-        } catch (Exception e) {
-            // icon doesn't exist
+        for (int i = 0; i < caller.size(); i++) {
+            try {
+                ImageIcon ii = new ImageIcon(caller.get(i).getResource(folder.get(i) + "/" + filename));
+                lookup.put(filename, ii);
+                return ii;
+            } catch (Exception e) {
+                // icon doesn't exist
+            }
         }
-        lookup.put(filename, ii);
-        return ii;
+
+        lookup.put(filename, null);
+        return null;
     }
 }
