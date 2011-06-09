@@ -141,7 +141,12 @@ public class CompressedImage extends Blittable implements HasBlittable {
     }
 
     @Override
-    public Blittable getBlittable() {
+    public Blittable getBlittable(int index) {
         return this;
+    }
+
+    @Override
+    public int getNumberOfBlittables() {
+        return 1;
     }
 }

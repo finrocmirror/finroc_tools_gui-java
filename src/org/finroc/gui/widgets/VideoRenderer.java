@@ -51,6 +51,9 @@ public class VideoRenderer extends Widget {
 
     public WidgetInput.Std<HasBlittable> videoInput;
 
+    /** Image index in image source - in case we receive lists of blittables */
+    public int imageIndexInSource;
+
     @Override
     protected WidgetUI createWidgetUI() {
         return new VideoWindowUI();
@@ -76,12 +79,12 @@ public class VideoRenderer extends Widget {
         @Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
             HasBlittable b = videoInput.getAutoLocked();
-            if (b == null) {
+            if (b == null || imageIndexInSource >= b.getNumberOfBlittables()) {
                 cache.fill(0);
                 releaseAllLocks();
                 return;
             }
-            b.getBlittable().blitTo(cache, new Rectangle(renderSize));
+            b.getBlittable(imageIndexInSource).blitTo(cache, new Rectangle(renderSize));
             releaseAllLocks();
         }
 
@@ -108,12 +111,12 @@ public class VideoRenderer extends Widget {
         public void mouseReleased(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON2) {
                 HasBlittable b = videoInput.getAutoLocked();
-                if (b == null || (b.getBlittable().getHeight() <= 0 && b.getBlittable().getWidth() <= 0)) {
+                if (b == null || imageIndexInSource >= b.getNumberOfBlittables() || (b.getBlittable(imageIndexInSource).getHeight() <= 0 && b.getBlittable(imageIndexInSource).getWidth() <= 0)) {
                     releaseAllLocks();
                     return;
                 }
 
-                Blittable bl = b.getBlittable();
+                Blittable bl = b.getBlittable(imageIndexInSource);
                 BufferedImageRGB image = new BufferedImageRGB(bl.getWidth(), bl.getHeight());
                 bl.blitTo(image);
                 File f = FileDialog.showSaveDialog("Save Image as...", "png");

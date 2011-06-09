@@ -44,6 +44,9 @@ public class VideoJoystick extends VirtualJoystick {
 
     private WidgetInput.Std<HasBlittable> video;
 
+    /** Image index in image source - in case we receive lists of blittables */
+    public int imageIndexInSource;
+
     public VideoJoystick() {
         zeroRadius = 10;
     }
@@ -74,10 +77,10 @@ public class VideoJoystick extends VirtualJoystick {
         @Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
             HasBlittable b = video.getAutoLocked();
-            if (b == null) {
+            if (b == null || imageIndexInSource >= b.getNumberOfBlittables()) {
                 cache.fill(0);
             } else {
-                b.getBlittable().blitTo(cache, new Rectangle(renderSize));
+                b.getBlittable(imageIndexInSource).blitTo(cache, new Rectangle(renderSize));
             }
 
             // initial position
