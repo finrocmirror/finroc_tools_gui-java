@@ -843,6 +843,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }
         return null;
     }
+
+    /**
+     * Text color for non-ports nodes
+     * (may be overridden)
+     *
+     * @param value Wrapped object
+     * @return Color - null, if default color
+     */
+    protected Color getBranchTextColor(Object value) {
+        return null;
+    }
 }
 
 /**
@@ -909,10 +920,16 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         if (!(value instanceof TreePortWrapper)) {
             Color bg = panel.getBranchBackgroundColor(value);
+            Color fg = panel.getBranchTextColor(value);
             if (bg != null) {
                 defaultRenderer.setBackgroundNonSelectionColor(bg);
             } else {
                 defaultRenderer.setBackgroundNonSelectionColor(background);
+            }
+            if (fg != null) {
+                defaultRenderer.setTextNonSelectionColor(fg);
+            } else {
+                defaultRenderer.setTextNonSelectionColor(Color.black);
             }
             return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
