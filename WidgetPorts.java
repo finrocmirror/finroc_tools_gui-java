@@ -29,7 +29,6 @@ import org.finroc.core.port.PortListener;
 import org.finroc.core.port.cc.CCPortBase;
 import org.finroc.core.port.std.PortBase;
 
-
 /**
  * @author max
  *
@@ -44,7 +43,7 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
     private String portNamePrefix;
     private Class <? extends WidgetPort > type;
     private transient Object hashDelegate;  // necessary that this can be used with EventRouter
-    transient boolean initialized;
+    private transient boolean initialized;
 
     public WidgetPorts(String portNamePrefix, int initialSize, Class <? extends WidgetPort > type, Widget parent) {
         this.portNamePrefix = portNamePrefix;
@@ -61,15 +60,20 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
         return hashDelegate.hashCode();
     }
 
+    public void initialize() {
+        for (P p : this) {
+            p.restore(parent);
+            addChangeListener(p);
+        }
+        initialized = true;
+    }
+
     @SuppressWarnings("unchecked")
     public void setSize(int newSize) {
 
         // re-register as listener after loading
         if (!initialized) {
-            for (P p : this) {
-                addChangeListener(p);
-            }
-            initialized = true;
+            initialize();
         }
 
         if (newSize < size()) {

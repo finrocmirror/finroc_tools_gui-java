@@ -50,6 +50,8 @@ import org.rrlib.finroc_core_utils.serialization.DataTypeBase;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 public class Oscilloscope extends Widget {
 
     /** UID */
@@ -83,6 +85,7 @@ public class Oscilloscope extends Widget {
         return suggestion;
     }
 
+    @XStreamAlias("OscilloscopeSignal")
     public static class SignalProperty implements Serializable {
 
         /** UID */

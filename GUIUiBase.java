@@ -91,7 +91,7 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
         g.getEmbeddedFileManager().saveFiles(zos);
         if (!binary) {
             zos.putNextEntry(new ZipEntry(GUI_MAIN_FILE_IN_ZIP));
-            oos = FinrocGuiXmlSerializer.getInstance().createObjectOutputStream(new OutputStreamWriter(zos), "fingui");
+            oos = FinrocGuiXmlSerializer.getInstance().createObjectOutputStream(new OutputStreamWriter(zos));
         } else {
             zos.putNextEntry(new ZipEntry(GUI_MAIN_FILE_IN_BINARY_ZIP));
             oos = new ObjectOutputStream(zos);

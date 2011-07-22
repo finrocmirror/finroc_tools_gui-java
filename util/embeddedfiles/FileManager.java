@@ -224,6 +224,11 @@ public class FileManager {
      * @return relative filename (as string)
      */
     public String getRelativeFilename(File file, String current) {
+        if (file == null) {
+            FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "FileManager", "Cannot locate external file/folder: " + current);
+            return current;
+        }
+
         List<File> rpaths = resourcePathProvider.getResourcePaths();
 
         // does file still exist?

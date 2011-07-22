@@ -88,6 +88,11 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
      * called after deserialization. Restores transient attributes.
      */
     public void restore(GUIPanel parent) {
+        try {
+            initPorts();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         super.restore(parent);
         frameworkElement.init();
         //getRoot().getJmcagui().addConnectionListener(this);

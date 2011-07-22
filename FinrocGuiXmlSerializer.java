@@ -20,9 +20,24 @@
  */
 package org.finroc.tools.gui;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
+
 import org.finroc.tools.gui.abstractbase.DataModelBase;
+import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
+import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintable;
+import org.finroc.tools.gui.util.propertyeditor.PropertyList;
+import org.finroc.tools.gui.util.embeddedfiles.ExternalFolder;
+import org.finroc.plugins.data_types.StringList;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.collections.CollectionConverter;
+import com.thoughtworks.xstream.converters.reflection.AbstractReflectionConverter;
+import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /**
  * @author max
@@ -48,11 +63,195 @@ public class FinrocGuiXmlSerializer {
         xstream.alias("fingui", GUI.class);
         xstream.alias("Window", GUIWindow.class);
         xstream.alias("Panel", GUIPanel.class);
+        xstream.alias("InputPortNumeric", WidgetInput.Numeric.class);
+        xstream.alias("InputPortCC", WidgetInput.CC.class);
+        xstream.alias("InputPort", WidgetInput.Std.class);
+        xstream.alias("OutputPortNumeric", WidgetOutput.Numeric.class);
+        xstream.alias("OutputPortCC", WidgetOutput.CC.class);
+        xstream.alias("OutputPort", WidgetOutput.Std.class);
+        xstream.alias("BlackboardPort", WidgetOutput.Blackboard.class);
+        xstream.alias("EmbeddedPaintable", EmbeddedPaintable.class);
+        xstream.alias("ExternalFolder", ExternalFolder.class);
         xstream.addImplicitCollection(DataModelBase.class, "children");
+        xstream.registerConverter(new WidgetConverter(xstream.getMapper(), xstream.getReflectionProvider()));
+        xstream.registerConverter(new PanelConverter(xstream.getMapper(), xstream.getReflectionProvider()));
+        xstream.registerConverter(new FinguiCollectionConverter(xstream.getMapper()));
+        xstream.processAnnotations(GUIPanel.class);
         //xstream.addImplicitCollection(GUIPanel.class, "widgets");
         //xstream.registerConverter(new WidgetConverter(xstream.getMapper(), new AnnotationProvider()));
         return xstream;
     }
+
+    /**
+     * Converter for StringList mainly
+     */
+    @SuppressWarnings("rawtypes")
+    static class FinguiCollectionConverter extends CollectionConverter {
+
+        public FinguiCollectionConverter(Mapper mapper) {
+            super(mapper);
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            return type.equals(StringList.class) || type.equals(PropertyList.class) || type.equals(WidgetPorts.class) || AbstractFiles.class.isAssignableFrom(type);
+        }
+
+        @Override
+        public void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Collection collection) {
+            super.populateCollection(reader, context, collection);
+        }
+    }
+
+    /**
+     * Converter for GUI panels. More robust when widgets are missing than standard converter.
+     */
+    @SuppressWarnings("rawtypes")
+    static class PanelConverter extends AbstractReflectionConverter {
+
+        public PanelConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
+            super(mapper, reflectionProvider);
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            return type.equals(GUIPanel.class);
+        }
+
+        @Override
+        public Object doUnmarshal(Object result, HierarchicalStreamReader reader, UnmarshallingContext context) {
+            GUIPanel panel = (GUIPanel)result;
+
+            panel.setName(reader.getAttribute("name"));
+
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+
+                String originalNodeName = reader.getNodeName();
+                Class type = null;
+                try {
+                    type = mapper.realClass(originalNodeName);
+                } catch (Exception e) {
+                    System.out.println("Warning: Cannot instantiate widget of unknown type '" + originalNodeName + "'");
+                }
+
+                if (type != null) {
+                    Widget value = (Widget)context.convertAnother(result, type);
+                    panel.ensureChildVectorIsInstantiated();
+                    panel.add(value);
+                }
+
+                reader.moveUp();
+            }
+
+            return result;
+        }
+    }
+
+    /**
+     * Mapper class for widgets
+     */
+    @SuppressWarnings("rawtypes")
+    static class WidgetMapper extends MapperWrapper {
+
+        public WidgetMapper(Mapper wrapped) {
+            super(wrapped);
+        }
+
+        @Override
+        public ImplicitCollectionMapping getImplicitCollectionDefForFieldName(Class itemType, String fieldName) {
+            if (Widget.class.isAssignableFrom(itemType)) {
+                return null;
+            }
+            return super.getImplicitCollectionDefForFieldName(itemType, fieldName);
+        }
+
+        @Override
+        public boolean shouldSerializeMember(Class definedIn, String fieldName) {
+            if (DataModelBase.class.isAssignableFrom(definedIn) && fieldName.equals("children")) {
+                return false;
+            }
+            return super.shouldSerializeMember(definedIn, fieldName);
+        }
+
+        @Override
+        public Class realClass(String elementName) {
+            if (Character.isLowerCase(elementName.charAt(0))) {
+                return null; // This must be a field that no longer exists
+            }
+            return super.realClass(elementName);
+        }
+    }
+
+    /**
+     * Special, more robust converter for widgets
+     */
+    @SuppressWarnings("rawtypes")
+    static class WidgetConverter extends AbstractReflectionConverter {
+
+        HierarchicalStreamReader reader;
+        FinguiCollectionConverter converter;
+
+        public WidgetConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
+            super(new WidgetMapper(mapper), reflectionProvider);
+            converter = new FinguiCollectionConverter(mapper);
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            return Widget.class.isAssignableFrom(type);
+        }
+
+        @Override
+        protected Object instantiateNewInstance(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            String attributeName = mapper.aliasForSystemAttribute("resolves-to");
+            String readResolveValue = attributeName == null ? null : reader.getAttribute(attributeName);
+            Object currentObject = context.currentObject();
+            if (currentObject != null) {
+                return currentObject;
+            } else if (readResolveValue != null) {
+                try {
+                    return mapper.realClass(readResolveValue).newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException("Could not instantiate class " + mapper.realClass(readResolveValue).getSimpleName(), e);
+                }
+            } else {
+                try {
+                    return context.getRequiredType().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException("Could not instantiate class " + context.getRequiredType(), e);
+                }
+            }
+        }
+
+        @Override
+        public Object doUnmarshal(Object result, HierarchicalStreamReader reader, UnmarshallingContext context) {
+            this.reader = reader;
+            return super.doUnmarshal(result, reader, context);
+        }
+
+        @Override
+        protected Object unmarshallField(UnmarshallingContext context, Object result, Class type, Field field) {
+            if (WidgetPorts.class.isAssignableFrom(field.getType()) || PropertyList.class.isAssignableFrom(field.getType())) {
+                try {
+                    field.setAccessible(true);
+                    Collection c = (Collection)field.get(result);
+                    c.clear();
+                    converter.populateCollection(reader, context, c);
+                    if (WidgetPorts.class.isAssignableFrom(field.getType())) {
+                        ((WidgetPorts<?>)c).initialize();
+                    }
+                    return c;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            return super.unmarshallField(context, result, type, field);
+        }
+
+    }
+
 }
 
 /**

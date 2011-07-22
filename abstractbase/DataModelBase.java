@@ -77,14 +77,21 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     }
 
     /**
+     * For deserialization: Ensure that children is not null
+     */
+    public void ensureChildVectorIsInstantiated() {
+        if (children == null) {
+            children = new Vector<C>();
+        }
+    }
+
+    /**
      * Called during initialization (when all required values have been set)
      */
     @SuppressWarnings("unchecked")
     public void restore(P parent) {
         this.parent = parent;
-        if (children == null) {
-            children = new Vector<C>();
-        }
+        ensureChildVectorIsInstantiated();
         if (frameworkElement == null) {
             frameworkElement = createFrameworkElement();
         }

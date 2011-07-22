@@ -150,4 +150,5 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
             connectionList.add(connectionAddress);
         }
     }
+
 }

@@ -20,6 +20,7 @@
  */
 package org.finroc.tools.gui;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -96,11 +97,6 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
                 Class <? extends Widget > c = (Class <? extends Widget >)Class.forName(getClass().getPackage().getName() + "." + WIDGETPACKAGENAME + "." + s.substring(0, s.length() - 6));
                 if (Widget.class.isAssignableFrom(c)) {
                     this.add(c);
-
-                    // for nicer XML output
-                    if (!appletMode) {
-                        FinrocGuiXmlSerializer.getInstance().alias(c.getSimpleName(), c);
-                    }
                 }
             }
         }
@@ -118,6 +114,18 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
                         this.add(c);
                     }
                 }
+            }
+        }
+
+        if (!appletMode) {
+            for (Class<?> c : this) {
+                FinrocGuiXmlSerializer.getInstance().alias(c.getSimpleName(), c);
+                for (Class<?> inner : c.getClasses()) {
+                    if ((!WidgetUI.class.isAssignableFrom(inner)) && Serializable.class.isAssignableFrom(inner)) {
+                        FinrocGuiXmlSerializer.getInstance().alias(inner.getSimpleName(), inner);
+                    }
+                }
+                FinrocGuiXmlSerializer.getInstance().processAnnotations(c);
             }
         }
 

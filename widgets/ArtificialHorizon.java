@@ -33,7 +33,6 @@ import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
-import org.finroc.tools.gui.themes.Themes;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
@@ -59,8 +58,6 @@ public class ArtificialHorizon extends Widget {
     public int warningDelimiter = 30;
     public int inputValueFactorX = 1;
     public int inputValueFactorY = 1;
-
-    private Color background = Themes.getCurTheme().panelBackground();
 
     @Override
     protected WidgetUI createWidgetUI() {
@@ -110,7 +107,7 @@ public class ArtificialHorizon extends Widget {
 
             // draw background
             Rectangle r = new Rectangle(renderSize);
-            cache.drawFilledRectangle(r, background.getRGB());
+            cache.drawFilledRectangle(r, ArtificialHorizon.this.getBackground().getRGB());
 
             final int size = Math.min(renderSize.height, renderSize.width);
             if (indentsForSize != size) {
@@ -205,7 +202,7 @@ public class ArtificialHorizon extends Widget {
             final int my = renderSize / 2;
             final double dmx = mx;
             final double dmy = my;
-            int altColor = background.getRGB() != 0 ? 0 : 0xffffff;
+            int altColor = ArtificialHorizon.this.getBackground().getRGB() != 0 ? 0 : 0xffffff;
             for (double d = 0; d < 360; d += angleStep) {
                 int x = (int)(dmx + (Math.cos(d) * dmx));
                 int y = (int)(dmy + (Math.sin(d) * dmy));

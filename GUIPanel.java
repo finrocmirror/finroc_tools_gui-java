@@ -30,6 +30,8 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 
 import org.finroc.core.FrameworkElement;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
 
 /**
  * @author max
@@ -40,6 +42,7 @@ public class GUIPanel extends DataModelBase<GUI, GUIWindow, Widget> {
     /** UID */
     private static final long serialVersionUID = -4533212678935459906L;
 
+    @XStreamAsAttribute
     private String name = "   ";
 
     public GUIPanel(GUIWindow parent) {
