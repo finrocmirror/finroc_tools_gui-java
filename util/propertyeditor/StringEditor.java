@@ -76,9 +76,10 @@ public class StringEditor extends PropertyEditComponent<String> {
         } else {
             jtc = new JTextArea();
             jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, 100));
+            jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, 100));
             valueUpdated(getCurWidgetValue());
             JPanel jp = new JPanel();
-            jp.setBorder(BorderFactory.createTitledBorder(getPropertyName()));
+            jp.setBorder(BorderFactory.createTitledBorder(""/*getPropertyName()*/));
             jp.setLayout(new BorderLayout());
             //jp.setPreferredSize(new Dimension(LABELWIDTH + TEXTFIELDWIDTH, 128));
             jp.add(new JScrollPane(jtc), BorderLayout.CENTER);

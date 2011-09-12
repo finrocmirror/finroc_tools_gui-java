@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.Method;
 
+import org.finroc.plugins.data_types.ContainsStrings;
 import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
@@ -54,6 +55,9 @@ public class StandardComponentFactory implements ComponentFactory {
             wpec = new ComboBoxEditor<Enum>(getEnumConstants((Class <? extends Enum >)type));
         } else if (PropertyListAccessor.class.isAssignableFrom(type)) {
             wpec = new PropertyListEditor(panel.getComponentFactories());
+        } else if (ContainsStrings.class.isAssignableFrom(type)) {
+            wpec = new StringEditor(-1);
+            acc = new ContainsStringsAdapter((PropertyAccessor)acc);
         }
         if (wpec != null) {
             wpec.init(acc);
@@ -81,5 +85,37 @@ public class StandardComponentFactory implements ComponentFactory {
             FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "EnumEditor", e);
         }
         return new Enum[0];
+    }
+
+    /**
+     * Allows using StringLists in TextEditor
+     */
+    public class ContainsStringsAdapter extends PropertyAccessorAdapter<ContainsStrings, String> {
+
+        @SuppressWarnings( { "rawtypes", "unchecked" })
+        public ContainsStringsAdapter(PropertyAccessor wrapped) {
+            super(wrapped, String.class);
+        }
+
+        @Override
+        public void set(String newValue) throws Exception {
+            ContainsStrings cs = wrapped.getType().newInstance();
+            String[] strings = newValue.split("\n");
+            cs.setSize(strings.length);
+            for (int i = 0; i < strings.length; i++) {
+                cs.setString(i, strings[i]);
+            }
+            wrapped.set(cs);
+        }
+
+        @Override
+        public String get() throws Exception {
+            ContainsStrings cs = wrapped.get();
+            String s = "";
+            for (int i = 0; i < cs.stringCount(); i++) {
+                s += cs.getString(i) + "\n";
+            }
+            return cs.stringCount() == 0 ? "" : s.substring(0, s.length() - 1);
+        }
     }
 }

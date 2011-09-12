@@ -67,13 +67,20 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
         return root.wrapped.getChild();
     }
 
+    public InterfaceNode getInterfaceNode(FrameworkElement element) {
+        return getInterfaceNode(element, 0);
+    }
+
     /**
      * Get Node for element. If it doesn't exist yet - create it
      *
      * @param element Framework Element to get node for
      * @return Node
      */
-    public InterfaceNode getInterfaceNode(FrameworkElement element) {
+    public InterfaceNode getInterfaceNode(FrameworkElement element, int count) {
+        if (element.isDeleted()) {
+            return null;
+        }
 
         assert(element.isInitialized());
         InterfaceNode node = element.isPort() ? ports.get(element.getHandle()) : elements.get(-element.getHandle());
@@ -86,7 +93,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
             FrameworkElement.Link l = element.getLink(i);
             if (element.isPort()) {
                 InterfaceNodePort in = new InterfaceNodePort(l);
-                InterfaceNode parent = getInterfaceNode(l.getParent());
+                InterfaceNode parent = getInterfaceNode(l.getParent(), count + 1);
                 parent.add(in);
                 if (i == 0) {
                     primary = in;
@@ -99,7 +106,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
                 //ports.put(element.getHandle(), in);
             } else {
                 InterfaceNode in = new InterfaceNode(l);
-                InterfaceNode parent = getInterfaceNode(l.getParent());
+                InterfaceNode parent = getInterfaceNode(l.getParent(), count + 1);
                 parent.add(in);
                 if (i == 0) {
                     primary = in;
@@ -113,7 +120,7 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
             }
         }
 
-        return getInterfaceNode(element);
+        return getInterfaceNode(element, count + 1);
     }
 
     @Override
@@ -124,31 +131,33 @@ public class InterfaceTreeModel extends DefaultTreeModel implements RuntimeListe
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (changeType == ADD) {
-                    final InterfaceNode in = getInterfaceNode(element);
-                    InterfaceTreeModel.this.nodeStructureChanged(in.getParent());
-                } else if (changeType == REMOVE) {
-                    if (element.isPort()) {
-                        InterfaceNode in = ports.get(element.getHandle());
-                        ports.remove(element.getHandle());
-                        while (in != null) { // remove all links
-                            final InterfaceNode parent = (InterfaceNode)in.getParent();
-                            final int idx = parent.getIndex(in);
-                            final InterfaceNode inCopy = in;
-                            parent.remove(in);
-                            InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
-                            in = in.next;
-                        }
-                    } else {
-                        InterfaceNode in = elements.get(-element.getHandle());;
-                        elements.remove(-element.getHandle());
-                        while (in != null) { // remove all links
-                            final InterfaceNode parent = (InterfaceNode)in.getParent();
-                            final int idx = parent.getIndex(in);
-                            final InterfaceNode inCopy = in;
-                            parent.remove(in);
-                            InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
-                            in = in.next;
+                synchronized (RuntimeEnvironment.getInstance().getRegistryLock()) {
+                    if (changeType == ADD && element.isReady()) {
+                        final InterfaceNode in = getInterfaceNode(element);
+                        InterfaceTreeModel.this.nodeStructureChanged(in.getParent());
+                    } else if (changeType == REMOVE) {
+                        if (element.isPort()) {
+                            InterfaceNode in = ports.get(element.getHandle());
+                            ports.remove(element.getHandle());
+                            while (in != null) { // remove all links
+                                final InterfaceNode parent = (InterfaceNode)in.getParent();
+                                final int idx = parent.getIndex(in);
+                                final InterfaceNode inCopy = in;
+                                parent.remove(in);
+                                InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                                in = in.next;
+                            }
+                        } else {
+                            InterfaceNode in = elements.get(-element.getHandle());;
+                            elements.remove(-element.getHandle());
+                            while (in != null) { // remove all links
+                                final InterfaceNode parent = (InterfaceNode)in.getParent();
+                                final int idx = parent.getIndex(in);
+                                final InterfaceNode inCopy = in;
+                                parent.remove(in);
+                                InterfaceTreeModel.this.nodesWereRemoved(parent, new int[] {idx}, new Object[] {inCopy});
+                                in = in.next;
+                            }
                         }
                     }
                 }
