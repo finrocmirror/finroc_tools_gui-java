@@ -100,10 +100,12 @@ public class StandardComponentFactory implements ComponentFactory {
         @Override
         public void set(String newValue) throws Exception {
             ContainsStrings cs = wrapped.getType().newInstance();
-            String[] strings = newValue.split("\n");
-            cs.setSize(strings.length);
-            for (int i = 0; i < strings.length; i++) {
-                cs.setString(i, strings[i]);
+            if (newValue.trim().length() > 0) {
+                String[] strings = newValue.split("\n");
+                cs.setSize(strings.length);
+                for (int i = 0; i < strings.length; i++) {
+                    cs.setString(i, strings[i]);
+                }
             }
             wrapped.set(cs);
         }
