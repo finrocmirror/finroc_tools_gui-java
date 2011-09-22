@@ -60,11 +60,11 @@ public class StringEditor extends PropertyEditComponent<String> {
     }
 
     protected void createAndShow() throws Exception {
-        if (maxStringLength >= 0) {
+        if(maxStringLength >= 0) {
             jtc = new JTextField();
             jtc.setText(getCurWidgetValue());
             jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
-            if (maxStringLength > 0) {
+            if(maxStringLength > 0) {
                 Dimension d = new Dimension(Math.max(TEXTFIELDWIDTH, CHAR_WIDTH * maxStringLength), jtc.getPreferredSize().height);
                 jtc.setMinimumSize(d);
                 jtc.setPreferredSize(d);
@@ -76,9 +76,10 @@ public class StringEditor extends PropertyEditComponent<String> {
         } else {
             jtc = new JTextArea();
             jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, 100));
+            jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, 100));
             valueUpdated(getCurWidgetValue());
             JPanel jp = new JPanel();
-            jp.setBorder(BorderFactory.createTitledBorder(getPropertyName()));
+            jp.setBorder(BorderFactory.createTitledBorder(""/*getPropertyName()*/));
             jp.setLayout(new BorderLayout());
             //jp.setPreferredSize(new Dimension(LABELWIDTH + TEXTFIELDWIDTH, 128));
             jp.add(new JScrollPane(jtc), BorderLayout.CENTER);
