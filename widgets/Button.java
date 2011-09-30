@@ -35,7 +35,7 @@ import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 
-import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
@@ -53,6 +53,7 @@ public class Button extends Widget {
     /** Button output ports */
     public WidgetOutput.Numeric pressCounter;
     public WidgetOutput.Numeric emitValue;
+    public WidgetOutput.CC<CoreBoolean> buttonPressed;
 
     /** Button parameters */
     public String text = "Button";
@@ -70,6 +71,9 @@ public class Button extends Widget {
         if (forPort == emitValue) {
             return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
         }
+        if (forPort == buttonPressed) {
+            return suggestion.derive(CoreBoolean.TYPE).derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+        }
         return null;
     }
 
@@ -77,7 +81,8 @@ public class Button extends Widget {
         return "Button" + (text.length() == 0 ? "" : (" (\"" + text + "\")"));
     }
 
-    class ButtonUI extends WidgetUI implements ActionListener, MouseListener, PortListener<CoreNumber> {
+    @SuppressWarnings( { "unchecked", "rawtypes" })
+    class ButtonUI extends WidgetUI implements ActionListener, MouseListener, PortListener {
 
         /** UID */
         private static final long serialVersionUID = -9876567882234222L;
@@ -88,6 +93,7 @@ public class Button extends Widget {
             super(RenderMode.Swing);
             setLayout(new BorderLayout());
             emitValue.addChangeListener(this);
+            buttonPressed.addChangeListener(this);
             widgetPropertiesChanged();
             //outputValueChanged(null);
         }
@@ -120,6 +126,7 @@ public class Button extends Widget {
             pressCounter.publish(pressCounter.getInt() + 1);
             if (button instanceof JToggleButton) {
                 emitValue.publish(((JToggleButton)button).isSelected() ? emitValuePush : emitValueRelease);
+                buttonPressed.publish(CoreBoolean.getInstance(((JToggleButton)button).isSelected()));
             }
         }
 
@@ -129,19 +136,26 @@ public class Button extends Widget {
         public void mousePressed(MouseEvent e) {
             if (button instanceof JButton) {
                 emitValue.publish(emitValuePush);
+                buttonPressed.publish(CoreBoolean.TRUE);
             }
         }
         public void mouseReleased(MouseEvent e) {
             if (button instanceof JButton) {
                 emitValue.publish(emitValueRelease);
+                buttonPressed.publish(CoreBoolean.FALSE);
             }
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, Object value) {
             if (toggleButton) {
-                double val = emitValue.getDouble();
-                button.setSelected(Math.abs(val - emitValuePush) < Math.abs(val - emitValueRelease));
+                if (origin == emitValue.getPort()) {
+                    double val = emitValue.getDouble();
+                    button.setSelected(Math.abs(val - emitValuePush) < Math.abs(val - emitValueRelease));
+                } else if (origin == buttonPressed.getPort()) {
+                    CoreBoolean b = (CoreBoolean)value;
+                    button.setSelected(b.get());
+                }
             }
         }
     }

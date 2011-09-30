@@ -79,6 +79,10 @@ public class WidgetOutput {
         public void addChangeListener(PortListener<T> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
+
+        public void publish(T t) {
+            asPort().publish(t);
+        }
     }
 
     @SuppressWarnings("rawtypes")
