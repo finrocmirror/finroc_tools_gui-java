@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -55,6 +56,8 @@ import org.finroc.core.port.PortListener;
 import org.finroc.core.port.std.PortDataManager;
 import org.finroc.core.portdatabase.ReusableGenericObjectManager;
 import org.rrlib.finroc_core_utils.serialization.Serialization;
+import org.rrlib.finroc_core_utils.xml.XMLDocument;
+import org.rrlib.finroc_core_utils.xml.XMLNode;
 
 
 /**
@@ -69,6 +72,8 @@ public class CameraController extends Widget {
     /** Ports */
     public WidgetInput.Std<CameraFeature.Set> cameraState;
     public WidgetOutput.Std<CameraFeature> changeRequests;
+
+    boolean dumpButtonVisible = false;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
@@ -94,26 +99,35 @@ public class CameraController extends Widget {
         return new CameraControllerUI();
     }
 
-    class CameraControllerUI extends WidgetUI implements PortListener<CameraFeature.Set> {
+    class CameraControllerUI extends WidgetUI implements PortListener<CameraFeature.Set>, ActionListener {
 
         /** UID */
         private static final long serialVersionUID = -27396902858121219L;
 
         List<CameraControllerPanel> cpanels = new ArrayList<CameraControllerPanel>();
+        JButton dumpSettings = new JButton("Dump camera settings to console");
+        JPanel main = new JPanel();
         GridLayout layout = new GridLayout();
 
         CameraControllerUI() {
             super(RenderMode.Swing);
             cameraState.addChangeListener(this);
-            setLayout(layout);
+            setLayout(new BorderLayout());
+
+            main.setLayout(layout);
+            add(main, BorderLayout.CENTER);
+            add(dumpSettings, BorderLayout.SOUTH);
+            dumpSettings.addActionListener(this);
 
             // create Titlebar
             portChanged(null, null);
+
+            widgetPropertiesChanged();
         }
 
         @Override
         public void widgetPropertiesChanged() {
-
+            dumpSettings.setVisible(dumpButtonVisible);
         }
 
         @Override
@@ -123,7 +137,7 @@ public class CameraController extends Widget {
 
             // no data ?
             if (cfs == null) {
-                this.removeAll();
+                main.removeAll();
                 cpanels.clear();
                 releaseAllLocks();
                 return;
@@ -140,12 +154,12 @@ public class CameraController extends Widget {
 
             while (cpanels.size() < panelCount) {
                 CameraControllerPanel cp = new CameraControllerPanel();
-                this.add(cp);
+                main.add(cp);
                 cpanels.add(cp);
             }
             while (cpanels.size() > panelCount) {
                 CameraControllerPanel cp = cpanels.remove(cpanels.size() - 1);
-                this.remove(cp);
+                main.remove(cp);
                 cpanels.remove(cp);
             }
 
@@ -159,6 +173,22 @@ public class CameraController extends Widget {
             }
 
             releaseAllLocks();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == dumpSettings) {
+                try {
+                    XMLDocument xml = new XMLDocument();
+                    XMLNode root = xml.addRootNode("settings");
+                    CameraFeature.Set cfs = cameraState.getAutoLocked();
+                    cfs.serialize(root);
+                    releaseAllLocks();
+                    System.out.println(xml.getXMLDump());
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            }
         }
 
         class CameraControllerPanel extends JPanel implements ActionListener, ChangeListener {
