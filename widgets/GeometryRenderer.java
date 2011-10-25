@@ -65,7 +65,7 @@ import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
-import org.finroc.plugins.data_types.Pose3D;
+import org.finroc.plugins.data_types.Pose2D;
 
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -83,7 +83,7 @@ public class GeometryRenderer extends Widget {
     /** Geometry to render */
     public WidgetPorts<WidgetInput.Std<PaintablePortData>> geometry;
     public WidgetPorts<WidgetInput.Numeric> objectCoordinates;
-    public WidgetPorts<WidgetInput.CC<Pose3D>> objectPoses;
+    public WidgetPorts<WidgetInput.CC<Pose2D>> objectPoses;
     public WidgetOutput.Numeric clickX;
     public WidgetOutput.Numeric clickY;
     public WidgetOutput.Numeric clickCounter;
@@ -107,7 +107,7 @@ public class GeometryRenderer extends Widget {
     public GeometryRenderer() {
         geometry = new WidgetPorts<WidgetInput.Std<PaintablePortData>>("geometry", 3, WidgetInput.Std.class, this);
         objectCoordinates = new WidgetPorts<WidgetInput.Numeric>("", 0, WidgetInput.Numeric.class, this);
-        objectPoses = new WidgetPorts<WidgetInput.CC<Pose3D>>("", 0, WidgetInput.CC.class, this);
+        objectPoses = new WidgetPorts<WidgetInput.CC<Pose2D>>("", 0, WidgetInput.CC.class, this);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class GeometryRenderer extends Widget {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
         } else if (objectPoses != null && objectPoses.contains(forPort)) {
-            return suggestion.derive(Pose3D.TYPE);
+            return suggestion.derive(Pose2D.TYPE);
         }
         return suggestion;
     }
@@ -397,7 +397,7 @@ public class GeometryRenderer extends Widget {
             toolbar.setVisible(!hideToolbar);
 
             if (objectPoses == null) {
-                objectPoses = new WidgetPorts<WidgetInput.CC<Pose3D>>("", 0, WidgetInput.CC.class, GeometryRenderer.this);
+                objectPoses = new WidgetPorts<WidgetInput.CC<Pose2D>>("", 0, WidgetInput.CC.class, GeometryRenderer.this);
             }
 
             // Init Input Ports
@@ -413,7 +413,7 @@ public class GeometryRenderer extends Widget {
                 objectCoordinates.add(new WidgetInput.Numeric());
             }
             while (objectPoses.size() < mapObjects.size()) {
-                objectPoses.add(new WidgetInput.CC<Pose3D>());
+                objectPoses.add(new WidgetInput.CC<Pose2D>());
             }
             while ((objectCoordinates.size() + 2) / MAP_OBJECT_EDGE_COUNT > mapObjects.size()) {
                 objectCoordinates.remove(objectCoordinates.size() - 1);
@@ -444,7 +444,7 @@ public class GeometryRenderer extends Widget {
             for (WidgetInput.Numeric wp : objectCoordinates) {
                 wp.addChangeListener(renderer);
             }
-            for (WidgetInput.CC<Pose3D> wp : objectPoses) {
+            for (WidgetInput.CC<Pose2D> wp : objectPoses) {
                 wp.addChangeListener(renderer);
             }
 
