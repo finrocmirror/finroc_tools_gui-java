@@ -82,6 +82,12 @@ public class FieldAccessorFactory {
                                     FieldAccessor fa = new FieldAccessor(f, x);
                                     components.put(f, fa);
                                     componentsList.add(fa);
+                                } else {
+                                    FieldAccessor fa = customFieldHandling(f, x);
+                                    if (fa != null) {
+                                        components.put(f, fa);
+                                        componentsList.add(fa);
+                                    }
                                 }
                             }
                         } else {
@@ -94,6 +100,18 @@ public class FieldAccessorFactory {
             FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
         }
         return componentsList;
+    }
+
+    /**
+     * It's possible to override this in order to handle field in another custom way.
+     * (if it is not handled in default way already).
+     *
+     * @param f Field
+     * @param x Object currently inspected
+     * @return Field Accessor - or null if not handled
+     */
+    protected FieldAccessor customFieldHandling(Field f, Object x) {
+        return null;
     }
 
     /**

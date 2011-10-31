@@ -2,7 +2,7 @@
  * You received this file as part of FinGUI - a universal
  * (Web-)GUI editor for Robotic Systems.
  *
- * Copyright (C) 2007-2010 Max Reichardt
+ * Copyright (C) 2007-2011 Max Reichardt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,15 +32,17 @@ import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
+import org.finroc.tools.gui.util.propertyeditor.gui.EnumConstantsImporter;
 
-import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
+import org.rrlib.finroc_core_utils.serialization.Serialization;
 
 
-public class ComboBox extends Widget {
+public class ComboBox extends Widget implements EnumConstantsImporter {
 
     /** UID */
     private static final long serialVersionUID = 8816685145481173845L;
@@ -48,11 +50,14 @@ public class ComboBox extends Widget {
     /** Widget currently has three fixed outputs, variable number would be difficult with property editor */
     public WidgetOutput.Numeric output1, output2, output3;
 
+    /** Output port with custom type */
+    public WidgetOutput.Custom customOutput;
+
     public PropertyList<ComboBoxElement> choices = new PropertyList<ComboBoxElement>(ComboBoxElement.class, 30);
 
     public ComboBox() {
-        choices.add(new ComboBoxElement("Choice 1", 0, 0, 0));
-        choices.add(new ComboBoxElement("Choice 2", 1, 1, 1));
+        choices.add(new ComboBoxElement("Choice 1", 0, 0, 0, "0"));
+        choices.add(new ComboBoxElement("Choice 2", 1, 1, 1, "0"));
     }
 
     @Override
@@ -65,6 +70,20 @@ public class ComboBox extends Widget {
         return new ComboBoxUI();
     }
 
+    @Override
+    public void importEnumConstants(DataTypeReference enumType) {
+        choices.clear();
+        for (Object o : enumType.get().getJavaClass().getEnumConstants()) {
+            Enum<?> e = (Enum<?>)o;
+            choices.add(new ComboBoxElement(e.name(), e.ordinal(), e.ordinal(), e.ordinal(), Serialization.serialize(e)));
+        }
+    }
+
+    @Override
+    public boolean importEnumConstantsSupported() {
+        return true;
+    }
+
     public static class ComboBoxElement implements Serializable {
 
         /** UID */
@@ -72,14 +91,16 @@ public class ComboBox extends Widget {
 
         private String name = "choice name";
         private double output1 = 0, output2 = 0, output3 = 0;
+        private String customOutput = "0";
 
         public ComboBoxElement() {}
 
-        private ComboBoxElement(String name, double output1, double output2, double output3) {
+        private ComboBoxElement(String name, double output1, double output2, double output3, String customOutput) {
             this.name = name;
             this.output1 = output1;
             this.output2 = output2;
             this.output3 = output3;
+            this.customOutput = customOutput;
         }
 
         public String toString() {
@@ -87,18 +108,22 @@ public class ComboBox extends Widget {
         }
     }
 
-    class ComboBoxUI extends WidgetUI implements PortListener<CoreNumber>, ActionListener {
+    @SuppressWarnings("rawtypes")
+    class ComboBoxUI extends WidgetUI implements PortListener, ActionListener {
 
         /** UID */
         private static final long serialVersionUID = -8663762048760660960L;
 
         JComboBox comboBox = new JComboBox();
+        boolean updatingFromReversePush = true;
 
+        @SuppressWarnings("unchecked")
         public ComboBoxUI() {
             super(RenderMode.Swing);
             output1.addChangeListener(this);
             output2.addChangeListener(this);
             output3.addChangeListener(this);
+            customOutput.addChangeListener(this);
             setLayout(new BorderLayout());
             add(comboBox);
             comboBox.addActionListener(this);
@@ -116,23 +141,31 @@ public class ComboBox extends Widget {
 
         public void actionPerformed(ActionEvent e) {
             ComboBoxElement cbe = (ComboBoxElement)comboBox.getSelectedItem();
-            if (cbe != null) {
+            if (cbe != null && (!updatingFromReversePush)) {
+                //System.out.println("Publishing");
                 output1.publish(cbe.output1);
                 output2.publish(cbe.output2);
                 output3.publish(cbe.output3);
+                if (cbe.customOutput != null) {
+                    customOutput.publishFromString(cbe.customOutput);
+                }
             }
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, Object value) {
             for (ComboBoxElement cbe : choices) {
-                if (output1.getDouble() == cbe.output1 &&
-                        output2.getDouble() == cbe.output2 &&
-                        output3.getDouble() == cbe.output3) {
+                if ((output1.getDouble() == cbe.output1 || !output1.getPort().isConnected()) &&
+                        (output2.getDouble() == cbe.output2 || !output2.getPort().isConnected()) &&
+                        (output3.getDouble() == cbe.output3 || !output3.getPort().isConnected()) &&
+                        (Serialization.serialize(customOutput.asPort().getAutoLocked()).equals(cbe.customOutput) || !customOutput.asPort().isConnected())) {
+                    updatingFromReversePush = true;
                     comboBox.setSelectedItem(cbe);
+                    updatingFromReversePush = false;
                     return;
                 }
             }
+            releaseAllLocks();
             comboBox.setSelectedItem(null);
         }
     }

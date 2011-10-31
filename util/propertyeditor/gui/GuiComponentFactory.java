@@ -20,6 +20,9 @@
  */
 package org.finroc.tools.gui.util.propertyeditor.gui;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintable;
@@ -30,14 +33,16 @@ import org.finroc.tools.gui.util.propertyeditor.PropertyAccessor;
 import org.finroc.tools.gui.util.propertyeditor.PropertyAccessorAdapter;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.finroc.tools.gui.util.propertyeditor.StringEditor;
+import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.plugins.data_types.StringList;
+import org.rrlib.finroc_core_utils.serialization.DataTypeBase;
 
 /**
  * @author max
  *
  * Component factory for GUI types
  */
-public class GuiComponentFactory implements ComponentFactory {
+public class GuiComponentFactory implements ComponentFactory, Comparator<DataTypeReference> {
 
     /** Reference to dialog */
     private PropertiesDialog parent;
@@ -69,6 +74,13 @@ public class GuiComponentFactory implements ComponentFactory {
         } else if (StringList.class.isAssignableFrom(type)) {
             wpec = new StringEditor(-1);
             acc = new StringListAdapter((PropertyAccessor<StringList>)acc);
+        } else if (DataTypeReference.class.isAssignableFrom(acc.getType())) {
+            DataTypeReference[] types = new DataTypeReference[DataTypeBase.getTypeCount()];
+            for (short i = 0; i < types.length; i++) {
+                types[i] = new DataTypeReference(DataTypeBase.getType(i));
+            }
+            Arrays.sort(types, this);
+            wpec = new DataTypeEditor(types, (acc instanceof EnumConstantsImporter) ? (EnumConstantsImporter)acc : null, panel);
         }
         if (wpec != null) {
             wpec.init(acc);
@@ -94,5 +106,10 @@ public class GuiComponentFactory implements ComponentFactory {
         public String get() throws Exception {
             return wrapped.get().toString();
         }
+    }
+
+    @Override
+    public int compare(DataTypeReference o1, DataTypeReference o2) {
+        return o1.toString().compareTo(o2.toString());
     }
 }

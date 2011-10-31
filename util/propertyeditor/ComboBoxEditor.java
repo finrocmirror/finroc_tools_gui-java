@@ -39,7 +39,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
     /** UID */
     private static final long serialVersionUID = -6118534525281404885L;
 
-    JComboBox jcmb;
+    protected JComboBox jcmb;
 
     /** Possible values */
     private final T[] values;

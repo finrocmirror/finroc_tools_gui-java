@@ -161,6 +161,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     @Override
     protected void valueUpdated(PropertyListAccessor<?> t) {
         removeAll();
+        guielems.clear();
         listPanel = new JPanel();
         list = t;
         SpinnerNumberModel snm = new SpinnerNumberModel(list.size(), 0, list.getMaxEntries(), 1);

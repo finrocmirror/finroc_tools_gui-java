@@ -100,6 +100,7 @@ public class ObjectCloner {
                 ObjectOutputStream oos = new ObjectOutputStream(baos);
                 oos.writeObject(t);
                 oos.close();
+                baos.close();
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
                 T result = (T)ois.readObject();
                 ois.close();

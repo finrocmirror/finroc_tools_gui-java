@@ -66,6 +66,9 @@ public class VideoRenderer extends Widget {
 
     class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseInputListener {
 
+        /** Dimension of last blitted image */
+        private int lastWidth, lastHeight;
+
         public VideoWindowUI() {
             super(RenderMode.Cached);
             videoInput.addChangeListener(this);
@@ -84,7 +87,13 @@ public class VideoRenderer extends Widget {
                 releaseAllLocks();
                 return;
             }
-            b.getBlittable(imageIndexInSource).blitTo(cache, new Rectangle(renderSize));
+            Blittable bl = b.getBlittable(imageIndexInSource);
+            if (bl.getWidth() != lastWidth || bl.getHeight() != lastHeight) {
+                cache.fill(0);
+                lastWidth = bl.getWidth();
+                lastHeight = bl.getHeight();
+            }
+            bl.blitTo(cache, new Rectangle(renderSize));
             releaseAllLocks();
         }
 

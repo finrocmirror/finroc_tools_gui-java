@@ -37,10 +37,10 @@ import org.finroc.tools.gui.commons.Util;
 public class FieldAccessor implements PropertyAccessor {
 
     /** Property that is changed */
-    private final Field property;
+    protected final Field property;
 
     /** Objects that are edited */
-    private List<Object> objects = new ArrayList<Object>();
+    protected List<Object> objects = new ArrayList<Object>();
 
     public FieldAccessor(Field property, Object... objects) {
         this.property = property;

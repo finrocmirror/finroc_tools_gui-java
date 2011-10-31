@@ -23,15 +23,19 @@ package org.finroc.tools.gui;
 import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.plugins.blackboard.BlackboardClient;
 import org.finroc.plugins.blackboard.RawBlackboardClient;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.serialization.PortDataList;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
+import org.rrlib.finroc_core_utils.serialization.StringInputStream;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
+import org.finroc.core.port.cc.CCPortDataManagerTL;
 import org.finroc.core.port.cc.PortNumeric;
 import org.finroc.core.port.std.PortDataManager;
 
@@ -149,6 +153,56 @@ public class WidgetOutput {
             PortDataList<T> result = c.read();
             ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
             return result;
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class Custom extends WidgetOutputPort<Port<RRLibSerializable>> {
+
+        /** UID */
+        private static final long serialVersionUID = -3991768387448158703L;
+
+        /** Port's data type (can be changed) */
+        private DataTypeReference type = new DataTypeReference();
+
+        @Override
+        protected Port createPort() {
+            return new Port(getPci().derive((type == null || type.get() == null) ? CoreNumber.TYPE : type.get()));
+        }
+
+        public void changeDataType(DataTypeReference type) {
+            frameworkElement.managedDelete();
+            frameworkElement = null;
+            this.type = type;
+            restore(getParent());
+        }
+
+        public synchronized void publishFromString(String s) {
+            RRLibSerializable buffer = asPort().getUnusedBuffer();
+            StringInputStream sis = new StringInputStream(s);
+            try {
+                buffer.deserialize(sis);
+                asPort().publish(buffer);
+                buffer = null;
+            } catch (Exception ex) {
+                if (asPort().hasCCType()) {
+                    ((CCPortDataManagerTL)CCPortDataManagerTL.getManager(buffer)).recycleUnused();
+                } else {
+                    ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
+                }
+                logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
+            }
+        }
+
+        /**
+         * @return Port's data type
+         */
+        public DataTypeReference getType() {
+            return type;
+        }
+
+        public void addChangeListener(PortListener l) {
+            EventRouter.addListener(getPort(), "addPortListenerRaw", l);
         }
     }
 

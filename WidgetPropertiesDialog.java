@@ -30,8 +30,10 @@ import javax.swing.JFrame;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.util.embeddedfiles.FileManager;
+import org.finroc.tools.gui.util.propertyeditor.FieldAccessor;
 import org.finroc.tools.gui.util.propertyeditor.FieldAccessorFactory;
 import org.finroc.tools.gui.util.propertyeditor.PropertyAccessor;
+import org.finroc.tools.gui.util.propertyeditor.gui.CustomTypePortAccessor;
 import org.finroc.tools.gui.util.propertyeditor.gui.PropertiesDialog;
 
 
@@ -77,6 +79,14 @@ public class WidgetPropertiesDialog extends PropertiesDialog {
                 return true;
             }
             return false;
+        }
+
+        @Override
+        protected FieldAccessor customFieldHandling(Field f, Object x) {
+            if (f.getType() == WidgetOutput.Custom.class) {
+                return new CustomTypePortAccessor(f, x);
+            }
+            return null;
         }
     }
 
