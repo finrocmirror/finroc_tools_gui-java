@@ -109,4 +109,8 @@ public class FileDialog {
     public static File showOpenPathDialog(String title) {
         return showOpenDialog(title, new String[0], true);
     }
+
+    public static void setCurrentDirectory(File directory) {
+        lastDir = directory;
+    }
 }

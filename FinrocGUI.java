@@ -78,6 +78,15 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
         // restore last settings
         persistentSettings = Settings.restore();
 
+        // set file dialog start directory to convenient choice
+        if (System.getenv("FINROC_PROJECT_HOME") != null) {
+            FileDialog.setCurrentDirectory(new File(System.getenv("FINROC_PROJECT_HOME")));
+        } else if (System.getenv("FINROC_HOME") != null) {
+            FileDialog.setCurrentDirectory(new File(System.getenv("FINROC_HOME")));
+        } else {
+            FileDialog.setCurrentDirectory(new File("."));
+        }
+
         setModel(new GUI(this));
         arrangeWindows();
         updateLastGUIData();
