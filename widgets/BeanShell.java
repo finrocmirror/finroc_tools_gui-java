@@ -70,7 +70,7 @@ public class BeanShell extends Widget {
                 ip.eval("public org.finroc.core.port.AbstractPort getInput(String s) { return mcagui.getInput(s).getPort(); }");
                 ip.eval("public org.finroc.core.port.AbstractPort getOutput(String s) { return mcagui.getOutput(s).getPort(); }");
                 ip.eval("public void main() { System.out.println(\"main not defined yet\"); }");
-                ip.eval("public class XYZ extends org.finroc.jc.thread.LoopThread { " +
+                ip.eval("public class XYZ extends org.rrlib.finroc_core_utils.jc.thread.LoopThread { " +
                         "    public static XYZ instance;" +
                         "    public XYZ(long ms) {" +
                         "        super(ms, false);" +

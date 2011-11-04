@@ -21,13 +21,15 @@
 package org.finroc.tools.gui.util.propertyeditor;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
-import ZoeloeSoft.projects.JFontChooser.JFontChooser;
+import com.connectina.swing.fontchooser.JFontChooser;
 
 /**
  * @author max
@@ -57,11 +59,13 @@ public class FontEditor extends PropertyEditComponent<Font> implements ActionLis
 
 
     public void actionPerformed(ActionEvent e) {
-        JFontChooser jf = new JFontChooser(null);
-        jf.setFont(curFont);
-        jf.showDialog();
-        if (jf.getFont() != null) {
-            curFont = jf.getFont();
+        Container c = this.getParent();
+        while (!(c instanceof Window)) {
+            c = c.getParent();
+        }
+        Font newFont = JFontChooser.showDialog((Window)c, curFont);
+        if (newFont != null) {
+            curFont = newFont;
             button.setText(curFont.getFontName());
         }
     }
