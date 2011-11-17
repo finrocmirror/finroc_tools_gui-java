@@ -32,7 +32,6 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 
 import org.finroc.core.datatype.CoreBoolean;
-import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
@@ -69,7 +68,8 @@ public class CheckBox extends Widget {
         return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
     }
 
-    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener<CoreNumber> {
+    @SuppressWarnings("rawtypes")
+    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener {
 
         /** UID */
         private static final long serialVersionUID = -5106178045019582395L;
@@ -77,6 +77,7 @@ public class CheckBox extends Widget {
         /** Swing component for visual representation */
         private JCheckBox checkBox;
 
+        @SuppressWarnings("unchecked")
         private CheckBoxUI() {
             super(RenderMode.Swing); // use Swing render mode
             setLayout(new BorderLayout());
@@ -84,6 +85,7 @@ public class CheckBox extends Widget {
             checkBox.addActionListener(this);  // register as listener
             add(checkBox, BorderLayout.CENTER); // add check box the centre
             value.addChangeListener(this); // register as listener at port
+            boolValue.addChangeListener(this); // register as listener at port
             widgetPropertiesChanged(); // call properties changed method
             portChanged(null, null); // set initial value
         }
@@ -99,7 +101,7 @@ public class CheckBox extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value2) {
+        public void portChanged(AbstractPort origin, Object val) {
             if (value.getPort().isConnected()) {
                 checkBox.setSelected(value.getDouble() != 0);
             } else if (boolValue.getPort().isConnected()) {
