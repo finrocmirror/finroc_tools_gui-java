@@ -102,7 +102,9 @@ public abstract class WidgetPort < P extends PortWrapperBase<? >> extends DataMo
                 getPort().connectToTarget(s);
             }
         }
-        defaultFlags = getPort().getAllFlags();
+        if (defaultFlags == 0) {
+            defaultFlags = getPort().getAllFlags();
+        }
     }
 
     public void clearConnections() {
