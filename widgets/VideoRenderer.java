@@ -22,6 +22,7 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseEvent;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -32,6 +33,12 @@ import java.io.IOException;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.BasicStroke;
+import java.awt.Stroke;
+
+import java.lang.Math;
 
 import javax.imageio.ImageIO;
 import javax.naming.OperationNotSupportedException;
@@ -39,6 +46,7 @@ import javax.swing.event.MouseInputListener;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
+import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
@@ -53,7 +61,6 @@ import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 
-
 public class VideoRenderer extends Widget {
 
   enum ScaleMode { scaleFast, scaleSmooth, scaleAreaAverage };
@@ -62,6 +69,8 @@ public class VideoRenderer extends Widget {
     private static final long serialVersionUID = -8452479527434504700L;
 
     public WidgetInput.Std<HasBlittable> videoInput;
+
+  public WidgetOutput.Std<org.finroc.plugins.data_types.mca.Image> videoSelection;
 
     /** Image index in image source - in case we receive lists of blittables */
     public int imageIndexInSource;
@@ -75,7 +84,7 @@ public class VideoRenderer extends Widget {
     /** Indicates whether to keep image aspect ration or not */
     private boolean keepAspectRatio = true;
 
-  private ScaleMode scaleMode = ScaleMode.scaleFast;
+    private ScaleMode scaleMode = ScaleMode.scaleFast;
 
     @Override
     protected WidgetUI createWidgetUI() {
@@ -88,12 +97,20 @@ public class VideoRenderer extends Widget {
     }
 
   enum Action { SaveSingleImage }
-  //  enum Mode { Normal, Move, Zoom, Rotate}
-
 
   class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseInputListener, ActionListener {
 
         MToolBar toolbar;
+
+	private BufferedImageRGB temp_image = null;
+	
+	private Point marking_start_point;
+	
+	private Point marking_current_point;
+	
+	private Point marking_end_point;
+
+	private boolean paint_marking = false;
 
         /** Dimension of last blitted image */
         private int lastWidth, lastHeight;
@@ -110,6 +127,7 @@ public class VideoRenderer extends Widget {
 	    toolbar.add(new MAction(Action.SaveSingleImage, "document-save.png", "Save Image", this));
 
             add(toolbar, BorderLayout.WEST);
+	    toolbar.setVisible(!hideToolbar);
         }
 
         public void actionPerformed(ActionEvent ae) {
@@ -150,32 +168,66 @@ public class VideoRenderer extends Widget {
 	    }
 
 	    bl.blitTo (cache, new Rectangle(renderSize));
+
             releaseAllLocks();
         }
+	
+	@Override
+	  protected void paintComponent(Graphics g) {
+	  super.paintComponent (g);
+	  
+	  if (this.paint_marking) {
+	    int x = (int) this.marking_start_point.getX ();
+	    int y = (int) this.marking_start_point.getY ();
+	    int width = (int) Math.abs (x - this.marking_current_point.getX ());
+	    int height = (int) Math.abs (y - this.marking_current_point.getY ());
+	    if (x > (int) this.marking_current_point.getX ()) {
+	      x = (int) this.marking_current_point.getX ();
+	    }
+	    if (y > (int) this.marking_current_point.getY ()) {
+	      y = (int) this.marking_current_point.getY ();
+	    }
 
+	    g.drawRect (x, y, width, height);
+	  }
+	}
+	
         @Override
-        public void portChanged(AbstractPort origin, HasBlittable value) {
-            this.setChanged();
-            repaint();
+	  public void portChanged(AbstractPort origin, HasBlittable value) {
+	  this.setChanged();
+	  repaint();
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {}
         @Override
-        public void mousePressed(MouseEvent e) {}
+        public void mousePressed(MouseEvent e) {
+	  if (e.getButton() == MouseEvent.BUTTON1) {
+	    this.marking_start_point = e.getPoint();
+	    this.marking_current_point = e.getPoint();
+	    this.paint_marking = true;
+	  }
+	}
         @Override
         public void mouseEntered(MouseEvent e) {}
         @Override
         public void mouseExited(MouseEvent e) {}
         @Override
-        public void mouseDragged(MouseEvent e) {}
+        public void mouseDragged(MouseEvent e) {
+	  // trigger repaint
+	  if (this.paint_marking) {
+	    this.setChanged();
+	    repaint();
+	    this.marking_current_point = e.getPoint ();
+	  } 
+	}
         @Override
         public void mouseMoved(MouseEvent e) {}
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON2) {
-                HasBlittable b = videoInput.getAutoLocked();
+	  if (e.getButton() == MouseEvent.BUTTON2) {
+	    HasBlittable b = videoInput.getAutoLocked();
                 if (b == null || imageIndexInSource >= b.getNumberOfBlittables() || (b.getBlittable(imageIndexInSource).getHeight() <= 0 && b.getBlittable(imageIndexInSource).getWidth() <= 0)) {
                     releaseAllLocks();
                     return;
@@ -195,6 +247,47 @@ public class VideoRenderer extends Widget {
 
                 releaseAllLocks();
             }
+
+	    if (e.getButton() == MouseEvent.BUTTON1) {
+	      this.paint_marking = true;
+	      this.marking_end_point = e.getPoint();
+	      
+ 	      // remove markings again
+	      this.paint_marking = false;
+	      this.setChanged();
+	      repaint();
+
+	      // compute selection rectangle
+	      int x = (int) this.marking_start_point.getX ();
+	      int y = (int) this.marking_start_point.getY ();
+	      int width = (int) Math.abs (x - this.marking_end_point.getX ());
+	      int height = (int) Math.abs (y - this.marking_end_point.getY ());
+	      if (x > (int) this.marking_end_point.getX ()) {
+		x = (int) this.marking_end_point.getX ();
+	      }
+	      if (y > (int) this.marking_end_point.getY ()) {
+		y = (int) this.marking_end_point.getY ();
+	      }
+	      Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
+	      
+	      // create and render image from JPanel for export
+	      BufferedImageRGB image_selection = new BufferedImageRGB (width, height);
+	      Graphics2D g_region = image_selection.getBufferedImage().createGraphics();
+	      g_region.translate(-x, -y);
+	      this.printAll(g_region); 
+	      
+	      // save image if applicable
+	      if (image_selection != null) {
+                File f = FileDialog.showSaveDialog("Save Image Selection as...", "png");
+                if (f != null) {
+                    try {
+		      ImageIO.write(image_selection.getBufferedImage(), "png", f);
+                    } catch (IOException e1) {
+                        getRoot().getFingui().showErrorMessage(e1);
+                    }
+                }
+	      }
+	    }
         }
 
 	private BufferedImageRGB getScaledInstance (BufferedImageRGB input_image, Dimension renderSize, ScaleMode scaleMode, boolean keepAspectRatio) {
@@ -234,14 +327,18 @@ public class VideoRenderer extends Widget {
 									    scale_mode);
 	  }
 	      
-	  BufferedImageRGB output_image = new BufferedImageRGB(renderSize.width,
-							       renderSize.height);
+	  if ((temp_image == null) || 
+	      (temp_image.getWidth () != renderSize.width) || 
+	      (temp_image.getHeight () != renderSize.height)) {
+	    temp_image = new BufferedImageRGB(renderSize.width,
+					      renderSize.height);
+	  }
 	      
-	  Graphics g = output_image.getBufferedImage().createGraphics();
+	  Graphics g = temp_image.getBufferedImage().createGraphics();
 	  g.drawImage(scaled_image, 0, 0, null);
 	  g.dispose();
-
-	  return output_image;
+	  
+	  return temp_image;
 	}
 
     }
