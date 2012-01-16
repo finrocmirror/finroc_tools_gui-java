@@ -60,8 +60,11 @@ import org.finroc.plugins.data_types.HasBlittable;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.finroc.core.datatype.CoreNumber;
 
 public class VideoRenderer extends Widget {
+  
+  enum Mode {SaveToFile, SaveToPort}
 
   enum ScaleMode { scaleFast, scaleSmooth, scaleAreaAverage };
 
@@ -70,7 +73,9 @@ public class VideoRenderer extends Widget {
 
     public WidgetInput.Std<HasBlittable> videoInput;
 
-  public WidgetOutput.Std<org.finroc.plugins.data_types.mca.Image> videoSelection;
+    public WidgetOutput.Std<org.finroc.plugins.data_types.mca.Image> videoSelection;
+
+    public WidgetOutput.Numeric imageCounter;
 
     /** Image index in image source - in case we receive lists of blittables */
     public int imageIndexInSource;
@@ -86,6 +91,8 @@ public class VideoRenderer extends Widget {
 
     private ScaleMode scaleMode = ScaleMode.scaleFast;
 
+  private java.lang.String fileExtension = "png";
+
     @Override
     protected WidgetUI createWidgetUI() {
         return new VideoWindowUI();
@@ -93,10 +100,14 @@ public class VideoRenderer extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(HasBlittable.TYPE);
+      if (forPort == videoSelection) {
+	return suggestion.derive (org.finroc.plugins.data_types.mca.Image.TYPE);
+      }
+      if (forPort == videoInput) {
+	return suggestion.derive(HasBlittable.TYPE);
+      }
+      return null;
     }
-
-  enum Action { SaveSingleImage }
 
   class VideoWindowUI extends WidgetUI implements PortListener<HasBlittable>, MouseInputListener, ActionListener {
 
@@ -112,29 +123,38 @@ public class VideoRenderer extends Widget {
 
 	private boolean paint_marking = false;
 
+	private Mode current_mode = Mode.SaveToFile;
+
         /** Dimension of last blitted image */
         private int lastWidth, lastHeight;
+
+	private int image_counter = 0;
 
         public VideoWindowUI() {
             super(RenderMode.Cached);
             this.setLayout(new BorderLayout());
             videoInput.addChangeListener(this);
+	    //	    videoSelection.addChangeListener(this);
+	    
             addMouseListener(this);
             addMouseMotionListener(this);
 
             toolbar = new MToolBar("GeometryWidget Control", MToolBar.VERTICAL);
 	    //            toolbar.addToggleButton(new MAction(Mode.Normal, "arrow.png", "Point Mode", this, Cursor.HAND_CURSOR));
-	    toolbar.add(new MAction(Action.SaveSingleImage, "document-save.png", "Save Image", this));
+	    toolbar.addToggleButton (new MAction(Mode.SaveToFile, "document-save.png", "Save Image To File", this, Cursor.CROSSHAIR_CURSOR));
+	    toolbar.addToggleButton (new MAction(Mode.SaveToPort, "to-port.png", "Save Image to Port", this, Cursor.CROSSHAIR_CURSOR));
 
+            toolbar.setSelected(Mode.SaveToFile);
             add(toolbar, BorderLayout.WEST);
 	    toolbar.setVisible(!hideToolbar);
         }
 
         public void actionPerformed(ActionEvent ae) {
 	  Enum e = ((MActionEvent)ae).getEnumID();
-
-	  if (e == Action.SaveSingleImage) {
-	    System.out.println ("save image.\n");
+	  if (e instanceof Mode) {
+	    //	    renderer.setCursor(Cursor.getPredefinedCursor((Integer)((MActionEvent)ae).getCustomData()));
+	    current_mode = (Mode) e;
+	    toolbar.setSelected(e);
 	  }
 	}
 
@@ -228,26 +248,26 @@ public class VideoRenderer extends Widget {
         public void mouseReleased(MouseEvent e) {
 	  if (e.getButton() == MouseEvent.BUTTON2) {
 	    HasBlittable b = videoInput.getAutoLocked();
-                if (b == null || imageIndexInSource >= b.getNumberOfBlittables() || (b.getBlittable(imageIndexInSource).getHeight() <= 0 && b.getBlittable(imageIndexInSource).getWidth() <= 0)) {
-                    releaseAllLocks();
-                    return;
-                }
-
-                Blittable bl = b.getBlittable(imageIndexInSource);
-                BufferedImageRGB image = new BufferedImageRGB(bl.getWidth(), bl.getHeight());
-                bl.blitTo(image);
-                File f = FileDialog.showSaveDialog("Save Image as...", "png");
-                if (f != null) {
-                    try {
-                        ImageIO.write(image.getBufferedImage(), "png", f);
-                    } catch (IOException e1) {
-                        getRoot().getFingui().showErrorMessage(e1);
-                    }
-                }
-
-                releaseAllLocks();
-            }
-
+	    if (b == null || imageIndexInSource >= b.getNumberOfBlittables() || (b.getBlittable(imageIndexInSource).getHeight() <= 0 && b.getBlittable(imageIndexInSource).getWidth() <= 0)) {
+	      releaseAllLocks();
+	      return;
+	    }
+	    
+	    Blittable bl = b.getBlittable(imageIndexInSource);
+	    BufferedImageRGB image = new BufferedImageRGB(bl.getWidth(), bl.getHeight());
+	    bl.blitTo(image);
+	    File f = FileDialog.showSaveDialog("Save Image as...", fileExtension);
+	    if (f != null) {
+	      try {
+		ImageIO.write(image.getBufferedImage(), fileExtension, f);
+	      } catch (IOException e1) {
+		getRoot().getFingui().showErrorMessage(e1);
+	      }
+	    }
+	    
+	    releaseAllLocks();
+	  }
+	  
 	    if (e.getButton() == MouseEvent.BUTTON1) {
 	      this.paint_marking = true;
 	      this.marking_end_point = e.getPoint();
@@ -278,14 +298,28 @@ public class VideoRenderer extends Widget {
 	      
 	      // save image if applicable
 	      if (image_selection != null) {
-                File f = FileDialog.showSaveDialog("Save Image Selection as...", "png");
-                if (f != null) {
+		if (current_mode == Mode.SaveToFile) {
+		  File f = FileDialog.showSaveDialog("Save Image Selection as...", fileExtension);
+		  if (f != null) {
                     try {
-		      ImageIO.write(image_selection.getBufferedImage(), "png", f);
+		      ImageIO.write(image_selection.getBufferedImage(), fileExtension, f);
                     } catch (IOException e1) {
-                        getRoot().getFingui().showErrorMessage(e1);
+		      getRoot().getFingui().showErrorMessage(e1);
                     }
-                }
+		  }
+		}
+		
+		if (current_mode == Mode.SaveToPort) {
+		  org.finroc.plugins.data_types.mca.Image output_image = videoSelection.getUnusedBuffer ();
+		  
+		  System.out.println ("retrieved buffer: " + output_image.getWidth () + ", " + output_image.getHeight ());
+		  
+		  output_image.setImageDataRGB32 (image_selection.getWidth (), image_selection.getHeight (), image_selection.getBuffer ());
+		  videoSelection.publish (output_image);
+		  imageCounter.publish (image_counter++);
+
+		  System.out.println ("exporting image " + image_counter + " via port (" + output_image.getWidth () + ", " + output_image.getHeight () + ")");
+		}
 	      }
 	    }
         }
