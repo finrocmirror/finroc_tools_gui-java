@@ -34,7 +34,7 @@ import javax.swing.filechooser.FileFilter;
  * implementing the accept(File f, String name) method
  */
 public abstract class MFileFilter extends FileFilter implements java.io.FileFilter,
-            FilenameFilter {
+    FilenameFilter {
 
     /* (non-Javadoc)
      * @see javax.swing.filechooser.FileFilter#accept(java.io.File)

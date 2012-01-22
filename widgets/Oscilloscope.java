@@ -285,7 +285,7 @@ public class Oscilloscope extends Widget {
                 } else {
                     yRel = (y - rightScaleMin) / (rightScaleMax - rightScaleMin);
                 }
-                return ((double)(getHeight() - 1)) *(1 - yRel);
+                return ((double)(getHeight() - 1)) * (1 - yRel);
             }
 
             public double getXCord(double x) {

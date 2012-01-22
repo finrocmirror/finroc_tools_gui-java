@@ -66,7 +66,7 @@ public class BlackboardDropDown extends Widget {
     }
 
     class BlackboardDropDownUI extends WidgetUI implements
-                PortListener<StringBlackboardBuffer>, ActionListener {
+        PortListener<StringBlackboardBuffer>, ActionListener {
         /** UID */
         private static final long serialVersionUID = -4319918865786225484L;
 

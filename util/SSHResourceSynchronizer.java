@@ -89,7 +89,9 @@ public class SSHResourceSynchronizer implements FilenameFilter, InteractiveCallb
         String destDir = "";
         try {
             destDir = destFile.substring(0, destFile.lastIndexOf("/"));
-        } catch (Exception e) { /* no "/" in filename */ }
+        } catch (Exception e) {
+            /* no "/" in filename */
+        }
 
         try {
             SFTPv3FileAttributes attr = sftp.stat(destFile);

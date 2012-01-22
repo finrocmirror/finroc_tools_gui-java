@@ -179,7 +179,7 @@ public class SelectionUI implements MouseInputListener, DataModelListener {
         if (bounds == null) {
             return null;
         }
-        return new Rectangle(bounds.x - RESIZE_RECT_SIZE, bounds.y - RESIZE_RECT_SIZE, bounds.width + 2* RESIZE_RECT_SIZE, bounds.height + 2* RESIZE_RECT_SIZE);
+        return new Rectangle(bounds.x - RESIZE_RECT_SIZE, bounds.y - RESIZE_RECT_SIZE, bounds.width + 2 * RESIZE_RECT_SIZE, bounds.height + 2 * RESIZE_RECT_SIZE);
     }
 
     /**
