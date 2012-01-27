@@ -52,8 +52,10 @@ import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.plugins.data_types.StringList;
 
+import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 public class LED extends Widget {
 
@@ -91,7 +93,7 @@ public class LED extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion;
+        return suggestion.derive(NumericRepresentation.TYPE);
     }
 
     @Override
@@ -156,14 +158,18 @@ public class LED extends Widget {
         public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
             for (int i = 0; i < signals.size(); i++) {
                 LEDPanel pan = panels.get(i);
-                if (!pan.info.bitMode) {
-                    double d = signals.get(i).getDouble();
+                NumericRepresentation nr = signals.get(i).getAutoLocked();
+                if (nr instanceof CoreBoolean) {
+                    pan.on = ((CoreBoolean)nr).get();
+                } else if (!pan.info.bitMode) {
+                    double d = nr.getNumericRepresentation().doubleValue();
                     pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
                 } else {
-                    int v = signals.get(i).getInt();
+                    int v = nr.getNumericRepresentation().intValue();
                     pan.on = (v & (1 << pan.info.bit)) != 0;
                 }
             }
+            releaseAllLocks();
             repaint();
         }
 

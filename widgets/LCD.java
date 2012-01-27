@@ -41,7 +41,10 @@ import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
 import org.finroc.tools.gui.themes.Themes;
 import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.finroc_core_utils.serialization.EnumValue;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
+import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -113,7 +116,7 @@ public class LCD extends Widget {
         return new Color(all, 0, 0);
     }
 
-    private class LCDUI extends WidgetUI implements PortListener<CoreNumber> {
+    private class LCDUI extends WidgetUI implements PortListener<NumericRepresentation> {
 
         /** UID */
         private static final long serialVersionUID = -5577318403814215832L;
@@ -157,6 +160,11 @@ public class LCD extends Widget {
                 blocksForDigits.put("i", Arrays.asList(new String[] {"NE", "SE"}));
                 blocksForDigits.put("F", Arrays.asList(new String[] {"SW", "NW", "C", "N"}));
                 blocksForDigits.put("f", Arrays.asList(new String[] {"SW", "NW", "C", "N"}));
+                blocksForDigits.put("T", Arrays.asList(new String[] {"SW", "NW", "N"}));
+                blocksForDigits.put("R", Arrays.asList(new String[] {"SW", "SE", "C", "N", "NE", "NW"}));
+                blocksForDigits.put("U", Arrays.asList(new String[] {"SW", "NW", "S", "NE", "SE"}));
+                blocksForDigits.put("L", Arrays.asList(new String[] {"SW", "NW", "S"}));
+                blocksForDigits.put("S", Arrays.asList(new String[] {"SE", "NW", "C", "N", "S"}));
             }
 
             input.addChangeListener(this);
@@ -248,7 +256,7 @@ public class LCD extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, NumericRepresentation value) {
             //if (oldNumber != null) {
             //System.out.println(oldNumber.toString() + " " + value.toString() + " " + value.equals(oldNumber));
             //}
@@ -266,7 +274,7 @@ public class LCD extends Widget {
             }
 
             // Get value
-            CoreNumber cn = input.getAutoLocked();
+            NumericRepresentation cn = input.getAutoLocked();
             releaseAllLocks();
 
             // Optimal size
@@ -274,13 +282,21 @@ public class LCD extends Widget {
             int optimalLength = (int)((renderSize.width + blockWidth * SPACING) / (blockWidth * (1 + SPACING)));
 
             // Format number
-            String s = formatNumber(cn, optimalLength);
+            String s = "";
+            int commaPos = -1000;
+            if (cn instanceof CoreNumber) {
+                s = formatNumber((CoreNumber)cn, optimalLength);
 
-            // Determine pos of comma
-            int commaPos = s.indexOf(".");
-            s = s.replace(".", "");
-            if (commaPos == -1) {
-                commaPos = s.length();
+                // Determine pos of comma
+                commaPos = s.indexOf(".");
+                s = s.replace(".", "");
+                if (commaPos == -1) {
+                    commaPos = s.length();
+                }
+            } else if (cn instanceof CoreBoolean) {
+                s = cn.toString().toUpperCase();
+            } else if (cn instanceof EnumValue) {
+                s = "" + cn.getNumericRepresentation().intValue();
             }
 
             // calculate block size
@@ -300,7 +316,7 @@ public class LCD extends Widget {
                 commaPos += fillSpace;
             }
 
-            boolean warn = ((warnings == WarnOptions.LargerThan && cn.doubleValue() > warningThreshold) || (warnings == WarnOptions.SmallerThan && cn.doubleValue() < warningThreshold));
+            boolean warn = ((warnings == WarnOptions.LargerThan && cn.getNumericRepresentation().doubleValue() > warningThreshold) || (warnings == WarnOptions.SmallerThan && cn.getNumericRepresentation().doubleValue() < warningThreshold));
             Color background = warn ? lcdWarningBackground : lcdBackground;
             cache.drawFilledRectangle(new Rectangle(renderSize), background.getRGB());
             try {

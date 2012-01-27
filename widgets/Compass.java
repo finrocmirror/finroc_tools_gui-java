@@ -35,6 +35,7 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
 import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
@@ -91,7 +92,7 @@ public class Compass extends Widget {
         }
     }
 
-    private class CompassUI extends WidgetUI implements PortListener<CoreNumber> {
+    private class CompassUI extends WidgetUI implements PortListener<NumericRepresentation> {
 
         /** UID */
         private static final long serialVersionUID = -5577967894215832L;
@@ -109,7 +110,7 @@ public class Compass extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, NumericRepresentation value) {
             setChanged();
             repaint();
         }

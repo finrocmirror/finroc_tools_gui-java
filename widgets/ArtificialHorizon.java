@@ -38,6 +38,7 @@ import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 /**
  * @author max
@@ -81,7 +82,7 @@ public class ArtificialHorizon extends Widget {
     /** Constants for calculation */
     private static int SHIFT = 16, SHIFT_MULT = 1 << SHIFT, WHITE = 0xFFFFFF, BLOCK_RED = 0xAA0000;
 
-    class ArtificialHorizonUI extends WidgetUI implements PortListener<CoreNumber> {
+    class ArtificialHorizonUI extends WidgetUI implements PortListener<NumericRepresentation> {
 
         /** UID */
         private static final long serialVersionUID = -9876567882234222L;
@@ -257,7 +258,7 @@ public class ArtificialHorizon extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, NumericRepresentation value) {
             super.setChanged();
             repaint();
         }

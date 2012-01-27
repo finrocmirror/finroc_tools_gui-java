@@ -21,13 +21,13 @@
 package org.finroc.tools.gui;
 
 import org.finroc.tools.gui.commons.EventRouter;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
-import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
-import org.finroc.core.port.cc.PortNumeric;
+import org.finroc.core.port.ThreadLocalCache;
 
 /**
  * @author max
@@ -78,31 +78,34 @@ public class WidgetInput {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public static class Numeric extends WidgetInputPort<PortNumeric<Double>> {
+    public static class Numeric extends WidgetInputPort<Port<NumericRepresentation>> {
 
         /** UID */
         private static final long serialVersionUID = 2771906075250045196L;
 
         @Override
-        protected PortNumeric createPort() {
-            return new PortNumeric(getPci());
+        protected Port<NumericRepresentation> createPort() {
+            return new Port<NumericRepresentation>(getPci().derive(NumericRepresentation.TYPE));
         }
 
-        public void addChangeListener(PortListener<CoreNumber> listener) {
+        public void addChangeListener(PortListener<NumericRepresentation> listener) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
         }
 
         public int getInt() {
-            return asPort().getIntRaw();
+            int result = getAutoLocked().getNumericRepresentation().intValue();
+            ThreadLocalCache.getFast().releaseAllLocks();
+            return result;
         }
 
         public double getDouble() {
-            return asPort().getDoubleRaw();
+            double result = getAutoLocked().getNumericRepresentation().doubleValue();
+            ThreadLocalCache.getFast().releaseAllLocks();
+            return result;
         }
 
-        public CoreNumber getAutoLocked() {
-            return (CoreNumber)asPort().getAutoLocked();
+        public NumericRepresentation getAutoLocked() {
+            return (NumericRepresentation)asPort().getAutoLocked();
         }
     }
 
