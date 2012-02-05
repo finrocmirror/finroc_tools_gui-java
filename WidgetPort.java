@@ -37,7 +37,7 @@ import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortWrapperBase;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
 
-public abstract class WidgetPort < P extends PortWrapperBase<? >> extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
+public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;

@@ -30,7 +30,7 @@ import org.finroc.core.port.PortWrapperBase;
  *
  * This is a output port of a widget
  */
-public abstract class WidgetOutputPort < P extends PortWrapperBase<? >> extends WidgetPort<P> { /*implements OutputPort<T>, PortListener*/
+public abstract class WidgetOutputPort < P extends PortWrapperBase > extends WidgetPort<P> { /*implements OutputPort<T>, PortListener*/
 
     /** UID */
     private static final long serialVersionUID = 4183113499724602127L;

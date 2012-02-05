@@ -37,7 +37,7 @@ public class InterfaceNode extends DefaultMutableTreeNode implements TreeNode, U
     public static final boolean SORT_TREE = true;
 
     public InterfaceNode(FrameworkElement.Link wrapped) {
-        super(wrapped.getDescription());
+        super(wrapped.getName());
         this.wrapped = wrapped;
     }
 
