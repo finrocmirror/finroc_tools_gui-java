@@ -45,8 +45,8 @@ import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 import org.finroc.plugins.data_types.PartWiseLinearFunction;
-import org.rrlib.finroc_core_utils.serialization.DataType;
-import org.rrlib.finroc_core_utils.serialization.DataTypeBase;
+import org.rrlib.finroc_core_utils.rtti.DataType;
+import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 

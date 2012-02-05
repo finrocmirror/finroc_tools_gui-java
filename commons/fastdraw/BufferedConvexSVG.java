@@ -38,7 +38,7 @@ import com.kitfox.svg.SVGElementException;
 
 import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.serialization.DataType;
+import org.rrlib.finroc_core_utils.rtti.DataType;
 
 /**
  * @author max

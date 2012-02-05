@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.HasBlittable;
-import org.rrlib.finroc_core_utils.serialization.DataType;
+import org.rrlib.finroc_core_utils.rtti.DataType;
 import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.Serialization;
