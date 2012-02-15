@@ -59,6 +59,9 @@ public class WidgetInput {
         }
     }
 
+    /**
+     * Deprecated: Don't use this in new widgets
+     */
     public static class CC<T extends RRLibSerializable> extends WidgetInputPort<Port<T>> {
 
         /** UID */

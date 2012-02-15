@@ -72,7 +72,7 @@ public class ConnectDialog extends MDialog {
         }
         JPanel jp2 = new JPanel();
         jp.add(jp2);
-        buttons.add(createButton("No, thankyou", jp2));
+        buttons.add(createButton("No, thank you", jp2));
 
         pack();
         setVisible(true);

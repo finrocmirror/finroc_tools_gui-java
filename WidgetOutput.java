@@ -70,6 +70,9 @@ public class WidgetOutput {
         }
     }
 
+    /**
+     * Deprecated: Don't use this in new widgets
+     */
     public static class CC<T extends RRLibSerializable> extends WidgetOutputPort<Port<T>> {
 
         /** UID */
@@ -90,7 +93,7 @@ public class WidgetOutput {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class Numeric extends WidgetOutputPort<PortNumeric<Double>> {
+    public static class Numeric extends WidgetOutputPort<Port<CoreNumber>> {
 
         /** UID */
         private static final long serialVersionUID = 8765896513368994897L;
@@ -105,19 +108,27 @@ public class WidgetOutput {
         }
 
         public void publish(int val) {
-            asPort().publish(val);
+            CoreNumber cn = asPort().getUnusedBuffer();
+            cn.setValue(val);
+            asPort().publish(cn);
         }
 
         public void publish(double val) {
-            asPort().publish(val);
+            CoreNumber cn = asPort().getUnusedBuffer();
+            cn.setValue(val);
+            asPort().publish(cn);
         }
 
         public int getInt() {
-            return asPort().getIntRaw();
+            int result = asPort().getAutoLocked().intValue();
+            ThreadLocalCache.getFast().releaseAllLocks();
+            return result;
         }
 
         public double getDouble() {
-            return asPort().getDoubleRaw();
+            double result = asPort().getAutoLocked().doubleValue();
+            ThreadLocalCache.getFast().releaseAllLocks();
+            return result;
         }
 
         public CoreNumber getAutoLocked() {

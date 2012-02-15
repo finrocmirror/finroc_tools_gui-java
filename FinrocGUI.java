@@ -48,6 +48,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.StringList;
 
+import org.finroc.core.RuntimeSettings;
 import org.finroc.core.util.Files;
 
 /**
@@ -349,6 +350,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
 
     public static void main(String[] args) {
 
+        RuntimeSettings.setUseCCPorts(false);
+        RuntimeSettings.setMaxCoreRegisterIndexBits(19);
         try {
             UIManager.setLookAndFeel("sun.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
