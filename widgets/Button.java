@@ -26,20 +26,27 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 
+import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.util.embeddedfiles.EmbeddedFile;
+import org.finroc.tools.gui.util.embeddedfiles.ValidExtensions;
 
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
  * @author max
@@ -57,6 +64,8 @@ public class Button extends Widget {
 
     /** Button parameters */
     public String text = "Button";
+    @ValidExtensions( { "jpg", "png", "gif" })
+    public EmbeddedFile iconFile;
     public double emitValuePush = 1;
     public double emitValueRelease = 0;
     public boolean toggleButton = false;
@@ -119,6 +128,14 @@ public class Button extends Widget {
             button.setText(text);
             //button.setBackground(new Color(0,0,1));
             //emitValue.setValue(emitValueRelease);
+            if (iconFile != null) {
+                try {
+                    Icon icon = new ImageIcon(ImageIO.read(iconFile.getInputStream(getRoot().getEmbeddedFileManager())));
+                    button.setIcon(icon);
+                } catch (Exception e) {
+                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+                }
+            }
             portChanged(null, null);
         }
 
