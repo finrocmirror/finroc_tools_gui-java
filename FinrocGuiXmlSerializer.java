@@ -28,14 +28,18 @@ import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintable;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.tools.gui.util.embeddedfiles.ExternalFolder;
+import org.finroc.core.datatype.Unit;
 import org.finroc.plugins.data_types.StringList;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.AbstractReflectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
@@ -60,6 +64,7 @@ public class FinrocGuiXmlSerializer {
 
         // initialize
         xstream = new XStream(/*new DomDriver()*/);
+        xstream.addImmutableType(java.awt.Color.class);
         xstream.alias("fingui", GUI.class);
         xstream.alias("Window", GUIWindow.class);
         xstream.alias("Panel", GUIPanel.class);
@@ -76,6 +81,7 @@ public class FinrocGuiXmlSerializer {
         xstream.registerConverter(new WidgetConverter(xstream.getMapper(), xstream.getReflectionProvider()));
         xstream.registerConverter(new PanelConverter(xstream.getMapper(), xstream.getReflectionProvider()));
         xstream.registerConverter(new FinguiCollectionConverter(xstream.getMapper()));
+        xstream.registerConverter(new UnitConverter());
         xstream.processAnnotations(GUIPanel.class);
         //xstream.addImplicitCollection(GUIPanel.class, "widgets");
         //xstream.registerConverter(new WidgetConverter(xstream.getMapper(), new AnnotationProvider()));
@@ -252,6 +258,32 @@ public class FinrocGuiXmlSerializer {
 
     }
 
+    static class UnitConverter implements Converter {
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean canConvert(Class c) {
+            return Unit.class.equals(c);
+        }
+
+        @Override
+        public void marshal(Object unit, HierarchicalStreamWriter writer, MarshallingContext context) {
+            writer.setValue(unit.toString());
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            String u = reader.getValue();
+            try {
+                return Unit.getUnit(u);
+            } catch (Exception e) {
+                if (u != null && u.length() > 0) {
+                    System.out.println("Warning: Do not know unit '" + u + "'.");
+                }
+                return null;
+            }
+        }
+    }
 }
 
 /**
