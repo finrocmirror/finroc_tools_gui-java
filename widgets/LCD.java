@@ -74,7 +74,10 @@ public class LCD extends Widget {
     private String format = "2";
     private boolean useScientificFormatOutOfRange = true;
     private static final Pattern CXX_PATTERN = Pattern.compile("%([0-9]+).([0-9]+)f");
+
+    /** value-related */
     private Unit preferredUnit;
+    private double scalingFactor;
 
     /** warnings */
     private Color lcdWarningBackground;
@@ -290,6 +293,9 @@ public class LCD extends Widget {
                 CoreNumber tmp = new CoreNumber((CoreNumber)cn);
                 if (tmp.getUnit().convertibleTo(preferredUnit)) {
                     tmp.setValue(tmp.getUnit().convertTo(tmp.doubleValue(), preferredUnit), preferredUnit);
+                }
+                if (scalingFactor != 1.0 && scalingFactor != 0.0) {
+                    tmp.setValue(tmp.doubleValue() * scalingFactor, tmp.getUnit());
                 }
                 s = formatNumber(tmp, optimalLength);
 
