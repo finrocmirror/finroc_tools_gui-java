@@ -46,6 +46,7 @@ import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.Unit;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -73,6 +74,10 @@ public class LCD extends Widget {
     private String format = "2";
     private boolean useScientificFormatOutOfRange = true;
     private static final Pattern CXX_PATTERN = Pattern.compile("%([0-9]+).([0-9]+)f");
+
+    /** value-related */
+    private Unit preferredUnit;
+    private double scalingFactor;
 
     /** warnings */
     private Color lcdWarningBackground;
@@ -285,7 +290,14 @@ public class LCD extends Widget {
             String s = "";
             int commaPos = -1000;
             if (cn instanceof CoreNumber) {
-                s = formatNumber((CoreNumber)cn, optimalLength);
+                CoreNumber tmp = new CoreNumber((CoreNumber)cn);
+                if (tmp.getUnit().convertibleTo(preferredUnit)) {
+                    tmp.setValue(tmp.getUnit().convertTo(tmp.doubleValue(), preferredUnit), preferredUnit);
+                }
+                if (scalingFactor != 1.0 && scalingFactor != 0.0) {
+                    tmp.setValue(tmp.doubleValue() * scalingFactor, tmp.getUnit());
+                }
+                s = formatNumber(tmp, optimalLength);
 
                 // Determine pos of comma
                 commaPos = s.indexOf(".");
