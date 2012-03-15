@@ -62,6 +62,7 @@ import org.finroc.tools.gui.util.gui.MPopupMenu;
 import org.finroc.tools.gui.util.gui.MToolBar;
 import org.finroc.tools.gui.util.gui.MouseEventListener;
 import org.finroc.tools.gui.util.gui.RulerOfTheForest;
+import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
@@ -90,6 +91,7 @@ public class GeometryRenderer extends Widget {
 
     /** Parameters */
     public int numberOfGeometries = 3;
+    public boolean invertYAxis;
     public double zoom = 1;
     public double translationX = 0;
     public double translationY = 0;
@@ -98,7 +100,8 @@ public class GeometryRenderer extends Widget {
     private double lineWidth = 1;
     private boolean showRulers = true;
     private boolean showCoordinates = false;
-    private boolean invertObjectYInput = true;
+    @NotInPropertyEditor
+    private transient boolean invertObjectYInput = false;
     private boolean resetClickPosOnMouseRelease = false;
     private boolean hideToolbar = false;
     public EmbeddedPaintables mapObjects = new EmbeddedPaintables();
@@ -274,7 +277,7 @@ public class GeometryRenderer extends Widget {
             case Point:
                     Point2D temp = getPoint(me.getPoint());
                 clickX.publish(temp.getX());
-                clickY.publish(invertObjectYInput ? -temp.getY() : temp.getY());
+                clickY.publish(temp.getY());
                 clickCounter.publish(clickCounter.getDouble() + 1);
                 break;
             case ResetPoint:
@@ -299,15 +302,19 @@ public class GeometryRenderer extends Widget {
                 Point2D lastPoint = source.getSecondLastPos();
                 double lastAngle = Math.atan2(center.getY() - lastPoint.getY(), center.getX() - lastPoint.getX());
                 diff = curAngle - lastAngle;
-                rotation -= diff;// / 180;
+                if (invertYAxis) {
+                    rotation += diff;
+                } else {
+                    rotation -= diff;// / 180;
+                }
                 renderer.repaint();
                 updateRulers();
                 break;
             case Move:
                 stopTracking();
                 transform.setToIdentity();
-                transform.scale(zoom, zoom);
-                transform.rotate(-rotation);
+                transform.scale(zoom, invertYAxis ? zoom : -zoom);
+                transform.rotate(rotation);
                 try {
                     //transform.invert();
                     Util.invert(transform);
@@ -353,7 +360,11 @@ public class GeometryRenderer extends Widget {
                 right = -right;
             }
 
-            leftRuler.setMinAndMax(bottom, top);
+            if (invertYAxis) {
+                leftRuler.setMinAndMax(bottom, top);
+            } else {
+                leftRuler.setMinAndMax(-bottom, -top);
+            }
             topRuler.setMinAndMax(left, right);
             topRuler.setVisible(showRulers);
             leftRuler.setVisible(showRulers);
@@ -376,8 +387,8 @@ public class GeometryRenderer extends Widget {
             transform.translate(renderer.getSize().width / 2, renderer.getSize().height / 2);
 
             // Apply widget translation/rotation/zoom
-            transform.scale(zoom, zoom);
-            transform.rotate(-rotation);
+            transform.scale(zoom, invertYAxis ? zoom : -zoom);
+            transform.rotate(rotation);
             transform.translate(translationX, translationY);
             try {
                 //transform.invert();  // only in Java 1.6
@@ -527,8 +538,8 @@ public class GeometryRenderer extends Widget {
                 g2d.translate(this.getSize().width / 2, this.getSize().height / 2);
 
                 // Apply widget translation/rotation/zoom
-                g2d.scale(zoom, zoom);
-                g2d.rotate(-rotation);
+                g2d.scale(zoom, invertYAxis ? zoom : -zoom);
+                g2d.rotate(rotation);
                 g2d.translate(translationX, translationY);
                 if (antialiasing) {
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -556,9 +567,11 @@ public class GeometryRenderer extends Widget {
                         continue;
                     }
                     Graphics2D temp = ((Graphics2D)g2d.create());
-                    double yFactor = invertObjectYInput ? -1 : 1;
-                    temp.translate(GetObjectXCoordinate(i * MAP_OBJECT_EDGE_COUNT), yFactor * GetObjectYCoordinate(i * MAP_OBJECT_EDGE_COUNT + 1));
-                    temp.rotate(-GetObjectYawAngle(i * MAP_OBJECT_EDGE_COUNT + 2));
+                    temp.translate(GetObjectXCoordinate(i * MAP_OBJECT_EDGE_COUNT), GetObjectYCoordinate(i * MAP_OBJECT_EDGE_COUNT + 1));
+                    temp.rotate(GetObjectYawAngle(i * MAP_OBJECT_EDGE_COUNT + 2));
+                    if (!invertYAxis) {
+                        temp.scale(1, -1);
+                    }
                     p.paintToCenter(temp, getRoot().getEmbeddedFileManager());
                     temp.dispose();
                 }
