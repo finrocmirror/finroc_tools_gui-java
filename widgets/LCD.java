@@ -297,6 +297,7 @@ public class LCD extends Widget {
                 if (scalingFactor != 1.0 && scalingFactor != 0.0) {
                     tmp.setValue(tmp.doubleValue() * scalingFactor, tmp.getUnit());
                 }
+                tmp.setUnit(Unit.NO_UNIT);
                 s = formatNumber(tmp, optimalLength);
 
                 // Determine pos of comma
