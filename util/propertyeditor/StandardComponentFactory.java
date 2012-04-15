@@ -29,7 +29,7 @@ import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Component factory for standard types.
  * If other factories are used, this can be used to aggregate them.
@@ -113,6 +113,9 @@ public class StandardComponentFactory implements ComponentFactory {
         @Override
         public String get() throws Exception {
             ContainsStrings cs = wrapped.get();
+            if (cs == null) {
+                return null;
+            }
             String s = "";
             for (int i = 0; i < cs.stringCount(); i++) {
                 s += cs.getString(i) + "\n";

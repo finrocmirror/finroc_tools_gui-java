@@ -1023,4 +1023,24 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     public void refreshConnectionPanelModels() {
         getParent().updateInterface();
     }
+
+    /**
+     * Adjusts window size to widgets in contains
+     */
+    public void adjustSizeToContent() {
+        int maxX = 0;
+        int maxY = 0;
+        for (GUIPanel gp : getModel().getChildren()) {
+            for (Widget w : gp.getChildren()) {
+                maxX = Math.max(maxX, (int)w.getBounds().getMaxX());
+                maxY = Math.max(maxY, (int)w.getBounds().getMaxY());
+            }
+        }
+        maxX += (asComponent().getBounds().width - children.get(0).asComponent().getBounds().width);
+        maxY += (asComponent().getBounds().height - children.get(0).asComponent().getBounds().height);
+        Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        maxX = Math.min(maxX, r.width);
+        maxY = Math.min(maxY, r.height - 30);
+        setSize(maxX + 2, maxY + 2); // +2 looks somewhat nicer
+    }
 }
