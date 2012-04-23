@@ -885,10 +885,15 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     if (getParent().getPersistentSettings().lastConnectionAddress != null) {
                         ec.setDefaultAddress(getParent().getPersistentSettings().lastConnectionAddress);
                     }
-                    ec.connect(null);
-                    if (ec.isConnected()) {
-                        getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
-                        getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());
+                    String address = JOptionPane.showInputDialog(null, ioInterface.getName() + ": Please input connection address", ec.getConnectionAddress());
+                    if (address != null) {
+                        ec.connect(address);
+                        if (ec.isConnected()) {
+                            getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
+                            getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());
+                        }
+                    } else {
+                        ec.managedDelete();
                     }
                     //parent.ioInterface.addModule(ioInterface.createModule());
                 }
@@ -1025,7 +1030,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     }
 
     /**
-     * Adjusts window size to widgets in contains
+     * Adjusts window size to widgets it contains
      */
     public void adjustSizeToContent() {
         int maxX = 0;
