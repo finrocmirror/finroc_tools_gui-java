@@ -107,7 +107,6 @@ public class FileChooser extends Widget {
             }
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                System.out.println(fc.getSelectedFile().getAbsolutePath());
                 CoreString file_name = filename.getUnusedBuffer();
                 file_name.set(fc.getSelectedFile().getAbsolutePath());
                 filename.publish(file_name);

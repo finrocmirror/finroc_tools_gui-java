@@ -250,7 +250,7 @@ public class GeometryRenderer extends Widget {
                     // center object
                     int index = mapObjects.indexOf(mapObject) * MAP_OBJECT_EDGE_COUNT;
                     translationX = -objectCoordinates.get(index).getDouble();
-                    translationY = objectCoordinates.get(index + 1).getDouble();
+                    translationY = invertObjectYInput ? objectCoordinates.get(index + 1).getDouble() : -objectCoordinates.get(index + 1).getDouble();
                     toolbar.setSelected(e, false);
                     renderer.repaint();
                 } else if (e.equals(Action.Watch)) {
@@ -525,7 +525,7 @@ public class GeometryRenderer extends Widget {
                     int index = mapObjects.indexOf(trackObject) * MAP_OBJECT_EDGE_COUNT;
                     if (index >= 0) {
                         translationX = -GetObjectXCoordinate(index);
-                        translationY = GetObjectYCoordinate(index + 1);
+                        translationY = invertObjectYInput ? GetObjectYCoordinate(index + 1) : -GetObjectYCoordinate(index + 1);
                     } else {
                         stopTracking();
                     }

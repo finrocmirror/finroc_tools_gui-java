@@ -98,6 +98,7 @@ public class Slider extends Widget {
         }
 
         public void stateChanged(ChangeEvent e) {
+            slider.setToolTipText(String.format("%.2f", slider.getDoubleValue()));
             value.publish(slider.getDoubleValue());
         }
 
@@ -135,7 +136,7 @@ class DoubleSlider extends JSlider {
     double min, max, step;
     private static final double MAXTICKSPERPIXEL = 0.1;
     Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
-    JLabel maxLabel, minLabel;
+    JLabel maxLabel, minLabel, valueLabel;
 
     public void setValue(double value) {
         if (value <= min) {
@@ -164,17 +165,28 @@ class DoubleSlider extends JSlider {
         if (labelTable.size() == 0) {
             maxLabel = new JLabel();
             minLabel = new JLabel();
+            valueLabel = new JLabel();
         }
         minLabel.setText("" + min);
         maxLabel.setText("" + max);
+        valueLabel.setText("                                              ");
         labelTable.clear();
         labelTable.put(0, minLabel);
+        labelTable.put(numberOfSteps / 2, valueLabel);
         labelTable.put(numberOfSteps, maxLabel);
         setLabelTable(labelTable);
+
+        // update value label
+        getDoubleValue();
     }
 
     public double getDoubleValue() {
+        updateValueLabel();
         return min + getValue() * step;
+    }
+
+    public void updateValueLabel() {
+        valueLabel.setText("(" + String.format("%.2f", min + getValue() * step) + ")");
     }
 
     // Call after first updateParams
