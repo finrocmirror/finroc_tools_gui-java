@@ -34,6 +34,7 @@ import org.finroc.tools.gui.util.propertyeditor.PropertyAccessorAdapter;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.finroc.tools.gui.util.propertyeditor.StringEditor;
 import org.finroc.core.datatype.DataTypeReference;
+import org.finroc.core.datatype.Unit;
 import org.finroc.plugins.data_types.StringList;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
@@ -81,6 +82,8 @@ public class GuiComponentFactory implements ComponentFactory, Comparator<DataTyp
             }
             Arrays.sort(types, this);
             wpec = new DataTypeEditor(types, (acc instanceof EnumConstantsImporter) ? (EnumConstantsImporter)acc : null, panel);
+        } else if (Unit.class.equals(type)) {
+            wpec = new UnitEditor();
         }
         if (wpec != null) {
             wpec.init(acc);

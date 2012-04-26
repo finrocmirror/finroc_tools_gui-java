@@ -885,10 +885,15 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     if (getParent().getPersistentSettings().lastConnectionAddress != null) {
                         ec.setDefaultAddress(getParent().getPersistentSettings().lastConnectionAddress);
                     }
-                    ec.connect(null);
-                    if (ec.isConnected()) {
-                        getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
-                        getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());
+                    String address = JOptionPane.showInputDialog(null, ioInterface.getName() + ": Please input connection address", ec.getConnectionAddress());
+                    if (address != null) {
+                        ec.connect(address);
+                        if (ec.isConnected()) {
+                            getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
+                            getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());
+                        }
+                    } else {
+                        ec.managedDelete();
                     }
                     //parent.ioInterface.addModule(ioInterface.createModule());
                 }
@@ -1022,5 +1027,25 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     @Override
     public void refreshConnectionPanelModels() {
         getParent().updateInterface();
+    }
+
+    /**
+     * Adjusts window size to widgets it contains
+     */
+    public void adjustSizeToContent() {
+        int maxX = 0;
+        int maxY = 0;
+        for (GUIPanel gp : getModel().getChildren()) {
+            for (Widget w : gp.getChildren()) {
+                maxX = Math.max(maxX, (int)w.getBounds().getMaxX());
+                maxY = Math.max(maxY, (int)w.getBounds().getMaxY());
+            }
+        }
+        maxX += (asComponent().getBounds().width - children.get(0).asComponent().getBounds().width);
+        maxY += (asComponent().getBounds().height - children.get(0).asComponent().getBounds().height);
+        Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        maxX = Math.min(maxX, r.width);
+        maxY = Math.min(maxY, r.height - 30);
+        setSize(maxX + 2, maxY + 2); // +2 looks somewhat nicer
     }
 }

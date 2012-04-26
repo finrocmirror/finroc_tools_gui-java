@@ -27,6 +27,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
 
+import org.finroc.core.datatype.Unit;
+
 /**
  * @author max
  *
@@ -48,7 +50,7 @@ public class ObjectCloner {
         cloners.add(new CloneHandler() {
             @Override
             public boolean handles(Object o) {
-                return o == null || o instanceof Serializable || o instanceof Cloneable;
+                return o == null || o instanceof Serializable || o instanceof Cloneable || o instanceof Unit;
             }
 
             @Override
@@ -91,7 +93,7 @@ public class ObjectCloner {
         if (t == null) {
             return null;
         }
-        if (t instanceof String || t instanceof Number) { // directly return immutable objects
+        if (t instanceof String || t instanceof Number || t instanceof Unit) { // directly return immutable objects
             return t;
         }
         if (t instanceof Serializable) {

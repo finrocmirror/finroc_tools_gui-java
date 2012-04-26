@@ -332,6 +332,11 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
 
             arrangeWindows();
 
+            // adjust window sizes to content
+            for (GUIWindowUI wui : children) {
+                wui.adjustSizeToContent();
+            }
+
             // update last GUIData
             updateLastGUIData();
         }
