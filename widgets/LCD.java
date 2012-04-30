@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.finroc.plugins.data_types.Angle;
 import org.finroc.tools.gui.GUIPanel;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -310,6 +311,16 @@ public class LCD extends Widget {
                 s = cn.toString().toUpperCase();
             } else if (cn instanceof EnumValue) {
                 s = "" + cn.getNumericRepresentation().intValue();
+            } else if (cn instanceof Angle) {
+                CoreNumber cn2 = new CoreNumber(cn.getNumericRepresentation().doubleValue());
+                s = formatNumber(cn2, optimalLength);
+
+                // Determine pos of comma
+                commaPos = s.indexOf(".");
+                s = s.replace(".", "");
+                if (commaPos == -1) {
+                    commaPos = s.length();
+                }
             }
 
             // calculate block size

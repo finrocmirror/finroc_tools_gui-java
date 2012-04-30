@@ -184,7 +184,7 @@ public class CameraController extends Widget {
                     CameraFeature.Set cfs = cameraState.getAutoLocked();
                     cfs.serialize(root);
                     releaseAllLocks();
-                    System.out.println(xml.getXMLDump());
+                    System.out.println(xml.getXMLDump(true));
                 } catch (Exception e2) {
                     e2.printStackTrace();
                 }
