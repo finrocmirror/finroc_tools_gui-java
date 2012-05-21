@@ -69,6 +69,17 @@ public class MToolBar extends JToolBar {
         return jb;
     }
 
+    public JToggleButton createToggleButton(String iconFilename, String toolTip, ActionListener listener) {
+        JToggleButton jtb = new JToggleButton();
+        jtb.setIcon(IconManager.getInstance().getIcon(iconFilename));
+        jtb.addActionListener(listener);
+        jtb.setToolTipText(toolTip);
+        jtb.setFocusable(false);
+        jtb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        add(jtb);
+        return jtb;
+    }
+
     public JButton add(Action a) {
         JButton jb = super.add(a);
         jb.setFocusable(false);
