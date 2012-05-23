@@ -854,6 +854,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     protected Color getBranchTextColor(Object value) {
         return null;
     }
+
+    /**
+     * Draw port connected (green) in tree?
+     */
+    public boolean drawPortConnected(TreePortWrapper port) {
+        return port.getPort().isConnected();
+    }
 }
 
 /**
@@ -943,7 +950,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         //setBackground(color);
         boolean portSelected = (!timer.isRunning() && sel);
         TreePortWrapper port = (TreePortWrapper)value;
-        Color c = portSelected ? selected : (port.getPort().isConnected() ? connected : (port.getPort().hasLinkEdges() ? connectionPartnerMissing : color));
+        Color c = portSelected ? selected : (panel.drawPortConnected(port) ? connected : (port.getPort().hasLinkEdges() ? connectionPartnerMissing : color));
         if (panel.mouseOver != null) {
             boolean mouseOver = (port.getPort() == panel.mouseOver.getPort()) || port.getPort().isConnectedTo(panel.mouseOver.getPort());
             if (mouseOver) {
