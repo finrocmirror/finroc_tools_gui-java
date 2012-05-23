@@ -114,8 +114,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     TreePortWrapper mouseOver = null;
 
     /** PopupMenu */
-    private JPopupMenu popupMenu;
-    private boolean popupOnRight;
+    protected JPopupMenu popupMenu;
+    protected boolean popupOnRight;
     JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
 
     public ConnectionPanel(Owner win, Font treeFont) {
@@ -264,10 +264,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         Point diff = ((JComponent)e.getSource()).getLocationOnScreen();
         pos.x += diff.x - getLocationOnScreen().x;
         pos.y += diff.y - getLocationOnScreen().y;
-        TreePortWrapper tpw = getTreeNodeFromPos(rightTree, pos);
+        TreePortWrapper tpw = getTreePortWrapperFromPos(rightTree, pos);
         MJTree<TreePortWrapper> curTree = (MJTree<TreePortWrapper>)e.getSource();
         if (tpw == null) {
-            tpw = getTreeNodeFromPos(leftTree, pos);
+            tpw = getTreePortWrapperFromPos(leftTree, pos);
         }
 
         if (tpw != mouseOver) {
@@ -422,7 +422,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             popupMenu.show(this, e.getX() + p.x - p2.x, e.getY() + p.y - p2.y);
             saveLastMousePos(e);
             miRemoveConnections.setEnabled(getTreeNodeFromPos((MJTree<TreePortWrapper>)e.getSource()) != null);
-            TreePortWrapper tnp = getTreeNodeFromPos(popupOnRight ? rightTree : leftTree);
+            TreePortWrapper tnp = getTreePortWrapperFromPos(popupOnRight ? rightTree : leftTree);
             if (tnp instanceof WidgetPort<?>) {
                 WidgetPort<?> wp = (WidgetPort<?>)tnp;
                 miCopyUID.setEnabled(false);
@@ -621,7 +621,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         MJTree<TreePortWrapper> selTree = selectionFromRight ? rightTree : leftTree;
         MJTree<TreePortWrapper> otherTree = selectionFromRight ? leftTree : rightTree;
 
-        TreePortWrapper tn = getTreeNodeFromPos(otherTree);
+        TreePortWrapper tn = getTreePortWrapperFromPos(otherTree);
 
         // can connect to this node?
         List<TreePortWrapper> nodesToConnect = selTree.getSelectedObjects();
@@ -659,11 +659,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return result;
     }
 
-    public TreePortWrapper getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree) {
+    public TreeNode getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree) {
         return getTreeNodeFromPos(otherTree, lastMousePos);
     }
 
-    public TreePortWrapper getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
+    public TreePortWrapper getTreePortWrapperFromPos(MJTree<TreePortWrapper> otherTree) {
+        return getTreePortWrapperFromPos(otherTree, lastMousePos);
+    }
+
+    public TreeNode getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
 
         if (otherTree == rightTree && (!showRightTree)) {
             return null;
@@ -687,7 +691,11 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             //System.out.println("2");
             return null;
         }
-        TreeNode tn = (TreeNode)tp.getLastPathComponent();
+        return (TreeNode)tp.getLastPathComponent();
+    }
+
+    public TreePortWrapper getTreePortWrapperFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
+        TreeNode tn = getTreeNodeFromPos(otherTree, pos);
         if (!(tn instanceof TreePortWrapper)) {
             //System.out.println("3");
             return null;
@@ -705,7 +713,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else if (e.getSource() == miSelectVisible) {
             ptree.setSelectedObjects(ptree.getVisibleObjects(), true);
         } else if (e.getSource() == miRemoveConnections) {
-            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
             removeConnections(tnp);
             parent.addUndoBufferEntry("Remove connections");
             repaint();
@@ -725,7 +733,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             parent.addUndoBufferEntry("Remove all connections");
             repaint();
         } else if (e.getSource() == miCopyUID) {
-            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
             String uid = "Element has no UID";
             if (tnp instanceof Uid) {
                 uid = ((Uid)tnp).getUid();
@@ -733,7 +741,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Clipboard clipboard = getToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(uid), null);
         } else if (e.getSource() == miCopyLinks) {
-            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
             String uid = "";
             if (tnp instanceof WidgetPort<?>) {
                 for (String s : ((WidgetPort<?>)tnp).getConnectionLinks()) {
@@ -746,7 +754,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Clipboard clipboard = getToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(uid), null);
         } else if (e.getSource() == miShowPartner) {
-            TreePortWrapper tnp = getTreeNodeFromPos(ptree);
+            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
             WidgetPort<?> wp = (WidgetPort<?>)tnp;
             List<PortWrapper> partners = wp.getConnectionPartners();
             for (PortWrapper partner : partners) {
