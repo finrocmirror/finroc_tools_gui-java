@@ -24,19 +24,38 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.UIManager;
+
 import org.finroc.tools.gui.util.PackageContentEnumerator;
 
 public class Themes {
 
     private static List<Theme> themes = initThemes();
 
+    // temporary
+    private static Theme SHINY = new BrushedMetalBlue();
+    private static Theme CLASSIC = new Default();
+    private static Boolean NIMBUS;
+
     public static Theme getCurTheme() {
-        for (Theme t : themes) {
+        return nimbusLookAndFeel() ? SHINY : CLASSIC;
+
+        /*for (Theme t : themes) {
             if (t instanceof Default) {
                 return t;
             }
         }
-        return null;
+        return null;*/
+    }
+
+    /**
+     * @return Are we using Nimbus Look And Feel instead of default
+     */
+    public static boolean nimbusLookAndFeel() {
+        if (NIMBUS == null) {
+            NIMBUS = UIManager.getLookAndFeel().getName().equals("Nimbus");
+        }
+        return NIMBUS.booleanValue();
     }
 
     private static List<Theme> initThemes() {

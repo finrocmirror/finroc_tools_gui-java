@@ -34,7 +34,7 @@ import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -58,7 +58,7 @@ public class Knob extends Widget {
     private double minimum = 0, maximum = 360, stepSize = 0.1;
 
     /** Slider background */
-    private Color sliderBackground = Themes.getCurTheme().sliderBackground();
+    private Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
 
     /** Show ticks? Show labels? */
     private boolean showTicks = true, showLabels = true;

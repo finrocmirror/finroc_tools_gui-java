@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.finroc.tools.gui.themes.Themes;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
@@ -142,7 +143,9 @@ public class PropertiesPanel extends JPanel {
         gbcComp.fill = GridBagConstraints.BOTH;
         gbcComp.gridwidth = label == null ? 2 : 1;
         gbcComp.gridx = 1;
-        gbcComp.insets = new Insets(1, 0, 1, 0);
+        if (!Themes.nimbusLookAndFeel()) {
+            gbcComp.insets = new Insets(1, 0, 1, 0);
+        }
         gbcComp.gridy = index;
         gbcComp.weightx = 0.9;
         gbcComp.weighty = comp.isResizable() ? 0.2 : 0.0001;

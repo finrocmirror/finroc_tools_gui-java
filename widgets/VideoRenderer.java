@@ -22,7 +22,6 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseEvent;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -31,12 +30,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.BasicStroke;
-import java.awt.Stroke;
 
 import java.lang.Math;
 
@@ -60,7 +56,6 @@ import org.finroc.plugins.data_types.HasBlittable;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
-import org.finroc.core.datatype.CoreNumber;
 
 public class VideoRenderer extends Widget {
 
@@ -150,7 +145,7 @@ public class VideoRenderer extends Widget {
         }
 
         public void actionPerformed(ActionEvent ae) {
-            Enum e = ((MActionEvent)ae).getEnumID();
+            Enum<?> e = ((MActionEvent)ae).getEnumID();
             if (e instanceof Mode) {
                 //      renderer.setCursor(Cursor.getPredefinedCursor((Integer)((MActionEvent)ae).getCustomData()));
                 current_mode = (Mode) e;
@@ -288,7 +283,7 @@ public class VideoRenderer extends Widget {
                 if (y > (int) this.marking_end_point.getY()) {
                     y = (int) this.marking_end_point.getY();
                 }
-                Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
+                //Rectangle2D rect = new Rectangle2D.Double(x, y, width, height);
 
                 // create and render image from JPanel for export
                 BufferedImageRGB image_selection = new BufferedImageRGB(width, height);

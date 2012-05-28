@@ -45,7 +45,6 @@ import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
 
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.BehaviourInfo;
@@ -89,8 +88,7 @@ public class BehaviourSignals extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
-        setLabelColor(Themes.getCurTheme().standardLabel());
+        useAlternativeColors();
     }
 
     @Override

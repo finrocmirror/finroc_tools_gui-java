@@ -38,6 +38,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
@@ -357,11 +358,6 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
 
         RuntimeSettings.setUseCCPorts(false);
         RuntimeSettings.setMaxCoreRegisterIndexBits(19);
-        try {
-            UIManager.setLookAndFeel("sun.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception e) {
-            // LookAndFeel not available
-        }
 
 //      // Server mode ?
 //      if (args.length > 0 && args[0].toLowerCase().contains("-serve")) {
@@ -390,6 +386,16 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
             } else if (arg.equals("-h") || arg.equals("--help")) {
                 printHelp();
                 return;
+            } else if (arg.equals("--shiny")) {
+                try {
+                    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                        if ("Nimbus".equals(info.getName())) {
+                            UIManager.setLookAndFeel(info.getClassName());
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                }
             } else if (arg.startsWith("-")) {
                 System.out.println("Unsupported option: " + arg);
                 printHelp();

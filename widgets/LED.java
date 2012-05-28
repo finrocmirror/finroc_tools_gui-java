@@ -47,7 +47,7 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageARGBColorAdd;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageARGBColorable;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.plugins.data_types.StringList;
@@ -66,7 +66,7 @@ public class LED extends Widget {
 
     @SuppressWarnings("unused")
     @NotInPropertyEditor
-    private transient Color ledColor = Themes.getCurTheme().ledColor(); // outdated - kept for backward compatibility
+    private transient Color ledColor = getDefaultColor(Theme.DefaultColor.LED); // outdated - kept for backward compatibility
     @NotInPropertyEditor
     public StringList descriptions = new StringList(); // outdated - kept for backward compatibility
 
@@ -81,7 +81,7 @@ public class LED extends Widget {
     static BufferedImageARGBColorable ledOn, ledOnSmall;
 
     public LED() {
-        setBackground(Themes.getCurTheme().panelBackground());
+        setBackground(getDefaultColor(Theme.DefaultColor.BACKGROUND));
         leds.add(new LEDProperty("LED 1"));
         leds.add(new LEDProperty("LED 2"));
     }
@@ -116,7 +116,7 @@ public class LED extends Widget {
         /** UID */
         private static final long serialVersionUID = 6464808920773228472L;
 
-        private Color off = new Color(0, 0, 0), on = Themes.getCurTheme().ledColor();
+        private Color off = new Color(0, 0, 0), on = getDefaultColor(Theme.DefaultColor.LED);
         private double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
         String label = "LED";
         boolean bitMode = false;
@@ -219,6 +219,7 @@ public class LED extends Widget {
 
             public LEDPanel() {
                 setLayout(new BorderLayout());
+                setOpaque(useOpaquePanels());
                 jl = new JLabel();
                 jl.setFont(jl.getFont().deriveFont(fontSize));
                 jl.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));

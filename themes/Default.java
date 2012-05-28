@@ -22,68 +22,99 @@ package org.finroc.tools.gui.themes;
 
 import java.awt.Color;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
+import org.finroc.tools.gui.Widget;
+import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.util.gui.MPanel;
+import org.finroc.tools.gui.util.gui.MToolBar;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
+ * Classic/original jmcagui look and feel.
+ * Somewhat inconsistent.
  */
 public class Default extends Theme {
 
-    /** Background of panel */
-    public Color panelBackground() {
-        return new Color(0.2f, 0.2f, 0.2f);
-    };
+    public final Color BACKGROUND = new Color(0.2f, 0.2f, 0.2f);
+    public final Color ALT_BACKGROUND = new Color(new JCheckBox().getBackground().getRGB());
+    public final Color BORDER = new Color(184, 207, 229);
 
-    /** Background color of widget (at least of the border) */
-    public Color widgetBackground() {
-        return new Color(0.2f, 0.2f, 0.2f);
-    };
+    @Override
+    public void initGUIPanel(MPanel panel) {
+        panel.setBackground(BACKGROUND);
+    }
 
-    /** Color of Label */
-    public Color widgetLabel() {
-        return Color.white;
-    };
+    @Override
+    public void processWidget(Widget w, WidgetUI wui) {
+        wui.setBackground(w.getBackground());
+        String label = w.getLabel();
+        if (label != null && !label.equals("")) {
+            TitledBorder tb = new TitledBorder(label);
+            tb.setTitleColor(w.getLabelColor());
+            tb.setBorder(BorderFactory.createLineBorder(BORDER));
+            wui.setTitleBorder(tb);
+        } else {
+            wui.setTitleBorder(null);
+        }
+        wui.setOpaque(true);
+    }
 
-    public Color standardLabel() {
-        return Color.black;
-    };
-    public Color standardBackground() {
-        return new Color(new JCheckBox().getBackground().getRGB());
-    };
+    @Override
+    public Color getDefaultColor(DefaultColor dc) {
+        switch (dc) {
+        case BACKGROUND:
+            return BACKGROUND;
+        case LABEL:
+            return Color.white;
+        case ALTERNATIVE_BACKGROUND:
+            return ALT_BACKGROUND;
+        case ALTERNATIVE_LABEL:
+            return Color.black;
+        case LCD_BACKGROUND:
+            return new Color(0, 0, 0.15f);
+        case LCD_ENABLED:
+            return new Color(0.15f, 0.15f, 1f);
+        case LCD_DISABLED:
+            return new Color(0, 0, 0.2f);
+        case LED:
+            return new Color(0.1f, 1f, 0.1f);
+        case SLIDER_BACKGROUND:
+            return new Color(0, 0, 0.2f);
+        case JOYSTICK_BACKGROUND:
+            return new Color(0.5f, 0.5f, 0.5f);
+        case JOYSTICK_FOREGROUND:
+            return Color.WHITE;
+        case GEOMETRY_BACKGROUND:
+            return Color.gray;
+        case OSCILLOSCOPE_BACKGROUND:
+            return new Color(0, 0.2f, 0);
+        case OSCILLOSCOPE_FOREGROUND:
+            return new Color(0, 1.0f, 0);
+        case OSCILLOSCOPE_SCALE:
+            return new Color(0, 0.25f, 0);
+        case OSCILLOSCOPE_SCALE_MAJOR:
+            return new Color(0, 0.33f, 0);
+        default:
+            return null;
+        }
+    }
 
-    public Color geometryBackground() {
-        return Color.gray;
-    };
+    @Override
+    public Border createThinBorder() {
+        return BorderFactory.createLineBorder(BACKGROUND);
+    }
 
-    public Color lcdBackground() {
-        return new Color(0, 0, 0.15f);
-    };
-    public Color lcdEnabled() {
-        return new Color(0.15f, 0.15f, 1f);
-    };
-    public Color lcdDisabled() {
-        return new Color(0, 0, 0.2f);
-    };
+    @Override
+    public void initToolbar(MToolBar tb) {
+    }
 
-    public Color ledColor() {
-        return new Color(0.1f, 1f, 0.1f);
-    };
-
-    /** Slider background */
-    public Color sliderBackground() {
-        return new Color(0, 0, 0.2f);
-    };
-
-    public Color joystickBackground() {
-        return new Color(0.5f, 0.5f, 0.5f);
-    };
-    public Color joystickForeground() {
-        return Color.WHITE;
-    };
-
-    public Color borderColor() {
-        return new Color(184, 207, 229);
-    };
-    //public Color borderColor() { return new Color(230, 230, 255); };
+    @Override
+    public boolean useOpaquePanels() {
+        return true;
+    }
 }

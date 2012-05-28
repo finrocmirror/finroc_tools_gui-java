@@ -34,7 +34,6 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 
-import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;

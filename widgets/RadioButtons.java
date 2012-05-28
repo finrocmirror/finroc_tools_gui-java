@@ -32,11 +32,11 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 
+import org.finroc.tools.gui.ConnectionPanel;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
 import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.datatype.CoreNumber;
@@ -63,8 +63,7 @@ public class RadioButtons extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
-        setLabelColor(Themes.getCurTheme().standardLabel());
+        useAlternativeColors();
     }
 
     @Override
@@ -121,7 +120,7 @@ public class RadioButtons extends Widget {
                     add(jrb);
                     buttons.add(jrb);
                     jrb.setBackground(RadioButtons.this.getBackground());
-                    jrb.setForeground(getLabelColor());
+                    jrb.setForeground(getLabelColor(RadioButtons.this));
                     itemCount++;
                 } catch (Exception e) {}
             }
@@ -141,7 +140,7 @@ public class RadioButtons extends Widget {
         public void componentMoved(ComponentEvent e) {}
 
         public void componentResized(ComponentEvent e) {
-            if (itemCount > 0 && getRenderHeight() > 0) {
+            if (itemCount > 0 && getRenderHeight() > 0) { // to prevent option buttons sticking to the left edge
                 setBorder(BorderFactory.createEmptyBorder(0, (getRenderHeight() / itemCount) / 3 , 0, 0));
             }
         }

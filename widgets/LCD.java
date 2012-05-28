@@ -40,7 +40,7 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedConvexSVG;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.serialization.EnumValue;
 import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
@@ -65,9 +65,9 @@ public class LCD extends Widget {
     public WidgetInput.Numeric input;
 
     /** colors */
-    private Color lcdBackground = Themes.getCurTheme().lcdBackground();
-    private Color lcdEnabled = Themes.getCurTheme().lcdEnabled();
-    private Color lcdDisabled = Themes.getCurTheme().lcdDisabled();
+    private Color lcdBackground = getDefaultColor(Theme.DefaultColor.LCD_BACKGROUND);
+    private Color lcdEnabled = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
+    private Color lcdDisabled = getDefaultColor(Theme.DefaultColor.LCD_DISABLED);
 
     /** number format */
     private enum FormatOptions { Default, FractionDigits, ToString, JavaDecimalFormat, CxxDecimalFormat };

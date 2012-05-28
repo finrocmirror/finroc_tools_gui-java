@@ -2,7 +2,7 @@
  * You received this file as part of FinGUI - a universal
  * (Web-)GUI editor for Robotic Systems.
  *
- * Copyright (C) 2007-2010 Max Reichardt
+ * Copyright (C) 2007-2012 Max Reichardt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,59 +22,78 @@ package org.finroc.tools.gui.themes;
 
 import java.awt.Color;
 
+import javax.swing.border.Border;
+
+import org.finroc.tools.gui.Widget;
+import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.util.gui.MPanel;
+import org.finroc.tools.gui.util.gui.MToolBar;
+
 /**
- * @author max
+ * @author Max Reichardt
  *
+ * Base class for "themes" - the possibility to customize look & feel of fingui widgets a little
  */
 public abstract class Theme {
 
-    /** Background of panel */
-    public abstract Color panelBackground();
+    /**
+     * @param panel GUI Panel to initialize
+     */
+    public abstract void initGUIPanel(MPanel panel);
 
-    /** Background color of widget (at least of the border) */
-    public Color widgetBackground() {
-        return standardBackground();
-    };
+    /**
+     * Adjust widget after property change (especially borders)
+     *
+     * @param widgetUI Widget panel to update
+     */
+    public abstract void processWidget(Widget w, WidgetUI wui);
 
-    /** Color of Label */
-    public Color widgetLabel() {
-        return standardLabel();
-    };
+    public enum DefaultColor {
+        BACKGROUND,
+        LABEL,
+        ALTERNATIVE_BACKGROUND,
+        ALTERNATIVE_LABEL,
+        LCD_BACKGROUND,
+        LCD_ENABLED,
+        LCD_DISABLED,
+        LED,
+        SLIDER_BACKGROUND,
+        JOYSTICK_BACKGROUND,
+        JOYSTICK_FOREGROUND,
+        GEOMETRY_BACKGROUND,
+        OSCILLOSCOPE_BACKGROUND,
+        OSCILLOSCOPE_FOREGROUND,
+        OSCILLOSCOPE_SCALE,
+        OSCILLOSCOPE_SCALE_MAJOR
+    }
 
-    public abstract Color standardLabel();
-    public abstract Color standardBackground();
+    /**
+     * @param dc Type of element
+     * @return Default color for specified element
+     */
+    public abstract Color getDefaultColor(DefaultColor dc);
 
-    public Color geometryBackground() {
-        return standardBackground();
-    };
+    /**
+     * Create thin border inside widget
+     *
+     * @return Border
+     */
+    public abstract Border createThinBorder();
 
-    public Color lcdBackground() {
-        return standardBackground();
-    };
-    public Color lcdEnabled() {
-        return standardLabel();
-    };
-    public Color lcdDisabled() {
-        return standardBackground().brighter();
-    };
+    /**
+     * @return Label color to use
+     */
+    public Color getLabelColor(Widget w, WidgetUI slider, Color labelColor) {
+        return labelColor;
+    }
 
-    public Color ledColor() {
-        return new Color(0.1f, 1f, 0.1f);
-    };
+    /**
+     * @param tb Toolbar to initialize
+     */
+    public abstract void initToolbar(MToolBar tb);
 
-    /** Slider background */
-    public Color sliderBackground() {
-        return standardBackground();
-    };
-
-    public Color joystickBackground() {
-        return standardBackground();
-    };
-    public Color joystickForeground() {
-        return standardLabel();
-    };
-
-    public Color borderColor() {
-        return standardLabel().darker();
-    };
+    /**
+     * @return Use opaque panels?
+     */
+    public abstract boolean useOpaquePanels();
 }

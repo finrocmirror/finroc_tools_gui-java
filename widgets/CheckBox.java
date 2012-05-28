@@ -93,6 +93,8 @@ public class CheckBox extends Widget {
         @Override
         public void widgetPropertiesChanged() {
             checkBox.setText(text);
+            checkBox.setBackground(CheckBox.this.getBackground());
+            checkBox.setForeground(getLabelColor(CheckBox.this));
         }
 
         public void actionPerformed(ActionEvent e) {

@@ -34,13 +34,18 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+
+import org.finroc.tools.gui.themes.Themes;
 
 public class RulerOfTheForest extends JPanel {
 
     /** UID */
     private static final long serialVersionUID = -4128981461613296756L;
 
-    private static final int RULERHEIGHT = 30;
+    public static final int RULERHEIGHT = 30;
+    private int rulerHeight = RULERHEIGHT;
     private double MAXTICKSPERPIXEL = 0.2;
     private double min, max;
     private int orientation;
@@ -54,6 +59,7 @@ public class RulerOfTheForest extends JPanel {
 
     public RulerOfTheForest(int orientation, double maxTicksPerPixel, boolean mirrored, int borders) {
         this(orientation, borders);
+        setOpaque(Themes.getCurTheme().useOpaquePanels());
         MAXTICKSPERPIXEL = maxTicksPerPixel;
         this.mirrored = mirrored;
     }
@@ -62,11 +68,16 @@ public class RulerOfTheForest extends JPanel {
         //setBorder(BorderFactory.createLineBorder(Color.BLACK));
         this.orientation = orientation;
         this.borders = borders;
+        setPreferredSize(RULERHEIGHT);
+    }
+
+    public void setPreferredSize(int rulerHeight) {
         if (orientation == SwingConstants.HORIZONTAL) {
-            setPreferredSize(new Dimension(0, RULERHEIGHT));
+            setPreferredSize(new Dimension(0, rulerHeight));
         } else {
-            setPreferredSize(new Dimension(RULERHEIGHT, 0));
+            setPreferredSize(new Dimension(rulerHeight, 0));
         }
+        this.rulerHeight = rulerHeight;
     }
 
     public void setMinAndMax(double min, double max) {
@@ -82,24 +93,30 @@ public class RulerOfTheForest extends JPanel {
 
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.setFont(font);
-        g2d.setColor(new Color(0, 0, 0));
+        if (Themes.nimbusLookAndFeel()) {
+            g2d.setColor(getForeground().darker());
+        } else {
+            g2d.setColor(new Color(0, 0, 0));
+        }
 
         // reset lists
         minorTicksList.clear();
         majorTicksList.clear();
 
         // Draw Border
-        if ((borders & BOTTOM) > 0) {
-            g2d.drawLine(0, getHeight() - 1, getWidth() - 1, getHeight() - 1); // bottom
-        }
-        if ((borders & TOP) > 0) {
-            g2d.drawLine(0, 0, getWidth() - 1, 0);  // top
-        }
-        if ((borders & LEFT) > 0) {
-            g2d.drawLine(0, 0, 0, getHeight() - 1); // left
-        }
-        if ((borders & RIGHT) > 0) {
-            g2d.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight() - 1); // right
+        if (!Themes.nimbusLookAndFeel()) {
+            if ((borders & BOTTOM) > 0) {
+                g2d.drawLine(0, getHeight() - 1, getWidth() - 1, getHeight() - 1); // bottom
+            }
+            if ((borders & TOP) > 0) {
+                g2d.drawLine(0, 0, getWidth() - 1, 0);  // top
+            }
+            if ((borders & LEFT) > 0) {
+                g2d.drawLine(0, 0, 0, getHeight() - 1); // left
+            }
+            if ((borders & RIGHT) > 0) {
+                g2d.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight() - 1); // right
+            }
         }
 
         // transform Graphics for vertical ruler
@@ -137,7 +154,7 @@ public class RulerOfTheForest extends JPanel {
 
     private void drawTick(Graphics2D g, double realPos, double pixelPos, int height, boolean drawLabel) {
         if (!mirrored) {
-            tempLine.setLine(pixelPos, RULERHEIGHT - 1, pixelPos, RULERHEIGHT - 1 - height);
+            tempLine.setLine(pixelPos, rulerHeight - 1, pixelPos, rulerHeight - 1 - height);
         } else {
             tempLine.setLine(pixelPos, 0, pixelPos, height);
         }
@@ -178,16 +195,51 @@ public class RulerOfTheForest extends JPanel {
         /** UID */
         private static final long serialVersionUID = -8770560627435640115L;
 
-        public RulerLabel() {
+        public enum Position { NW, SW, NE, SE, NO_ETCHED_BORDER };
+        Position position;
+
+        public RulerLabel(Position p) {
+            setOpaque(Themes.getCurTheme().useOpaquePanels());
             setPreferredSize(new Dimension(RULERHEIGHT, RULERHEIGHT));
             setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            this.position = p;
             //setMinimumSize(new Dimension(HEIGHT, HEIGHT));
             //setMaximumSize(new Dimension(HEIGHT, HEIGHT));
+        }
+
+        public void setForeground(Color c) {
+            super.setForeground(c);
+            if (Themes.nimbusLookAndFeel()) {
+                //setBorder(null);
+                //setBorder(BorderFactory.createLineBorder(c));
+                setBorder(Themes.getCurTheme().createThinBorder());
+            }
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+        }
+
+        protected void paintBorder(Graphics g) {
+            //super.paintBorder(g);
+            Border border = getBorder();
+            if (border instanceof EtchedBorder) {
+                if (position == Position.NW) {
+                    // TODO
+                    super.paintBorder(g);
+                } else if (position == Position.SW) {
+                    g.setClip(-1, 0, getWidth() + 1, getHeight());
+                    border.paintBorder(this, g, -2, 0, getWidth() + 2, getHeight() + 5);
+                } else if (position == Position.NE) {
+                    // TODO
+                    super.paintBorder(g);
+                } else if (position == Position.SE) {
+                    border.paintBorder(this, g, 0, 0, getWidth() + 5, getHeight() + 5);
+                }
+            } else {
+                super.paintBorder(g);
+            }
         }
     }
 }

@@ -20,16 +20,15 @@
  */
 package org.finroc.tools.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.MouseInputListener;
 
 import org.finroc.tools.gui.abstractbase.DataModelBase;
@@ -56,6 +55,7 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
 
     protected WidgetUI(RenderMode renderMode) {
         super(renderMode);
+        this.setOpaque(useOpaquePanels());
     }
 
     public class WidgetUIContainer extends UIBase<GUIPanelUI, WidgetUI, Widget, WidgetUIContainer> {
@@ -155,19 +155,12 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
     }
 
     private void updateBorder() {
-        String label = getModel().getLabel();
-        if (label != null && !label.equals("")) {
-            TitledBorder tb = new TitledBorder(label);
-            tb.setTitleColor(getModel().getLabelColor());
-            tb.setBorder(BorderFactory.createLineBorder(Themes.getCurTheme().borderColor()));
-            titleBorder = tb;
-            super.setBorder(tb);
-            //super.setBorder(BorderFactory.createTitledBorder(label));
-        } else {
-            titleBorder = null;
-            super.setBorder(null);
-        }
-        setBackground(getModel().getBackground());
+        Themes.getCurTheme().processWidget(getModel(), this);
+    }
+
+    public void setTitleBorder(Border tb) {
+        titleBorder = tb;
+        super.setBorder(tb);
     }
 
     public void setBorder(Border b) {
@@ -176,6 +169,13 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
         } else {
             super.setBorder(b);
         }
+    }
+
+    /**
+     * @return Label color to actually use in widget
+     */
+    public Color getLabelColor(Widget w) {
+        return Themes.getCurTheme().getLabelColor(w, this, w.getLabelColor());
     }
 
     public void widgetPropertiesChanged() {}
@@ -267,6 +267,10 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
 
     public void releaseAllLocks() {
         ThreadLocalCache.getFast().releaseAllLocks();
+    }
+
+    public boolean useOpaquePanels() {
+        return Themes.getCurTheme().useOpaquePanels();
     }
 
 }

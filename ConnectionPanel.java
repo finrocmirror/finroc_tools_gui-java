@@ -74,6 +74,7 @@ import org.finroc.core.portdatabase.FinrocTypeInfo;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
+import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.MJTree;
 import org.finroc.tools.gui.util.treemodel.PortWrapper;
 import org.finroc.tools.gui.util.treemodel.TreePortWrapper;
@@ -117,6 +118,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     protected JPopupMenu popupMenu;
     protected boolean popupOnRight;
     JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
+
+    static boolean NIMBUS_LOOK_AND_FEEL = Themes.nimbusLookAndFeel();
 
     public ConnectionPanel(Owner win, Font treeFont) {
 
@@ -367,6 +370,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         //int offset = (!p.isInputPort()) ? r.height / 2 - 1 : 0;  // An Spitze oder in Vertiefung ansetzen?
         //int xpos = selFromRight ? r.x + offset : r.x + r.width - offset - 4; // Linker oder rechter Baum
         int xpos = tree == leftTree ? (r.x + r.width + offset) : (r.x - offset);
+        if (NIMBUS_LOOK_AND_FEEL) {
+            xpos -= (tree == leftTree) ? 4 : 2;
+        }
 
         // xpos an den Rand setzen, falls es Baum sonst überschreitet
         if (tree == leftTree) {
@@ -967,6 +973,7 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
         }
         setBackgroundSelectionColor(c);
         setBackgroundNonSelectionColor(c);
+
         setIconTextGap(0);
         if (!rightTree) {
             setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -982,10 +989,33 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
 
     @Override
     public void paint(Graphics g) {
+
+        if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
+            if (super.selected) {
+                g.setColor(background);
+                g.setClip(-getX(), 0, parent.getWidth(), getHeight());
+                g.fillRect(-getX(), 0, parent.getWidth(), getHeight());
+            }
+
+            // copied from super class to ensure that background is filled
+            g.setColor(super.selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
+            if (getComponentOrientation().isLeftToRight()) {
+                g.fillRect(-1, 0, getWidth() - 4, getHeight());
+            } else {
+                g.fillRect(0, 0, getWidth() - 5, getHeight());
+            }
+        }
+
+        setForeground(Color.white);
         super.paint(g);
         Color temp = g.getColor();
         g.setColor(background);
         g.drawLine(0, 0, getWidth() - 1, 0);
+        if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
+            g.drawLine(0, 1, getWidth() - 1, 1);
+            g.fillRect(getWidth() - 4, 0, 5, getHeight());
+            g.fillRect(-1, 0, 1, getHeight());
+        }
         g.drawLine(0, getHeight() - 1, getWidth() - 1, getHeight() - 1);
         g.setColor(temp);
     }
