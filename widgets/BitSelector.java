@@ -41,7 +41,6 @@ import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
 import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.datatype.CoreNumber;
@@ -69,8 +68,7 @@ public class BitSelector extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
-        setLabelColor(Themes.getCurTheme().standardLabel());
+        useAlternativeColors();
     }
 
     @Override
@@ -96,6 +94,7 @@ public class BitSelector extends Widget {
 
         BitSelectorUI() {
             super(RenderMode.Swing);
+            checkBoxPanel.setOpaque(useOpaquePanels());
             JPanel topPanel = new JPanel();
             topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
             all = new JButton("all");

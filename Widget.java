@@ -34,6 +34,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.commons.Util;
 import org.finroc.tools.gui.commons.reflection.ReflectionCallback;
 import org.finroc.tools.gui.commons.reflection.ReflectionHelper;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
@@ -65,10 +66,10 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
     private String label;
 
     /** Color of Label */
-    private Color labelColor = Themes.getCurTheme().widgetLabel();
+    private Color labelColor = getDefaultColor(Theme.DefaultColor.LABEL);
 
     /** Background color of widget (at least of the border) */
-    private Color background = Themes.getCurTheme().widgetBackground();
+    private Color background = getDefaultColor(Theme.DefaultColor.BACKGROUND);
 
     /** temporary list */
     @NotInPropertyEditor
@@ -281,5 +282,23 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
     @Override
     protected FrameworkElement createFrameworkElement() {
         return new FrameworkElement(getClass().getSimpleName());
+    }
+
+    /**
+     * Convenience method to get default colors from theme
+     *
+     * @param dc Element type
+     * @return Default color for element type
+     */
+    public static Color getDefaultColor(Theme.DefaultColor dc) {
+        return Themes.getCurTheme().getDefaultColor(dc);
+    }
+
+    /**
+     * Use alternative background and label colors
+     */
+    public void useAlternativeColors() {
+        setBackground(getDefaultColor(Theme.DefaultColor.ALTERNATIVE_BACKGROUND));
+        setLabelColor(getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL));
     }
 }

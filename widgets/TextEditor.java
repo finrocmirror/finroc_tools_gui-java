@@ -64,6 +64,11 @@ public class TextEditor extends Widget {
     }
 
     @Override
+    protected void setDefaultColors() {
+        useAlternativeColors();
+    }
+
+    @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : StringBlackboardBuffer.TYPE);
     }
@@ -80,6 +85,7 @@ public class TextEditor extends Widget {
         TextEditorUI() {
             super(RenderMode.Swing);
             buttonPanel = new JPanel();
+            buttonPanel.setOpaque(useOpaquePanels());
             buttonPanel.setLayout(new GridLayout(1, 2));
             undoButton = new JButton("Undo Changes");
             undoButton.addActionListener(this);

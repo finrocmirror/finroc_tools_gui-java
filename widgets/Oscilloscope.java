@@ -22,12 +22,15 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -37,6 +40,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetPorts;
 import org.finroc.tools.gui.WidgetPortsListener;
 import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
@@ -77,7 +81,7 @@ public class Oscilloscope extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
+        useAlternativeColors();
     }
 
     @Override
@@ -96,7 +100,7 @@ public class Oscilloscope extends Widget {
 
         DrawMode drawMode = DrawMode.lines;
         Scale useScale = Scale.left;
-        Color color = new Color(0, 1.0f, 0);
+        Color color = getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_FOREGROUND);
     }
 
     class OscilloscopeUI extends WidgetUI implements WidgetPortsListener {
@@ -105,9 +109,11 @@ public class Oscilloscope extends Widget {
         private static final long serialVersionUID = 3206071864061439004L;
 
         RulerOfTheForest left, bottom, right;
+        RulerOfTheForest.RulerLabel bottomLeft, bottomRight;
         OscilloscopeMainPanel main;
         boolean skip;
         List<OscilloscopeFunction> functions = new ArrayList<OscilloscopeFunction>();
+        JLabel label = new JLabel();
 
         OscilloscopeThread thread;
 
@@ -120,10 +126,15 @@ public class Oscilloscope extends Widget {
             left = new RulerOfTheForest(SwingConstants.VERTICAL, 0.25, false, 13);
             right = new RulerOfTheForest(SwingConstants.VERTICAL, 0.25, true, 13);
             JPanel south = new JPanel();
+            south.setOpaque(useOpaquePanels());
             south.setLayout(new BorderLayout());
-            south.add(new RulerOfTheForest.RulerLabel(), BorderLayout.WEST);
+            bottomLeft = new RulerOfTheForest.RulerLabel(RulerOfTheForest.RulerLabel.Position.SW);
+            south.add(bottomLeft, BorderLayout.WEST);
             south.add(bottom, BorderLayout.CENTER);
-            south.add(new RulerOfTheForest.RulerLabel(), BorderLayout.EAST);
+            bottomRight = new RulerOfTheForest.RulerLabel(RulerOfTheForest.RulerLabel.Position.SE);
+            south.add(bottomRight, BorderLayout.EAST);
+            label.setVisible(false);
+            add(label, BorderLayout.PAGE_START);
             add(left, BorderLayout.WEST);
             add(right, BorderLayout.EAST);
             add(south, BorderLayout.SOUTH);
@@ -171,6 +182,36 @@ public class Oscilloscope extends Widget {
                     functions.remove(functions.size() - 1);
                 }
             }
+
+            if (Themes.nimbusLookAndFeel()) {
+                Color c = getLabelColor(Oscilloscope.this);
+                boolean alt = Themes.getCurTheme().getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL).equals(c);
+                Color b = getDefaultColor(alt ? Theme.DefaultColor.ALTERNATIVE_BACKGROUND : Theme.DefaultColor.BACKGROUND);
+                int rulerHeight = alt && Themes.nimbusLookAndFeel() ? RulerOfTheForest.RULERHEIGHT - 3 : RulerOfTheForest.RULERHEIGHT;
+                left.setBackground(b);
+                right.setBackground(b);
+                bottom.setBackground(b);
+                bottomLeft.setBackground(b);
+                bottomRight.setBackground(b);
+                left.setForeground(c);
+                right.setForeground(c);
+                bottom.setForeground(c);
+                bottomLeft.setForeground(c);
+                bottomRight.setForeground(c);
+                left.setPreferredSize(rulerHeight);
+                right.setPreferredSize(rulerHeight);
+                bottom.setPreferredSize(rulerHeight);
+                bottomLeft.setPreferredSize(new Dimension(rulerHeight, rulerHeight));
+                bottomRight.setPreferredSize(new Dimension(rulerHeight, rulerHeight));
+                if (getLabel() != null && getLabel().length() > 0) {
+                    label.setText(getLabel());
+                    label.setVisible(true);
+                    label.setForeground(c);
+                    label.setBorder(alt ? BorderFactory.createEmptyBorder(3, 7, 4, 5) : BorderFactory.createEmptyBorder(5, 8, 5, 5));
+                } else {
+                    label.setVisible(false);
+                }
+            }
         }
 
         class OscilloscopeThread extends LoopThread {
@@ -212,7 +253,7 @@ public class Oscilloscope extends Widget {
             private static final long serialVersionUID = -2946030738495285342L;
 
             public OscilloscopeMainPanel() {
-                setBackground(new Color(0, 0.2f, 0));
+                setBackground(getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_BACKGROUND));
             }
 
             @Override
@@ -226,7 +267,7 @@ public class Oscilloscope extends Widget {
                 g2d.setClip(0, 0, getWidth(), getHeight());
 
                 // Minor lines
-                g2d.setColor(new Color(0, 0.25f, 0));
+                g2d.setColor(getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_SCALE));
                 for (Integer i : bottom.getMinorTicks()) {
                     g2d.drawLine(i, 0, i, getHeight() - 1);
                 }
@@ -238,7 +279,7 @@ public class Oscilloscope extends Widget {
                 }
 
                 // Vertical major lines
-                g2d.setColor(new Color(0, 0.33f, 0));
+                g2d.setColor(getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_SCALE_MAJOR));
                 for (Integer i : bottom.getMajorTicks()) {
                     g2d.drawLine(i, 0, i, getHeight() - 1);
                 }

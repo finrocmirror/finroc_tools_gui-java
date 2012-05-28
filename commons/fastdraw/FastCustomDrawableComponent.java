@@ -27,9 +27,9 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 
 import javax.naming.OperationNotSupportedException;
-import javax.swing.JPanel;
 
 import org.finroc.tools.gui.FinrocGUI;
+import org.finroc.tools.gui.util.gui.MPanel;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
@@ -37,7 +37,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  *
  * This is the superclass for components that will be visible on FastCustomDrawingPanels
  */
-public abstract class FastCustomDrawableComponent extends JPanel {
+public abstract class FastCustomDrawableComponent extends MPanel {
 
     /** UID */
     private static final long serialVersionUID = 8289849736884579514L;

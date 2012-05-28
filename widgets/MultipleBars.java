@@ -41,7 +41,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetPorts;
 import org.finroc.tools.gui.WidgetPortsListener;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 
 import org.finroc.core.port.AbstractPort;
@@ -55,7 +55,7 @@ public class MultipleBars extends Widget {
 
     PropertyList<BarProperty> bars = new PropertyList<BarProperty>(BarProperty.class, 25);
     WidgetPorts<WidgetInput.Numeric> inputs = new WidgetPorts<WidgetInput.Numeric>("input", 2, WidgetInput.Numeric.class, this);
-    Color barBackground = Themes.getCurTheme().standardBackground().brighter();
+    Color barBackground = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_BACKGROUND).brighter();
 
     public MultipleBars() {
         // 2 bars by default
@@ -65,7 +65,7 @@ public class MultipleBars extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
+        useAlternativeColors();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class MultipleBars extends Widget {
         String label = "name";
         double min = 0;
         double max = 1;
-        Color color = Themes.getCurTheme().lcdEnabled();
+        Color color = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
     }
 
     class MultipleBarsUI extends WidgetUI implements WidgetPortsListener, ComponentListener {
@@ -104,7 +104,9 @@ public class MultipleBars extends Widget {
             // create panels
             setLayout(new BorderLayout());
             labelPanel = new JPanel();
+            labelPanel.setOpaque(useOpaquePanels());
             barPanel = new JPanel();
+            barPanel.setOpaque(useOpaquePanels());
             barPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3), BorderFactory.createLineBorder(Color.BLACK)));
             //barPanel.setBackground(barBackground);
             labelPanel.setBorder(BorderFactory.createEmptyBorder(1, 3, 3, 3));

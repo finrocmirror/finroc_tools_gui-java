@@ -37,7 +37,6 @@ import org.finroc.tools.gui.commons.fastdraw.SVG;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
-import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;

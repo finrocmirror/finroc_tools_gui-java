@@ -30,7 +30,7 @@ import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 import org.finroc.core.port.AbstractPort;
@@ -45,14 +45,13 @@ public class Label extends Widget {
 
     WidgetInput.Std<RRLibSerializable> text;
 
-    Color textColor = Themes.getCurTheme().standardLabel();
+    Color textColor = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL);
 
     float fontSize = 36;
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
-        setLabelColor(Themes.getCurTheme().standardLabel());
+        useAlternativeColors();
     }
 
     @Override

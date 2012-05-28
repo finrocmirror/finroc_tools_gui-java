@@ -34,10 +34,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.event.MouseInputListener;
 
@@ -46,6 +44,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.abstractbase.UIBase;
 import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.util.gui.MPanel;
 
 
 /**
@@ -80,7 +79,7 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
         this.parent = parent;
         selection = new SelectionUI(this);
         setLayout(null);
-        setBackground(Themes.getCurTheme().panelBackground());
+        Themes.getCurTheme().initGUIPanel(ui);
         addMouseListener(this);
         addMouseMotionListener(this);
 
@@ -416,7 +415,7 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
         getParent().updateToolBarState();
     }
 
-    public class GUIPanelUIJPanel extends JPanel {
+    public class GUIPanelUIJPanel extends MPanel {
 
         /** UID */
         private static final long serialVersionUID = -8220137772880712617L;

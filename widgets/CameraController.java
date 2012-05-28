@@ -28,7 +28,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -90,8 +89,7 @@ public class CameraController extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().standardBackground());
-        setLabelColor(Themes.getCurTheme().standardLabel());
+        useAlternativeColors();
     }
 
     @Override
@@ -114,6 +112,7 @@ public class CameraController extends Widget {
             cameraState.addChangeListener(this);
             setLayout(new BorderLayout());
 
+            main.setOpaque(useOpaquePanels());
             main.setLayout(layout);
             add(main, BorderLayout.CENTER);
             add(dumpSettings, BorderLayout.SOUTH);
@@ -208,7 +207,7 @@ public class CameraController extends Widget {
             CameraFeature currentState = new CameraFeature();
 
             public CameraControllerPanel() {
-                tb.setBorder(BorderFactory.createLineBorder(Themes.getCurTheme().borderColor()));
+                tb.setBorder(Themes.getCurTheme().createThinBorder());
                 super.setBorder(tb);
                 setLayout(new BorderLayout());
                 sliderPanel.setLayout(sliderGrid);

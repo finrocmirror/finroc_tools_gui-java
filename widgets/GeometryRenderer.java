@@ -22,6 +22,7 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -52,6 +53,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetPorts;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.commons.Util;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintable;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintables;
@@ -100,6 +102,7 @@ public class GeometryRenderer extends Widget {
     private double lineWidth = 1;
     private boolean showRulers = true;
     private boolean showCoordinates = false;
+    @SuppressWarnings("unused")
     @NotInPropertyEditor
     private transient boolean invertObjectYInput = false;
     private boolean resetClickPosOnMouseRelease = false;
@@ -115,7 +118,7 @@ public class GeometryRenderer extends Widget {
 
     @Override
     protected void setDefaultColors() {
-        setBackground(Themes.getCurTheme().geometryBackground());
+        setBackground(getDefaultColor(Theme.DefaultColor.GEOMETRY_BACKGROUND));
     }
 
     @Override
@@ -170,6 +173,7 @@ public class GeometryRenderer extends Widget {
             cordBar.setHorizontalAlignment(JLabel.CENTER);
             cordBar.setFont(cordBar.getFont().deriveFont(Font.PLAIN, 10));
             centerPanel.setLayout(new BorderLayout());
+            centerPanel.setOpaque(useOpaquePanels());
             renderer = new Renderer();
             renderer.addComponentListener(this);
             centerPanel.add(renderer, BorderLayout.CENTER);
@@ -205,9 +209,10 @@ public class GeometryRenderer extends Widget {
             // create ruler
             JPanel topPanel = new JPanel();
             topPanel.setLayout(new BorderLayout());
+            topPanel.setOpaque(useOpaquePanels());
             leftRuler = new RulerOfTheForest(SwingConstants.VERTICAL, 14);
             topRuler = new RulerOfTheForest(SwingConstants.HORIZONTAL, 11);
-            rulerLabel = new RulerOfTheForest.RulerLabel();
+            rulerLabel = new RulerOfTheForest.RulerLabel(RulerOfTheForest.RulerLabel.Position.NO_ETCHED_BORDER);
             topPanel.add(topRuler, BorderLayout.CENTER);
             topPanel.add(rulerLabel, BorderLayout.WEST);
             centerPanel.add(topPanel, BorderLayout.NORTH);
@@ -403,9 +408,23 @@ public class GeometryRenderer extends Widget {
         @SuppressWarnings("unchecked")
         @Override
         public void widgetPropertiesChanged() {
-            setBackground(GeometryRenderer.this.getBackground());
+            //setBackground(GeometryRenderer.this.getBackground());
             renderer.setBackground(GeometryRenderer.this.getBackground());
             toolbar.setVisible(!hideToolbar);
+
+            if (Themes.nimbusLookAndFeel()) {
+                Color c = getLabelColor(GeometryRenderer.this);
+                Color b = getBackground();
+                leftRuler.setOpaque(false);
+                leftRuler.setBackground(b);
+                leftRuler.setForeground(c);
+                topRuler.setBackground(b);
+                topRuler.setOpaque(false);
+                topRuler.setForeground(c);
+                rulerLabel.setOpaque(false);
+                rulerLabel.setBackground(b);
+                rulerLabel.setForeground(c);
+            }
 
             if (objectPoses == null) {
                 objectPoses = new WidgetPorts<WidgetInput.CC<Pose2D>>("", 0, WidgetInput.CC.class, GeometryRenderer.this);

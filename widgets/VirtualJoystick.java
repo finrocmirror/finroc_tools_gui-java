@@ -40,7 +40,7 @@ import org.finroc.tools.gui.commons.Util;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageARGBColorable;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.InvisibleComponent;
-import org.finroc.tools.gui.themes.Themes;
+import org.finroc.tools.gui.themes.Theme;
 
 import org.finroc.core.port.PortCreationInfo;
 
@@ -54,8 +54,8 @@ public class VirtualJoystick extends Widget {
     /** UID */
     private static final long serialVersionUID = 3806880236997654888L;
 
-    private Color joystickBackground = Themes.getCurTheme().joystickBackground();
-    private Color foreground = Themes.getCurTheme().joystickForeground();
+    private Color joystickBackground = getDefaultColor(Theme.DefaultColor.JOYSTICK_BACKGROUND);
+    private Color foreground = getDefaultColor(Theme.DefaultColor.JOYSTICK_FOREGROUND);
     private boolean resetOnRelease = true;
     transient Point curPos = null;
     private transient int pointColor = 0xFF00;

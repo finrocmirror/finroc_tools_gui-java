@@ -22,6 +22,7 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Hashtable;
@@ -35,6 +36,7 @@ import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 
 import org.finroc.core.datatype.CoreNumber;
@@ -60,7 +62,7 @@ public class Slider extends Widget {
     private double minimum = 0, maximum = 10, stepSize = 0.1;
 
     /** Slider background */
-    private Color sliderBackground = Themes.getCurTheme().sliderBackground();
+    private Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
 
     /** Show ticks? Show labels? */
     private boolean showTicks = true, showLabels = true;
@@ -116,7 +118,7 @@ public class Slider extends Widget {
             slider.setPaintTicks(showTicks);
             slider.setPaintLabels(showLabels);
             slider.setParams(minimum, maximum, stepSize);
-            slider.setLabelColor(Slider.this.getLabelColor());
+            slider.setLabelColor(getLabelColor(Slider.this));
         }
 
         @Override
@@ -136,6 +138,7 @@ class DoubleSlider extends JSlider {
     private static final double MAXTICKSPERPIXEL = 0.1;
     Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
     JLabel maxLabel, minLabel;
+    Graphics graphics; // Graphics object while painting - otherwise null
 
     public void setValue(double value) {
         if (value <= min) {
@@ -181,5 +184,29 @@ class DoubleSlider extends JSlider {
     public void setLabelColor(Color c) {
         minLabel.setForeground(c);
         maxLabel.setForeground(c);
+    }
+
+    // evil hack to be able to set the tick color (part I)
+    @Override
+    protected void paintComponent(Graphics g) {
+        graphics = g.create();
+        try {
+            ui.update(graphics, this);
+        } finally {
+            graphics.dispose();
+        }
+        graphics = null;
+    }
+
+
+    // evil hack to be able to set the tick color (part II)
+    @Override
+    public int getMajorTickSpacing() {
+        if (graphics != null && Themes.nimbusLookAndFeel()) {
+            boolean bright = minLabel.getForeground().getRed() + minLabel.getForeground().getGreen() + minLabel.getForeground().getBlue() >= 384;
+            graphics.setColor(bright ? minLabel.getForeground().darker().darker() : minLabel.getForeground());
+            graphics.setColor(bright ? new Color(0.07f, 0.07f, 0.07f) : minLabel.getForeground());
+        }
+        return super.getMajorTickSpacing();
     }
 }
