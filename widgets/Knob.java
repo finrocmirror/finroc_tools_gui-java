@@ -115,7 +115,7 @@ public class Knob extends Widget {
             return;
         }
         try {
-            URL u = LCD.class.getResource("knob-background-gregor2.svg");
+            URL u = LCD.class.getResource("knob-background-gregor.svg");
             if (u == null) {
                 u = LCD.class.getResource("knob-background-simple-max.svg");
             }
