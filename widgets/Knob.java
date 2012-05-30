@@ -360,7 +360,6 @@ public class Knob extends Widget {
                     angleToEnd = angleToEnd > 180 ? 360 - angleToEnd : angleToEnd; // take shortest angle
                     currentValue = (angleToEnd < angleToStart) ? maximum : minimum;
                 }
-                System.out.println(v);
                 repaint();
             }
         }
