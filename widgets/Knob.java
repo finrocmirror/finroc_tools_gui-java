@@ -20,26 +20,37 @@
  */
 package org.finroc.tools.gui.widgets;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JPanel;
+import javax.swing.event.MouseInputListener;
 
 import org.finroc.plugins.data_types.Angle;
+import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.Widget;
+import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Theme;
+import org.finroc.tools.gui.commons.fastdraw.SVG;
 
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 
 
 /**
@@ -49,80 +60,308 @@ import org.finroc.core.port.PortListener;
 public class Knob extends Widget {
 
     /** UID */
-    private static final long serialVersionUID = 2468949292381381445L;
+    private static final long serialVersionUID = 193567299267933L;
 
-    /** Slider-Value output port */
+    /** Value output port */
     private WidgetOutput.Std<Angle> value;
 
-    /** Slider parameters */
-    private double minimum = 0, maximum = 360, stepSize = 0.1;
+    /** Current value input */
+    private WidgetInput.Numeric measuredValue;
 
-    /** Slider background */
-    private Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
+    /** Parameters */
+    private double minimum = 0, maximum = 360;
+
+    /** Where does scale begin and end? (degree) */
+    private double scaleBeginAngle = 0, scaleArcLength = 360;
+
+    /** Number of segments scale should have */
+    private int scaleSegments = 8;
+
+    /** Clockwise knob? */
+    private boolean clockwise = true;
+
+    /** Ring Background */
+    private Color ringBackground = Color.black;
+
+    /** Ring Indication Color */
+    private Color ringIndication = new Color(255, 102, 0);
 
     /** Show ticks? Show labels? */
     private boolean showTicks = true, showLabels = true;
 
+    /** Current value */
+    private double currentValue;
+
+    /** SVG resources */
+    private static SVG svgBack, svgIndicator;
+    private static int svgWidth, svgHeight; // offset of images etc.
+    private static double svgSize, halfSVGSize;
+
     @Override
     protected WidgetUI createWidgetUI() {
-        return new SliderUI();
+        return new KnobUI();
     }
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH).derive(Angle.TYPE);
+        if (forPort == value) {
+            return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH).derive(Angle.TYPE);
+        }
+        return suggestion;
     }
 
-    class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, PortListener<Angle> {
+    public static synchronized void initSVG() {
+        if (svgIndicator != null) {
+            return;
+        }
+        try {
+            URL u = LCD.class.getResource("knob-background-gregor2.svg");
+            if (u == null) {
+                u = LCD.class.getResource("knob-background-simple-max.svg");
+            }
+            svgBack = SVG.createInstance(u, true);
+            svgIndicator = SVG.createInstance(LCD.class.getResource("knob-indicator.svg"), true);
+            svgWidth = (int)svgBack.getBounds().getWidth() + 4;
+            svgHeight = (int)svgBack.getBounds().getHeight() + 4;
+            svgSize = Math.min(svgWidth, svgHeight);
+            halfSVGSize = svgSize / 2;
+        } catch (Exception e) {
+            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "Knob", e);
+        }
+    }
+
+    class KnobUI extends WidgetUI implements PortListener<Angle> {
 
         /** UID */
         private static final long serialVersionUID = -226842649519588097L;
 
-        private DoubleSlider slider;
+        private boolean propChange = false;
+        private BufferedImage backgroundBuffer, knobBuffer;
+        private double factor; // scale factor
+        private double angleDiff;
+        private MainPanel mainPanel = new MainPanel();
 
-        SliderUI() {
+        KnobUI() {
             super(RenderMode.Swing);
-            slider = new DoubleSlider();
-            setLayout(new BorderLayout());
-            add(slider, BorderLayout.CENTER);
+            setOpaque(useOpaquePanels());
+            initSVG();
             widgetPropertiesChanged();
-
             value.addChangeListener(this);
-            addComponentListener(this);
-
             portChanged(null, null);
-
-            slider.addChangeListener(this);
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            Angle a = value.getUnusedBuffer();
-            a.setDeg(slider.getDoubleValue());
-            value.publish(a);
-        }
-
-        public void componentHidden(ComponentEvent e) {}
-        public void componentShown(ComponentEvent e) {}
-        public void componentMoved(ComponentEvent e) {}
-
-        public void componentResized(ComponentEvent e) {
-            slider.setOrientation(getWidth() > getHeight() ? JSlider.HORIZONTAL : JSlider.VERTICAL);
-            widgetPropertiesChanged();
+            mainPanel.setOpaque(false);
+            setLayout(new BorderLayout());
+            add(mainPanel, BorderLayout.CENTER);
         }
 
         @Override
         public void widgetPropertiesChanged() {
-            slider.setBackground(sliderBackground);
-            slider.setPaintTicks(showTicks);
-            slider.setPaintLabels(showLabels);
-            slider.setParams(minimum, maximum, stepSize);
-            slider.setLabelColor(Knob.this.getLabelColor());
+            // TODO: value sanity check
+            scaleArcLength = Math.max(0, Math.min(360, scaleArcLength));
+            if (maximum < minimum) {
+                double tmp = minimum;
+                minimum = maximum;
+                maximum = tmp;
+            } else if (maximum == minimum) {
+                maximum = minimum + 1;
+            }
+            propChange = true;
+            angleDiff = (scaleArcLength / (maximum - minimum));
+            setChanged();
+            repaint();
         }
 
         @Override
         public void portChanged(AbstractPort origin, Angle value) {
             if (value != null) {
-                slider.setValue(value.getSignedDeg());
+                //currentValue = value.
+                setChanged();
+                repaint();
+            }
+        }
+
+        public Angle valueToAngle(double value) {
+            Angle a = new Angle();
+            a.setDeg((scaleBeginAngle + angleDiff * (value - minimum)));
+            return a;
+        }
+
+        public double angleToValue(Angle angle) {
+            Angle a = new Angle();
+            a.setDeg((angle.getUnsignedDeg() - scaleBeginAngle));
+            return minimum + a.getUnsignedDeg() / angleDiff;
+        }
+
+        private class MainPanel extends JPanel implements MouseInputListener {
+
+            /** UID */
+            private static final long serialVersionUID = -2718129091250046008L;
+
+            public MainPanel() {
+                this.addMouseListener(this);
+                this.addMouseMotionListener(this);
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Dimension renderSize = getRenderSize();
+                double size = Math.min(renderSize.width, renderSize.height);
+                double size12 = size / 12;
+                factor = size / svgSize;
+                if (propChange || backgroundBuffer == null || renderSize.width != backgroundBuffer.getWidth() || renderSize.height != backgroundBuffer.getHeight()) {
+                    if (backgroundBuffer == null || renderSize.width != backgroundBuffer.getWidth() || renderSize.height != backgroundBuffer.getHeight()) {
+                        backgroundBuffer = new BufferedImage(renderSize.width, renderSize.height, BufferedImage.TYPE_INT_ARGB);
+                        knobBuffer = new BufferedImage(renderSize.width, renderSize.height, BufferedImage.TYPE_INT_ARGB);
+                    }
+
+                    // Draw background
+                    Graphics2D g2 = backgroundBuffer.createGraphics();
+                    g2.setColor(new Color(ringBackground.getRed(), ringBackground.getGreen(), ringBackground.getBlue(), 255));
+                    g2.fillOval((int)size12, (int)size12, (int)(size12 * 10.5), (int)(size12 * 10.5));
+                    g2.dispose();
+
+                    // Draw knob
+                    g2 = knobBuffer.createGraphics();
+                    g2.setColor(new Color(0, 0, 0, 0));
+                    g2.fillRect(-1, -1, renderSize.width + 2, renderSize.height + 2);
+                    propChange = false;
+
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                    g2.setClip(0, 0, renderSize.width, renderSize.height);
+
+                    g2.scale(factor, factor);
+                    svgBack.paint(g2);
+
+                    // draw scale
+                    if (showTicks) {
+
+                        // draw ring
+                        g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, 0));
+                        //g2.setColor(new Color(0, 0, 0, 128));
+                        g2.setColor(new Color(0, 0, 0, 128));
+                        Angle start = valueToAngle(minimum);
+                        final double ringInset = 19;
+                        g2.drawArc((int)ringInset + 1, (int)ringInset + 1, (int)(svgSize - 2 * ringInset), (int)(svgSize - 2 * ringInset), -(int)start.getUnsignedDeg(), (clockwise ? (-1) : 1) * (int)(scaleArcLength));
+
+                        g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, 0));
+                        //g2.setColor(new Color(0, 0, 0, 128));
+                        //g2.setColor(new Color(60, 60, 60));
+                        g2.translate(halfSVGSize + 1, halfSVGSize + 1);
+                        double scaleTickInterval = (maximum - minimum) / scaleSegments;
+                        g2.rotate((clockwise ? 1 : -1) * ((scaleBeginAngle / 180) * Math.PI));
+                        AffineTransform at = g2.getTransform();
+                        double currentValue = minimum;
+                        for (int i = 0; i < scaleSegments; i++, currentValue += scaleTickInterval) {
+                            if (currentValue < -(maximum - minimum) / 80 || currentValue > (maximum - minimum) / 80) {
+                                g2.setColor(getTickColor(g2, halfSVGSize * 0.94, 0));
+                                g2.drawLine((int)(halfSVGSize * 0.865), 0, (int)(halfSVGSize * 0.945), 0);
+                            }
+                            g2.rotate((clockwise ? -1 : 1) * ((-angleDiff * scaleTickInterval) / 180) * Math.PI);
+                        }
+                        if (scaleArcLength != 360) {
+                            g2.setColor(getTickColor(g2, halfSVGSize * 0.94, 0));
+                            g2.drawLine((int)(halfSVGSize * 0.865), 0, (int)(halfSVGSize * 0.945), 0);
+                        }
+
+                        if (minimum <= 0 && maximum >= 0) {
+                            g2.setTransform(at);
+                            Angle a = valueToAngle(0);
+                            g2.rotate(a.getUnsignedRad());
+                            g2.setColor(getTickColor(g2, halfSVGSize * 0.94, 0));
+                            g2.fillOval((int)(halfSVGSize * 0.855), -(int)(halfSVGSize * 0.05), (int)(halfSVGSize * 0.1), (int)(halfSVGSize * 0.1));
+                        }
+                    }
+
+                    g2.dispose();
+                }
+
+                // draw ring
+                g.drawImage(backgroundBuffer, 0, 0, null);
+                g.setColor(ringIndication);
+                Angle start = valueToAngle(minimum);
+                double length = angleDiff * ((measuredValue.getPort().isConnected() ? measuredValue.getDouble() : currentValue) - minimum);
+                if (minimum <= 0 && maximum >= 0) {
+                    start = valueToAngle(0);
+                    length = angleDiff * ((measuredValue.getPort().isConnected() ? measuredValue.getDouble() : currentValue));
+                }
+                if (clockwise) {
+                    g.fillArc((int)size12, (int)size12, (int)(size12 * 10), (int)(size12 * 10), -(int)start.getUnsignedDeg(), -(int)length);
+                } else {
+                    g.fillArc((int)size12, (int)size12, (int)(size12 * 10), (int)(size12 * 10), (int)start.getUnsignedDeg(), (int)length);
+                }
+
+                // draw knob
+                g.drawImage(knobBuffer, 0, 0, null);
+
+                // draw indicator
+                Graphics2D g2d = (Graphics2D)g;
+                AffineTransform tf = g2d.getTransform();
+                g2d.scale(factor, factor);
+                g2d.translate(halfSVGSize + 1, halfSVGSize + 1);
+                g2d.rotate(0.5 * Math.PI);
+                Angle a = valueToAngle(currentValue);
+                g2d.rotate(clockwise ? a.getUnsignedRad() : -a.getUnsignedRad());
+                g2d.translate(-(halfSVGSize + 1), -(halfSVGSize + 1));
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                svgIndicator.paint(g2d);
+                g2d.setTransform(tf);
+            }
+
+            /** Helper for above to determine tick colors */
+            public Color getTickColor(Graphics2D g, double x, double y) {
+                Point2D.Double result = new Point2D.Double();
+                g.getTransform().transform(new Point2D.Double(x, y), result);
+                Color tickColor = new Color(knobBuffer.getRGB((int)result.x, (int)result.y));
+                //System.out.println(tickColor.toString());
+                return new Color(tickColor.getRed() / 2, tickColor.getGreen() / 2, tickColor.getBlue() / 2);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {}
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                setPos(e.getPoint());
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                setPos(e.getPoint());
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                setPos(e.getPoint());
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {}
+
+            private void setPos(Point p) {
+                Dimension renderSize = getRenderSize();
+                double size = Math.min(renderSize.width, renderSize.height) / 2;
+                double angle = -Math.atan2(p.y - size, p.x - size);
+                Angle a = new Angle();
+                a.setRad(clockwise ? -angle : angle);
+                double v = angleToValue(a);
+                if (v >= minimum && v <= maximum) {
+                    currentValue = v;
+                } else {
+                    double angleToStart = Math.abs(a.getUnsignedDeg() - scaleBeginAngle);
+                    double angleToEnd = Math.abs(a.getUnsignedDeg() - (scaleBeginAngle + scaleArcLength));
+                    angleToStart = angleToStart > 180 ? 360 - angleToStart : angleToStart; // take shortest angle
+                    angleToEnd = angleToEnd > 180 ? 360 - angleToEnd : angleToEnd; // take shortest angle
+                    currentValue = (angleToEnd < angleToStart) ? maximum : minimum;
+                }
+                System.out.println(v);
+                repaint();
             }
         }
     }
