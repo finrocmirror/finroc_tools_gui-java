@@ -90,7 +90,7 @@ public class Knob extends Widget {
     private boolean showTicks = true, showLabels = true;
 
     /** Current value */
-    private double currentValue;
+    private transient double currentValue;
 
     /** SVG resources */
     private static SVG svgBack, svgIndicator;
