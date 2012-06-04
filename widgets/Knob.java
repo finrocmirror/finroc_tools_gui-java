@@ -249,8 +249,8 @@ public class Knob extends Widget {
                         //g2.setColor(new Color(60, 60, 60));
                         g2.translate(halfSVGSize + 1, halfSVGSize + 1);
                         double scaleTickInterval = (maximum - minimum) / scaleSegments;
-                        g2.rotate((clockwise ? 1 : -1) * ((scaleBeginAngle / 180) * Math.PI));
                         AffineTransform at = g2.getTransform();
+                        g2.rotate((clockwise ? 1 : -1) * ((scaleBeginAngle / 180) * Math.PI));
                         double currentValue = minimum;
                         for (int i = 0; i < scaleSegments; i++, currentValue += scaleTickInterval) {
                             if (currentValue < -(maximum - minimum) / 80 || currentValue > (maximum - minimum) / 80) {
@@ -267,7 +267,7 @@ public class Knob extends Widget {
                         if (minimum <= 0 && maximum >= 0) {
                             g2.setTransform(at);
                             Angle a = valueToAngle(0);
-                            g2.rotate(a.getUnsignedRad());
+                            g2.rotate((clockwise ? 1 : -1) * a.getUnsignedRad());
                             g2.setColor(getTickColor(g2, halfSVGSize * 0.94, 0));
                             g2.fillOval((int)(halfSVGSize * 0.855), -(int)(halfSVGSize * 0.05), (int)(halfSVGSize * 0.1), (int)(halfSVGSize * 0.1));
                         }
