@@ -51,6 +51,7 @@ import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 
 /**
@@ -130,7 +131,8 @@ public class Knob extends Widget {
         }
     }
 
-    class KnobUI extends WidgetUI implements PortListener<Angle> {
+    @SuppressWarnings("rawtypes")
+    class KnobUI extends WidgetUI implements PortListener {
 
         /** UID */
         private static final long serialVersionUID = -226842649519588097L;
@@ -141,12 +143,14 @@ public class Knob extends Widget {
         private double angleDiff;
         private MainPanel mainPanel = new MainPanel();
 
+        @SuppressWarnings("unchecked")
         KnobUI() {
             super(RenderMode.Swing);
             setOpaque(useOpaquePanels());
             initSVG();
             widgetPropertiesChanged();
             value.addChangeListener(this);
+            measuredValue.addChangeListener(this);
             portChanged(null, null);
             mainPanel.setOpaque(false);
             setLayout(new BorderLayout());
@@ -171,10 +175,10 @@ public class Knob extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, Angle value) {
+        public void portChanged(AbstractPort origin, Object value) {
             if (value != null) {
                 //currentValue = value.
-                setChanged();
+                //setChanged();
                 repaint();
             }
         }
@@ -242,7 +246,7 @@ public class Knob extends Widget {
                         g2.setColor(new Color(0, 0, 0, 128));
                         Angle start = valueToAngle(minimum);
                         final double ringInset = 19;
-                        g2.drawArc((int)ringInset + 1, (int)ringInset + 1, (int)(svgSize - 2 * ringInset), (int)(svgSize - 2 * ringInset), -(int)start.getUnsignedDeg(), (clockwise ? (-1) : 1) * (int)(scaleArcLength));
+                        g2.drawArc((int)ringInset + 1, (int)ringInset + 1, (int)(svgSize - 2 * ringInset), (int)(svgSize - 2 * ringInset), (clockwise ? (-1) : 1) * (int)start.getUnsignedDeg(), (clockwise ? (-1) : 1) * (int)(scaleArcLength));
 
                         g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, 0));
                         //g2.setColor(new Color(0, 0, 0, 128));
@@ -280,10 +284,10 @@ public class Knob extends Widget {
                 g.drawImage(backgroundBuffer, 0, 0, null);
                 g.setColor(ringIndication);
                 Angle start = valueToAngle(minimum);
-                double length = angleDiff * ((measuredValue.getPort().isConnected() ? measuredValue.getDouble() : currentValue) - minimum);
+                double length = angleDiff * ((measuredValue.getPort().isConnected() ? getMeasuredValue() : currentValue) - minimum);
                 if (minimum <= 0 && maximum >= 0) {
                     start = valueToAngle(0);
-                    length = angleDiff * ((measuredValue.getPort().isConnected() ? measuredValue.getDouble() : currentValue));
+                    length = angleDiff * ((measuredValue.getPort().isConnected() ? getMeasuredValue() : currentValue));
                 }
                 if (clockwise) {
                     g.fillArc((int)size12, (int)size12, (int)(size12 * 10), (int)(size12 * 10), -(int)start.getUnsignedDeg(), -(int)length);
@@ -306,6 +310,25 @@ public class Knob extends Widget {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 svgIndicator.paint(g2d);
                 g2d.setTransform(tf);
+            }
+
+            private double getMeasuredValue() {
+                NumericRepresentation cn = measuredValue.getAutoLocked();
+                double measured = cn.getNumericRepresentation().doubleValue();
+                if (cn instanceof Angle) {
+                    Angle a = (Angle)cn;
+                    measured = a.getSignedDeg();
+                    while (measured < minimum && (measured + 360 <= maximum || Math.abs((measured + 360) - maximum) < Math.abs(measured - minimum))) {
+                        measured += 360;
+                    }
+                    while (measured > maximum && (measured - 360 >= minimum || Math.abs((measured - 360) - minimum) < Math.abs(measured - maximum))) {
+                        measured -= 360;
+                    }
+                } else {
+                    measured = Math.max(minimum, Math.min(maximum, measured));
+                }
+                releaseAllLocks();
+                return measured;
             }
 
             /** Helper for above to determine tick colors */
