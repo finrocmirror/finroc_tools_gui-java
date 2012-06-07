@@ -281,7 +281,6 @@ public class LCD extends Widget {
 
             // Get value
             NumericRepresentation cn = input.getAutoLocked();
-            releaseAllLocks();
 
             // Optimal size
             int blockWidth = (SVGWIDTH * renderSize.height / SVGHEIGHT);
@@ -341,6 +340,7 @@ public class LCD extends Widget {
             }
 
             boolean warn = ((warnings == WarnOptions.LargerThan && cn.getNumericRepresentation().doubleValue() > warningThreshold) || (warnings == WarnOptions.SmallerThan && cn.getNumericRepresentation().doubleValue() < warningThreshold));
+            releaseAllLocks();
             Color background = warn ? lcdWarningBackground : lcdBackground;
             cache.drawFilledRectangle(new Rectangle(renderSize), background.getRGB());
             try {
@@ -358,6 +358,7 @@ public class LCD extends Widget {
                     firstBlock.x -= firstBlock.width * (1 + SPACING) / 2 + 1;
                 }
             }
+
             //cache.save(new File("cache.png"));
         }
 
