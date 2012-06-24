@@ -6,6 +6,7 @@ Start fingui using specified options and optionally loading specified file.
 
 available options:
 
+--classic   Use Java Swing classic look and feel
 --connect=[<connection type>:]<address>
 
    Connect to specified address using specified connection type. If no

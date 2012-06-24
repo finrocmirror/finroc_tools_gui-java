@@ -380,22 +380,15 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
         // parse command line arguments
         final List<String> loadTasks = new ArrayList<String>();
         final List<String> connectTasks = new ArrayList<String>();
+        boolean shiny = true;
         for (String arg : args) {
             if (arg.startsWith("--connect=")) {
                 connectTasks.add(arg.substring(10));
             } else if (arg.equals("-h") || arg.equals("--help")) {
                 printHelp();
                 return;
-            } else if (arg.equals("--shiny")) {
-                try {
-                    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                        if ("Nimbus".equals(info.getName())) {
-                            UIManager.setLookAndFeel(info.getClassName());
-                            break;
-                        }
-                    }
-                } catch (Exception e) {
-                }
+            } else if (arg.equals("--classic")) {
+                shiny = false;
             } else if (arg.startsWith("-")) {
                 System.out.println("Unsupported option: " + arg);
                 printHelp();
@@ -408,6 +401,17 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
                 }
                 loadTasks.add(arg);
             }
+        }
+
+        if (shiny) {
+            try {
+                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (Exception e) {}
         }
 
         // start Jmcagui in separate Thread (recommended in Java Tutorials)
