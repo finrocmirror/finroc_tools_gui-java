@@ -944,14 +944,17 @@ class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListe
             Color fg = panel.getBranchTextColor(value);
             if (bg != null) {
                 defaultRenderer.setBackgroundNonSelectionColor(bg);
+                defaultRenderer.setBackground(bg);
             } else {
                 defaultRenderer.setBackgroundNonSelectionColor(background);
+                defaultRenderer.setBackground(background);
             }
             if (fg != null) {
                 defaultRenderer.setTextNonSelectionColor(fg);
             } else {
                 defaultRenderer.setTextNonSelectionColor(Color.black);
             }
+            defaultRenderer.setOpaque(ConnectionPanel.NIMBUS_LOOK_AND_FEEL && bg != null);
             return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
 
