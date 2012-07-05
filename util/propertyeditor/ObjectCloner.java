@@ -26,8 +26,36 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.io.ObjectStreamClass;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.finroc.core.datatype.Unit;
+
+
+/**
+ * @author jens
+ *
+ * Local helper class for resolving classes via context class loader of current thread.
+ */
+class ObjectInputStreamUsingContextClassLoader extends ObjectInputStream {
+
+    @Override
+    public Class resolveClass(ObjectStreamClass descriptor) throws IOException, ClassNotFoundException {
+        ClassLoader currentClassLoader = null;
+        try {
+            currentClassLoader = Thread.currentThread().getContextClassLoader();
+            return currentClassLoader.loadClass(descriptor.getName());
+        } catch (Exception e) {
+        }
+        return super.resolveClass(descriptor);
+    }
+
+    public ObjectInputStreamUsingContextClassLoader(InputStream in) throws IOException {
+        super(in);
+    }
+
+}
 
 /**
  * @author max
@@ -103,7 +131,7 @@ public class ObjectCloner {
                 oos.writeObject(t);
                 oos.close();
                 baos.close();
-                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+                ObjectInputStream ois = new ObjectInputStreamUsingContextClassLoader(new ByteArrayInputStream(baos.toByteArray()));
                 T result = (T)ois.readObject();
                 ois.close();
                 return result;
