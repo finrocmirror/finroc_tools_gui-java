@@ -577,10 +577,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_CONTROL && e.getID() == KeyEvent.KEY_PRESSED) {
-            System.out.println("CTRL pressed");
             ctrlPressed = true;
         } else if (e.getKeyCode() == KeyEvent.VK_CONTROL && e.getID() == KeyEvent.KEY_RELEASED) {
-            System.out.println("CTRL released");
             ctrlPressed = false;
         }
 
