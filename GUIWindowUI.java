@@ -130,9 +130,6 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     /** Temporary object that stores, which type of Widget the user wants to create */
     private transient Class <? extends Widget > objectToCreate;
 
-    /** Is Control-Key currently pressed? */
-    private transient boolean ctrlPressed = false;
-
     /** the appication's clipboard */
     private static Clipboard clipboard;
 
@@ -646,16 +643,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         updateToolBarState();
     }
 
-    public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-            ctrlPressed = true;
-        }
-    }
+    public void keyPressed(KeyEvent e) {}
 
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-            ctrlPressed = false;
-        }
 
         // update state of menu items
         menuSelected(null);
@@ -704,7 +694,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
      * @return Is control button currently pressed?
      */
     public boolean isCtrlPressed() {
-        return ctrlPressed;
+        return getParent().isCtrlPressed();
     }
 
     public Clipboard getClipboard() {

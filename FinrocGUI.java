@@ -20,6 +20,9 @@
  */
 package org.finroc.tools.gui;
 
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -57,7 +60,7 @@ import org.finroc.core.util.Files;
  *
  * This is the main class and contains the top-level control functions.
  */
-public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*implements RobotInterface*/
+public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> implements KeyEventDispatcher { /*implements RobotInterface*/
 
     /** Constants that may be changed */
     public static final boolean USE_SYSTEM_CLIPBOARD = true;
@@ -75,7 +78,13 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
     /** Log domain for this class */
     public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("gui");
 
+    /** Is Control-Key currently pressed? */
+    private transient boolean ctrlPressed = false;
+
     public FinrocGUI() throws Exception {
+
+        // install keyboard hook
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
 
         // restore last settings
         persistentSettings = Settings.restore();
@@ -414,6 +423,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
             } catch (Exception e) {}
         }
 
+
         // start Jmcagui in separate Thread (recommended in Java Tutorials)
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -561,5 +571,23 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> { /*i
 
     public Settings getPersistentSettings() {
         return persistentSettings;
+    }
+
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_CONTROL && e.getID() == KeyEvent.KEY_PRESSED) {
+            System.out.println("CTRL pressed");
+            ctrlPressed = true;
+        } else if (e.getKeyCode() == KeyEvent.VK_CONTROL && e.getID() == KeyEvent.KEY_RELEASED) {
+            System.out.println("CTRL released");
+            ctrlPressed = false;
+        }
+
+        return false;
+    }
+
+    public boolean isCtrlPressed() {
+        return ctrlPressed;
     }
 }
