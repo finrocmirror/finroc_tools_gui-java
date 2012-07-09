@@ -81,9 +81,9 @@ public class LCD extends Widget {
     private double scalingFactor;
 
     /** warnings */
-    private Color lcdWarningBackground;
-    private Color lcdWarningEnabled;
-    private Color lcdWarningDisabled;
+    private Color lcdWarningBackground = createWarningColor(lcdBackground);;
+    private Color lcdWarningEnabled = createWarningColor(lcdEnabled);
+    private Color lcdWarningDisabled = createWarningColor(lcdDisabled);
     private enum WarnOptions { Off, LargerThan, SmallerThan };
     private WarnOptions warnings = WarnOptions.Off;
     private double warningThreshold = 0;
