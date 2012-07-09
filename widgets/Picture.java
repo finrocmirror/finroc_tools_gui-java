@@ -41,7 +41,7 @@ public class Picture extends Widget {
     /** UID */
     private static final long serialVersionUID = -6272458243456235119L;
 
-    private EmbeddedPaintable picture;
+    protected EmbeddedPaintable picture;
 
     private boolean scaleToFit;
 

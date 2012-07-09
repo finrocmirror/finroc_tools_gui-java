@@ -32,7 +32,6 @@ import javax.naming.OperationNotSupportedException;
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputListener;
 
-import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
@@ -49,7 +48,7 @@ import org.finroc.core.port.PortCreationInfo;
  * @author max
  *
  */
-public class VirtualJoystick extends Widget {
+public class VirtualJoystick extends Picture {
 
     /** UID */
     private static final long serialVersionUID = 3806880236997654888L;
@@ -81,7 +80,7 @@ public class VirtualJoystick extends Widget {
         return suggestion;
     }
 
-    class VirtualJoystickUI extends WidgetUI implements MouseInputListener {
+    class VirtualJoystickUI extends Picture.PictureUI implements MouseInputListener {
 
         /** UID */
         private static final long serialVersionUID = -6539674025052372200L;
@@ -89,7 +88,6 @@ public class VirtualJoystick extends Widget {
         private Point center;
 
         VirtualJoystickUI() {
-            super(RenderMode.Cached);
             setLayout(new BorderLayout());
             JComponent jp = new InvisibleComponent();
             this.add(jp, BorderLayout.CENTER);
@@ -100,6 +98,12 @@ public class VirtualJoystick extends Widget {
 
         @Override
         protected void renderToCache(BufferedImageRGB cache, Dimension renderSize, boolean resized) throws OperationNotSupportedException {
+            Rectangle r = new Rectangle(renderSize);
+            if (picture != null) {
+                super.renderToCache(cache, renderSize, resized);
+            } else {
+                cache.drawFilledRectangle(r, joystickBackground.getRGB());
+            }
 
             if (circle == null) {
                 try {
@@ -112,8 +116,6 @@ public class VirtualJoystick extends Widget {
                 curPos = getCenter();
             }
 
-            Rectangle r = new Rectangle(renderSize);
-            cache.drawFilledRectangle(r, joystickBackground.getRGB());
             center = getCenter();
             cache.drawRectangle(r, foreground.getRGB());
             cache.drawHorizontalLine(0, center.y, renderSize.width, foreground.getRGB());
