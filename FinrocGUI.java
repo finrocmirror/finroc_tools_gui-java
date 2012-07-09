@@ -507,6 +507,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
         public String lastConnectionAddress;
 
+        public boolean detachConnectionPanel;
+
         private Settings() {
             recentFiles = new ArrayList<File>();
             resourceFolders = new StringList("$MCAHOME\n.");

@@ -104,14 +104,15 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
     /** Reference to ConnectionPanel */
     protected transient ConnectionPanel connectionPanel;
+    protected transient JFrame connectionPanelWindow;
 
     /** reference to undo buffer */
     private transient UndoBuffer<GUIWindow> undoBuffer;
 
     /** MenuItems */
     private transient JMenuItem /*miConnect, miReconnect,*/ miDisconnectDiscard, miNew, miLoad, miSave, miExit, miSaveAs, miNewTab, miNewWindow, miCloseTab, miCloseWindow, miTest;
-    transient JMenuItem miUndo, miRedo, miCut, miCopy, miPaste, miDelete, miChangePanelName;
-    private transient JCheckBoxMenuItem miConnectionPanel, miSnapToGrid;
+    private transient JMenuItem miUndo, miRedo, miCut, miCopy, miPaste, miDelete, miChangePanelName;
+    private transient JCheckBoxMenuItem miConnectionPanel, miSnapToGrid, miDetachConnectionPanel;
     private transient JMenuItem miDebugConsole, miGuiSettings, miGlobalSettings, miFrameworkElementDump;
     private transient JMenu miConnectMenu, /*miDisconnectMenu, miReconnectMenu,*/ miRecentFiles;
     private transient JRadioButtonMenuItem miEditOriginal, miEditCtrl, miUseOnly;
@@ -224,6 +225,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         miConnectionPanel = new JCheckBoxMenuItem("Connection Panel", false);
         miConnectionPanel.addActionListener(this);
         menuView.add(miConnectionPanel);
+        miDetachConnectionPanel = new JCheckBoxMenuItem("Detach Connection Panel", parent.getPersistentSettings().detachConnectionPanel);
+        miDetachConnectionPanel.addActionListener(this);
+        menuView.add(miDetachConnectionPanel);
 
         // widget menu
         JMenu menuWidget = new JMenu("Widgets");
@@ -272,6 +276,11 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         // create and show GUI
         statusBar = new StatusBar();
         connectionPanel = new ConnectionPanel(this, getModel().getParent().getTreeFont());
+        connectionPanelWindow = new JFrame("Connection Panel");
+        connectionPanelWindow.addWindowListener(this);
+        Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        connectionPanelWindow.setSize(Math.min(1280, r.width), r.height - 70);
+
         jframe.setJMenuBar(menuBar);
         jframe.pack();
         setVisible(true);
@@ -282,7 +291,6 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         jframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         // set window to screen size
-        Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         setSize(r.width, r.height - 70);
         repaint();
 
@@ -365,13 +373,24 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
         // Connection Panel?
         if (miConnectionPanel.isSelected()) {
-            JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, connectionPanel, guipanels);
-            sp.setDividerSize(3);
-            root.add(sp, BorderLayout.CENTER);
+            if (miDetachConnectionPanel.isSelected()) {
+                connectionPanelWindow.getContentPane().removeAll();
+                connectionPanelWindow.getContentPane().add(connectionPanel);
+                if (!connectionPanelWindow.isVisible()) {
+                    connectionPanelWindow.setVisible(true);
+                }
+                root.add(guipanels, BorderLayout.CENTER);
+            } else {
+                connectionPanelWindow.setVisible(false);
+                JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, connectionPanel, guipanels);
+                sp.setDividerSize(3);
+                root.add(sp, BorderLayout.CENTER);
+            }
             connectionPanel.setRightTree(getCurPanel().getModel().getTreeModel());
             connectionPanel.setLeftTree(getParent().getTreeModel());
         } else {
             root.add(guipanels, BorderLayout.CENTER);
+            connectionPanelWindow.setVisible(false);
         }
 
         root.validate();
@@ -473,6 +492,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             } else if (src == miPaste || src == tbPaste) {
                 paste(null);
             } else if (src == miConnectionPanel) {
+                arrangePanels(getCurPanel());
+            } else if (src == miDetachConnectionPanel) {
+                getParent().getPersistentSettings().detachConnectionPanel = miDetachConnectionPanel.isSelected();
                 arrangePanels(getCurPanel());
             } else if (src == miUndo || src == tbUndo) {
                 GUIWindow newModel = undoBuffer.undo();
@@ -611,7 +633,12 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     }
 
     public void windowClosing(WindowEvent e) {
-        getParent().closeWindow(model);
+        if (e.getSource() == this) {
+            getParent().closeWindow(model);
+        } else {
+            assert(e.getSource() == connectionPanelWindow);
+            miConnectionPanel.setSelected(false);
+        }
     }
 
     public void areaSelected(Rectangle createRectangle) {
