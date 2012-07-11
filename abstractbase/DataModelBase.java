@@ -255,4 +255,14 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
         C c = children.remove(idx);
         children.add(newIndex, c);
     }
+
+    /**
+     * @return Framework element (backend) corresponding to this data model element
+     */
+    public FrameworkElement getFrameworkElement() {
+        if (frameworkElement == null) {
+            frameworkElement = createFrameworkElement();
+        }
+        return frameworkElement;
+    }
 }

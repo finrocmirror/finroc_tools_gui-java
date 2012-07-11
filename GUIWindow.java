@@ -40,7 +40,7 @@ public class GUIWindow extends DataModelBase<GUI, GUI, GUIPanel> {
 
     @Override
     protected FrameworkElement createFrameworkElement() {
-        return new FrameworkElement("GUI Window");
+        return new FrameworkElement(getParent().getFrameworkElement(), "GUI Window");
     }
 
     @Override

@@ -184,6 +184,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
             guifile = null;
 
             // clear panels
+            getModel().dispose();
             setModel(new GUI(this));
             if (caller != null) {
                 caller.setModel(getModel().getChildren().get(0));
@@ -335,6 +336,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
                 return;
             }
 
+            getModel().dispose();
             setModel(newGui);
 
             // put first window in calling window

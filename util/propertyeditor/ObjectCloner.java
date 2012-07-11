@@ -31,31 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.finroc.core.datatype.Unit;
+import org.finroc.core.plugin.Plugins;
 
-
-/**
- * @author jens
- *
- * Local helper class for resolving classes via context class loader of current thread.
- */
-class ObjectInputStreamUsingContextClassLoader extends ObjectInputStream {
-
-    @Override
-    public Class resolveClass(ObjectStreamClass descriptor) throws IOException, ClassNotFoundException {
-        ClassLoader currentClassLoader = null;
-        try {
-            currentClassLoader = Thread.currentThread().getContextClassLoader();
-            return currentClassLoader.loadClass(descriptor.getName());
-        } catch (Exception e) {
-        }
-        return super.resolveClass(descriptor);
-    }
-
-    public ObjectInputStreamUsingContextClassLoader(InputStream in) throws IOException {
-        super(in);
-    }
-
-}
 
 /**
  * @author max
@@ -69,6 +46,30 @@ public class ObjectCloner {
 
         /** Clone object */
         public Object clone();
+    }
+
+    /**
+     * @author jens
+     *
+     * Local helper class for resolving classes via plugin class loader.
+     */
+    private static class ObjectInputStreamUsingPluginClassLoader extends ObjectInputStream {
+
+        @Override
+        public Class<?> resolveClass(ObjectStreamClass descriptor) throws IOException, ClassNotFoundException {
+            ClassLoader currentClassLoader = null;
+            try {
+                currentClassLoader = Plugins.getInstance().getPluginClassLoader();
+                return currentClassLoader.loadClass(descriptor.getName());
+            } catch (Exception e) {
+            }
+            return super.resolveClass(descriptor);
+        }
+
+        public ObjectInputStreamUsingPluginClassLoader(InputStream in) throws IOException {
+            super(in);
+        }
+
     }
 
     /** List with available cloners, in order they will be used - contains ObjectCloner by default */
@@ -131,7 +132,7 @@ public class ObjectCloner {
                 oos.writeObject(t);
                 oos.close();
                 baos.close();
-                ObjectInputStream ois = new ObjectInputStreamUsingContextClassLoader(new ByteArrayInputStream(baos.toByteArray()));
+                ObjectInputStream ois = new ObjectInputStreamUsingPluginClassLoader(new ByteArrayInputStream(baos.toByteArray()));
                 T result = (T)ois.readObject();
                 ois.close();
                 return result;

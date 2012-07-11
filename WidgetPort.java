@@ -58,7 +58,9 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
 
     @Override
     protected FrameworkElement createFrameworkElement() {
-        port = createPort();
+        if (port == null) {
+            port = createPort();
+        }
         return port.getWrapped();
     }
 
@@ -96,6 +98,7 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
     @Override
     public void restore(Widget parent) {
         super.restore(parent);
+        parent.getFrameworkElement().addChild(frameworkElement);
         frameworkElement.init();
         for (String s : connectedTo) {
             if (getPort().isInputPort()) {

@@ -39,6 +39,7 @@ public abstract class WidgetInputPort < P extends PortWrapperBase > extends Widg
     public PortCreationInfo getPci() {
         PortCreationInfo def = stdPci.derive(getDescription());
         PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
+        pci.parent = getParent().getFrameworkElement();
         return pci == null ? def : pci;
     }
 
