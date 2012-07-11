@@ -72,6 +72,7 @@ public class GUIPanel extends DataModelBase<GUI, GUIWindow, Widget> {
      */
     public void restore(GUIWindow parent) {
         super.restore(parent);
+        frameworkElement.init();
         selection = new HashSet<Widget>();
     }
 
@@ -103,7 +104,7 @@ public class GUIPanel extends DataModelBase<GUI, GUIWindow, Widget> {
 
     @Override
     protected FrameworkElement createFrameworkElement() {
-        return new FrameworkElement(name);
+        return new FrameworkElement(getParent().getFrameworkElement(), "GUI Panel" + ((name != null) ? (" " + name) : ""));
     }
 
 }

@@ -33,6 +33,7 @@ import org.finroc.tools.gui.util.propertyeditor.gui.ResourcePathProvider;
 import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.FrameworkElement;
+import org.finroc.core.RuntimeEnvironment;
 
 /**
  * @author max
@@ -108,7 +109,7 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
 
     @Override
     protected FrameworkElement createFrameworkElement() {
-        return new FrameworkElement("GUI");
+        return new FrameworkElement(RuntimeEnvironment.getInstance(), "GUI");
     }
 
     @Override

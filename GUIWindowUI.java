@@ -37,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -277,7 +278,12 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         statusBar = new StatusBar();
         connectionPanel = new ConnectionPanel(this, getModel().getParent().getTreeFont());
         connectionPanelWindow = new JFrame("Connection Panel");
-        connectionPanelWindow.addWindowListener(this);
+        connectionPanelWindow.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                miConnectionPanel.setSelected(false);
+            }
+        });
         Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         connectionPanelWindow.setSize(Math.min(1280, r.width), r.height - 70);
 
@@ -633,12 +639,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     }
 
     public void windowClosing(WindowEvent e) {
-        if (e.getSource() == this) {
-            getParent().closeWindow(model);
-        } else {
-            assert(e.getSource() == connectionPanelWindow);
-            miConnectionPanel.setSelected(false);
-        }
+        getParent().closeWindow(model);
     }
 
     public void areaSelected(Rectangle createRectangle) {
