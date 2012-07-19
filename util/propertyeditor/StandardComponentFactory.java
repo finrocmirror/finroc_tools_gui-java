@@ -22,6 +22,7 @@ package org.finroc.tools.gui.util.propertyeditor;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.finroc.plugins.data_types.ContainsStrings;
@@ -41,7 +42,12 @@ public class StandardComponentFactory implements ComponentFactory {
     public PropertyEditComponent<?> createComponent(PropertyAccessor<?> acc, PropertiesPanel panel) throws Exception {
         Class<?> type = acc.getType();
         PropertyEditComponent wpec = null;
-        if (type.equals(String.class)) {
+        if (acc.getAnnotation(EditComponent.class) != null) {
+            Class componentClass = acc.getAnnotation(EditComponent.class).value();
+            Constructor constructor = componentClass.getConstructor(PropertiesPanel.class);
+            assert(constructor != null);
+            wpec = (PropertyEditComponent)constructor.newInstance(panel);
+        } else if (type.equals(String.class)) {
             wpec = new StringEditor(acc.getAnnotation(LongText.class) != null ? -1 : 0);
         } else if (Number.class.isAssignableFrom(type) || type.equals(int.class) || type.equals(double.class) || type.equals(float.class) || type.equals(long.class) || type.equals(short.class) || type.equals(byte.class)) {
             wpec = new NumberEditor();
@@ -54,11 +60,12 @@ public class StandardComponentFactory implements ComponentFactory {
         } else if (Enum.class.isAssignableFrom(type)) {
             wpec = new ComboBoxEditor<Enum>(getEnumConstants((Class <? extends Enum >)type));
         } else if (PropertyListAccessor.class.isAssignableFrom(type)) {
-            wpec = new PropertyListEditor(panel.getComponentFactories());
+            wpec = new PropertyListEditor(panel, panel.getComponentFactories());
         } else if (ContainsStrings.class.isAssignableFrom(type)) {
             wpec = new StringEditor(-1);
             acc = new ContainsStringsAdapter((PropertyAccessor)acc);
         }
+
         if (wpec != null) {
             wpec.init(acc);
         }
@@ -123,4 +130,5 @@ public class StandardComponentFactory implements ComponentFactory {
             return cs.stringCount() == 0 ? "" : s.substring(0, s.length() - 1);
         }
     }
+
 }

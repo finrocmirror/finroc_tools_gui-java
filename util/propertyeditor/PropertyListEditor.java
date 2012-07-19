@@ -65,8 +65,12 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     /** Current value */
     private PropertyListAccessor list;
 
-    public PropertyListEditor(ComponentFactory... componentFactories) {
+    /** Reference to properties panel */
+    private PropertiesPanel propertiesPanel;
+
+    public PropertyListEditor(PropertiesPanel panel, ComponentFactory... componentFactories) {
         this.componentFactories = componentFactories;
+        propertiesPanel = panel;
     }
 
     @Override
@@ -91,7 +95,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                 }
                 PropertyEditComponent wpec = null;
                 for (ComponentFactory cf : componentFactories) {
-                    wpec = cf.createComponent(property, null);
+                    wpec = cf.createComponent(property, propertiesPanel);
                     if (wpec != null) {
                         break;
                     }
