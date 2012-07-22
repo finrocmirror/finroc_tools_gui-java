@@ -65,8 +65,12 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     /** Current value */
     private PropertyListAccessor list;
 
-    public PropertyListEditor(ComponentFactory... componentFactories) {
+    /** Reference to properties panel */
+    private PropertiesPanel propertiesPanel;
+
+    public PropertyListEditor(PropertiesPanel panel, ComponentFactory... componentFactories) {
         this.componentFactories = componentFactories;
+        propertiesPanel = panel;
     }
 
     @Override
@@ -81,7 +85,8 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     private void createComponents(Object object) {
         try {
             gbc.gridy = guielems.size() + 1;
-            assert(object.getClass().equals(list.getElementType()));
+            //assert(object.getClass().equals(list.getElementType()));
+            assert(list.getElementType().isAssignableFrom(object.getClass()));
             List < PropertyAccessor<? >> attributes = list.getElementAccessors(object);
             PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
             for (int i = 0; i < attributes.size(); i++) {
@@ -91,7 +96,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                 }
                 PropertyEditComponent wpec = null;
                 for (ComponentFactory cf : componentFactories) {
-                    wpec = cf.createComponent(property, null);
+                    wpec = cf.createComponent(property, propertiesPanel);
                     if (wpec != null) {
                         break;
                     }

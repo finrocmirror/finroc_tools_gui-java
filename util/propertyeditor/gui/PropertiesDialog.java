@@ -25,6 +25,7 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -101,10 +102,12 @@ public class PropertiesDialog extends MDialog {
         JPanel main = new JPanel();
         main.setLayout(new BorderLayout());
         propertyPanel = new PropertiesPanel(new StandardComponentFactory(), new GuiComponentFactory(this));
-        propertyPanel.init(properties, false);
-        propertyPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
         JScrollPane jsp = new JScrollPane(propertyPanel);
         main.add(jsp, BorderLayout.CENTER);
+        getContentPane().add(main, BorderLayout.CENTER);
+
+        propertyPanel.init(properties, false);
+        propertyPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
 
         // create buttons
         JPanel buttonPanel = new JPanel();
@@ -117,7 +120,6 @@ public class PropertiesDialog extends MDialog {
 
         //main.add(new JComboBox(new String[]{"test1", "test2"}), BorderLayout.NORTH);
         //main.add(new JButton("test"), BorderLayout.CENTER);
-        getContentPane().add(main, BorderLayout.CENTER);
         pack();
         setVisible(true);
     }
@@ -161,5 +163,12 @@ public class PropertiesDialog extends MDialog {
 
     public FileManager getEmbeddedFileManager() {
         return efm;
+    }
+
+    /**
+     * @return Unmodifiable list of objects that are edited with this editor
+     */
+    public List<Object> getObjects() {
+        return Collections.unmodifiableList(objects);
     }
 }
