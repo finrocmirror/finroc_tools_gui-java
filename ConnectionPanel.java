@@ -2,7 +2,7 @@
  * You received this file as part of FinGUI - a universal
  * (Web-)GUI editor for Robotic Systems.
  *
- * Copyright (C) 2007-2010 Max Reichardt
+ * Copyright (C) 2007-2012 Max Reichardt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,7 +33,6 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -44,15 +43,11 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -73,7 +68,6 @@ import org.finroc.core.port.PortFlags;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
-import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.MJTree;
 import org.finroc.tools.gui.util.treemodel.PortWrapper;
@@ -82,7 +76,7 @@ import org.finroc.tools.gui.util.treemodel.Uid;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This panel is used to connect the panel's to the widgets
  */
@@ -100,6 +94,14 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private JScrollPane leftScrollPane;
     private JScrollPane rightScrollPane;
 
+    /** Color used in connection tree */
+    public static final ConnectorIcon.BackgroundColor leftBackgroundColor = new ConnectorIcon.BackgroundColor(new JTree().getBackground());
+    public static final ConnectorIcon.BackgroundColor rightBackgroundColor = new ConnectorIcon.BackgroundColor(new Color(242, 242, 255));
+    public static final ConnectorIcon.IconColor defaultColor = new ConnectorIcon.IconColor(new Color(100, 100, 200));
+    public static final ConnectorIcon.IconColor selectedColor = new ConnectorIcon.IconColor(new Color(255, 30, 30));
+    public static final ConnectorIcon.IconColor connectedColor = new ConnectorIcon.IconColor(new Color(30, 200, 30));
+    public static final ConnectorIcon.IconColor connectionPartnerMissingColor = new ConnectorIcon.IconColor(new Color(120, 10, 10));
+
     /** show right tree? */
     private boolean showRightTree;
 
@@ -108,7 +110,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     /** temporary variables for UI behaviour */
     private boolean selectionFromRight;
-    private List<Point> startPoints = new ArrayList<Point>();
+    private List<TreePortWrapper> startPoints = new ArrayList<TreePortWrapper>();
+    private MJTree<TreePortWrapper> startPointTree = null;
     private Point lastMousePos;
 
     /** WidgetPort that mouse cursor is currently over - NULL if somewhere else */
@@ -118,6 +121,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     protected JPopupMenu popupMenu;
     protected boolean popupOnRight;
     JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
+
+    /** Tree cell Height */
+    public static int HEIGHT = 0;
 
     static boolean NIMBUS_LOOK_AND_FEEL = Themes.nimbusLookAndFeel();
 
@@ -131,7 +137,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         rightTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
         //setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
         setMinimumSize(new Dimension(300, 0));
-        rightTree.setBackground(new Color(242, 242, 255));
+        rightTree.setBackground(rightBackgroundColor.color);
         rightTree.setFocusTraversalKeysEnabled(false);
         rightTree.addKeyListener(win);
         leftTree.setFocusTraversalKeysEnabled(false);
@@ -149,8 +155,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         add(rightScrollPane, BorderLayout.CENTER);
 
         // setup renderer
-        leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, leftTree.getBackground(), false, this));
-        rightTree.setCellRenderer(new GuiTreeCellRenderer(rightTree, rightTree.getBackground(), true, this));
+        leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, false, this));
+        rightTree.setCellRenderer(new GuiTreeCellRenderer(rightTree, true, this));
 
         // init Listeners
         leftTree.addMouseListener(this);
@@ -355,23 +361,48 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         // Startpunkte setzen
         startPoints.clear();
+        startPointTree = selTree;
         for (TreePortWrapper p : selTree.getSelectedObjects()) {
-            startPoints.add(getStartingPoint(selTree, p, selectionFromRight));
+            startPoints.add(p);
         }
     }
 
-    private Point getStartingPoint(MJTree<TreePortWrapper> tree, TreePortWrapper p, boolean selFromRight) {
+    /**
+     * (may be overridden)
+     *
+     * @param port Port in question
+     * @param partner Partner Port
+     * @return Line starting position
+     */
+    protected ConnectorIcon.LineStart getLineStartPosition(PortWrapper port, PortWrapper partner) {
+        if (port instanceof WidgetPort) {
+            return ConnectorIcon.LineStart.Default;
+        } else {
+            return ((WidgetPort<?>)partner).isInputPort() ? ConnectorIcon.LineStart.Incoming : ConnectorIcon.LineStart.Outgoing;
+        }
+    }
+
+    /**
+     * @param tree Tree that contains port
+     * @param p Port
+     * @param lineStart Type of line to determine starting position
+     * @return Start point of connection line
+     */
+    private Point getLineStartPoint(MJTree<TreePortWrapper> tree, TreePortWrapper p, ConnectorIcon.LineStart lineStart) {
         Rectangle r2 = tree.getObjectBounds(p, true);  // Bounds vom Eintrag
         Rectangle r = tree.getObjectBounds(p, false);  // Bounds vom Eintrag
 
         r.x += tree.getLocationOnScreen().x - getLocationOnScreen().x;  // Koordinaten im ConnectionPanel
         r.y += tree.getLocationOnScreen().y - getLocationOnScreen().y;
-        int offset = ((GuiTreeCellRenderer)tree.getCellRenderer()).getIcon(p, false, false, GuiTreeCellRenderer.color).inset;
+        ConnectorIcon icon = getConnectorIcon(p, tree == rightTree, defaultColor, false);
+        Point relativeStartPoint = icon.getLineStart(lineStart);
         //int offset = (!p.isInputPort()) ? r.height / 2 - 1 : 0;  // An Spitze oder in Vertiefung ansetzen?
         //int xpos = selFromRight ? r.x + offset : r.x + r.width - offset - 4; // Linker oder rechter Baum
-        int xpos = tree == leftTree ? (r.x + r.width + offset) : (r.x - offset);
+        int xpos = tree == leftTree ? (r.x + r.width - icon.getIconWidth() + relativeStartPoint.x) : (r.x + icon.getIconWidth() + 1 - relativeStartPoint.x);
+        int ypos = relativeStartPoint.y;
         if (NIMBUS_LOOK_AND_FEEL) {
-            xpos -= (tree == leftTree) ? 4 : 2;
+            xpos -= (tree == leftTree) ? 5 : 2;
+            ypos += 2;
         }
 
         // xpos an den Rand setzen, falls es Baum sonst überschreitet
@@ -381,7 +412,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             xpos = Math.max(xpos, r2.x + rightTree.getLocationOnScreen().x - getLocationOnScreen().x);
         }
 
-        return new Point(xpos, r.y + r.height / 2);
+        return new Point(xpos, r.y + ypos);
     }
 
     /**
@@ -510,17 +541,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         if (startPoints.size() > 0 && lastMousePos != null) {
             List<TreePortWrapper> drawFat = hypotheticalConnection();
             if (drawFat == null) {
-                for (Point p : startPoints) {
-                    drawLine(g, p, lastMousePos, Color.BLACK, false, false);
+                for (TreePortWrapper p : startPoints) {
+                    drawLine(g, getLineStartPoint(startPointTree, p, ConnectorIcon.LineStart.Default), lastMousePos, Color.BLACK, false, false);
                 }
             } else {
                 MJTree<TreePortWrapper> otherTree = selectionFromRight ? leftTree : rightTree;
                 //((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
                 for (int i = 0; i < startPoints.size(); i++) {
                     if (drawFat.get(i) != null) {
-                        Point p1 = startPoints.get(i);
-                        Point p2 = getStartingPoint(otherTree, drawFat.get(i), !selectionFromRight);
-                        drawLine(g, p1, p2, GuiTreeCellRenderer.selected, true, false);
+                        Point p1 = getLineStartPoint(startPointTree, startPoints.get(i), getLineStartPosition(startPoints.get(i), drawFat.get(i)));
+                        Point p2 = getLineStartPoint(otherTree, drawFat.get(i), getLineStartPosition(drawFat.get(i), startPoints.get(i)));
+                        drawLine(g, p1, p2, selectedColor.color, true, false);
                     }
                 }
             }
@@ -571,9 +602,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             for (PortWrapper port2 : getConnectionPartners(port)) {
                 if (port2 != null) {
                     if (toTree.isVisible((TreePortWrapper)port2)) {
-                        Point p1 = getStartingPoint(fromTree, port, fromTree == rightTree);
-                        Point p2 = getStartingPoint(toTree, (TreePortWrapper)port2, toTree == rightTree);
-                        Color c = GuiTreeCellRenderer.connected;
+                        Point p1 = getLineStartPoint(fromTree, port, getLineStartPosition(port, port2));
+                        Point p2 = getLineStartPoint(toTree, (TreePortWrapper)port2, getLineStartPosition(port2, port));
+                        Color c = connectedColor.color;
                         if (mouseOver != null) {
                             if (mouseOver == port || mouseOver == port2) {
                                 c = c.brighter();
@@ -875,241 +906,169 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     public boolean drawPortConnected(TreePortWrapper port) {
         return port.getPort().isConnected();
     }
-}
 
-/**
- * @author max
- *
- * Tree-Cell-Renderer for the GUI-Tree
- */
-class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListener {
-
-    /** Tree icon */
-    class TreeIcon {
-
-        /** offset for line start */
-        final int inset;
-
-        /** actual Icon */
-        final Icon icon;
-
-        public TreeIcon(int inset, ImageIcon imageIcon) {
-            this.inset = inset;
-            this.icon = imageIcon;
-        }
+    /**
+     * @param port Port
+     * @param rightTree Icon for right tree?
+     * @param color Icon Color
+     * @param boolean brighter Brighter icon color?
+     * @param iconHeight Icon height
+     * @return Connector icon for specified parameters
+     */
+    public ConnectorIcon getConnectorIcon(TreePortWrapper port, boolean rightTree, ConnectorIcon.IconColor color, boolean brighter) {
+        final ConnectorIcon.Type iconType = new ConnectorIcon.Type();
+        boolean rpc = FinrocTypeInfo.isMethodType(port.getPort().getDataType(), true);
+        iconType.set(port.isInputPort() || ((!rightTree) && rpc), (!rpc) && port.getPort().getFlag(PortFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
+        return ConnectorIcon.getIcon(iconType, HEIGHT);
     }
 
-    public static final Color color = new Color(100, 100, 200);
-    private Color background;
-    //private static Color selectedBorder = new Color(240, 140, 20);
-    public static final Color selected = new Color(255, 30, 30);
-    public static final Color connected = new Color(30, 200, 30);
-    public static final Color connectionPartnerMissing = new Color(120, 10, 10);
+    /**
+     * @author Max Reichardt
+     *
+     * Tree-Cell-Renderer for the GUI-Tree
+     */
+    class GuiTreeCellRenderer extends DefaultTreeCellRenderer implements ActionListener {
 
-    private static Map<String, TreeIcon> iconCache = new HashMap<String, TreeIcon>();
-    private boolean rightTree;
+        /** UID */
+        private static final long serialVersionUID = 4342216001043562115L;
 
-    /** for showing selection after some time */
-    private Timer timer;
+        /** Colors */
+        public final ConnectorIcon.BackgroundColor backgroundColor;
 
-    private JTree parent;
+        /** Renderer for tree on the right? */
+        private final boolean rightTree;
 
-    /** UID */
-    private static final long serialVersionUID = 4342216001043562115L;
+        /** for showing selection after some time */
+        private final Timer timer;
 
-    private DefaultTreeCellRenderer defaultRenderer;
+        /** Tree renderer belong to */
+        private final JTree parent;
 
-    private ConnectionPanel panel;
+        /** Default renderer for JTree */
+        private final DefaultTreeCellRenderer defaultRenderer;
 
-    public GuiTreeCellRenderer(JTree parent, Color background, boolean rightTree, ConnectionPanel panel) {
-        setBackgroundNonSelectionColor(color);
-        this.background = background;
-        this.panel = panel;
-        setBorderSelectionColor(selected);
-        setTextSelectionColor(background);
-        setTextNonSelectionColor(background);
-        setBackgroundSelectionColor(selected);
-        defaultRenderer = new DefaultTreeCellRenderer();
-        defaultRenderer.setBackgroundNonSelectionColor(background);
-        this.rightTree = rightTree;
-        this.parent = parent;
-        timer = new Timer(1000, this);
-        timer.stop();
-    }
+        /** Reference to connection panel */
+        private final ConnectionPanel panel;
 
-    @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        if (!(value instanceof TreePortWrapper)) {
-            Color bg = panel.getBranchBackgroundColor(value);
-            Color fg = panel.getBranchTextColor(value);
-            if (bg != null) {
-                defaultRenderer.setBackgroundNonSelectionColor(bg);
-                defaultRenderer.setBackground(bg);
-            } else {
-                defaultRenderer.setBackgroundNonSelectionColor(background);
-                defaultRenderer.setBackground(background);
-            }
-            if (fg != null) {
-                defaultRenderer.setTextNonSelectionColor(fg);
-            } else {
-                defaultRenderer.setTextNonSelectionColor(Color.black);
-            }
-            defaultRenderer.setOpaque(ConnectionPanel.NIMBUS_LOOK_AND_FEEL && bg != null);
-            return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+        public GuiTreeCellRenderer(JTree parent, boolean rightTree, ConnectionPanel panel) {
+            setBackgroundNonSelectionColor(defaultColor.color);
+            backgroundColor = rightTree ? rightBackgroundColor : leftBackgroundColor;
+            this.panel = panel;
+            setBorderSelectionColor(selectedColor.color);
+            setTextSelectionColor(backgroundColor.color);
+            setTextNonSelectionColor(backgroundColor.color);
+            setBackgroundSelectionColor(selectedColor.color);
+            defaultRenderer = new DefaultTreeCellRenderer();
+            defaultRenderer.setBackgroundNonSelectionColor(backgroundColor.color);
+            this.rightTree = rightTree;
+            this.parent = parent;
+            timer = new Timer(1000, this);
+            timer.stop();
         }
 
-
-        //JLabel result = new JLabel(value.toString());
-        //if (sel) {
-        //  result.setBorder(BorderFactory.createLineBorder(selectedBorder));
-        //}
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,    row, hasFocus);
-        //setBackground(color);
-        boolean portSelected = (!timer.isRunning() && sel);
-        TreePortWrapper port = (TreePortWrapper)value;
-        Color c = portSelected ? selected : (panel.drawPortConnected(port) ? connected : (port.getPort().hasLinkEdges() ? connectionPartnerMissing : color));
-        if (panel.mouseOver != null) {
-            boolean mouseOver = (port.getPort() == panel.mouseOver.getPort()) || port.getPort().isConnectedTo(panel.mouseOver.getPort());
-            if (mouseOver) {
-                c = c.brighter();
-            }
-        }
-        setBackgroundSelectionColor(c);
-        setBackgroundNonSelectionColor(c);
-
-        setIconTextGap(0);
-        if (!rightTree) {
-            setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        }
-        //this.setHorizontalTextPosition(SwingConstants.RIGHT);
-        //setOpaque(true);
-        /*result.setFont(c.getFont());
-        result.setForeground(sel ? selected : background);*/
-        setIcon(getIcon(port, rightTree, portSelected, c).icon);
-        /*return result;*/
-        return this;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-
-        if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
-            if (super.selected) {
-                g.setColor(background);
-                g.setClip(-getX(), 0, parent.getWidth(), getHeight());
-                g.fillRect(-getX(), 0, parent.getWidth(), getHeight());
-            }
-
-            // copied from super class to ensure that background is filled
-            g.setColor(super.selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
-            if (getComponentOrientation().isLeftToRight()) {
-                g.fillRect(-1, 0, getWidth() - 4, getHeight());
-            } else {
-                g.fillRect(0, 0, getWidth() - 5, getHeight());
-            }
-        }
-
-        setForeground(Color.white);
-        super.paint(g);
-        Color temp = g.getColor();
-        g.setColor(background);
-        g.drawLine(0, 0, getWidth() - 1, 0);
-        if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
-            g.drawLine(0, 1, getWidth() - 1, 1);
-            g.fillRect(getWidth() - 4, 0, 5, getHeight());
-            g.fillRect(-1, 0, 1, getHeight());
-        }
-        g.drawLine(0, getHeight() - 1, getWidth() - 1, getHeight() - 1);
-        g.setColor(temp);
-    }
-
-    TreeIcon getIcon(TreePortWrapper port, boolean rightTree, boolean sel, Color c) {
-        int height = getPreferredSize().height;
-        boolean input = !port.isInputPort();
-        boolean front = rightTree;
-        boolean proxy = port.getPort().getFlag(PortFlags.PROXY);
-        boolean isInterface = FinrocTypeInfo.isMethodType(port.getPort().getDataType());
-        String key = (input ? "t" : "f") + (front ? "t" : "f") + (proxy ? "t" : "f") + (isInterface ? "t" : "f") + c.getRGB() + "," + height;
-        TreeIcon temp = iconCache.get(key);
-        if (temp != null) {
-            return temp;
-        }
-
-        int backgroundTemp = background.getRGB();
-        int colorTemp = c.getRGB();
-
-        BufferedImageRGB img = new BufferedImageRGB(isInterface ? (input ? 12 : 13) : (height / 2 + 1), height);
-        img.drawFilledRectangle(img.getBounds(), input && (!isInterface) ? colorTemp : backgroundTemp);
-        int[] buffer = img.getBuffer();
-
-        int inset = 0;
-        if (!isInterface) {
-
-            // draw triangle
-            int top = 0;
-            int bottom = (img.getHeight() - 1) * img.getWidth();
-            int count = 1;
-            while (top <= bottom) {
-                for (int i = 0; i < count; i++) {
-                    buffer[top + i] = input ? backgroundTemp : colorTemp;
-                    buffer[bottom + i] = input ? backgroundTemp : colorTemp;
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if (!(value instanceof TreePortWrapper)) {
+                Color bg = panel.getBranchBackgroundColor(value);
+                Color fg = panel.getBranchTextColor(value);
+                if (bg != null) {
+                    defaultRenderer.setBackgroundNonSelectionColor(bg);
+                    defaultRenderer.setBackground(bg);
+                } else {
+                    defaultRenderer.setBackgroundNonSelectionColor(backgroundColor.color);
+                    defaultRenderer.setBackground(backgroundColor.color);
                 }
-                top += img.getWidth();
-                bottom -= img.getWidth();
-                count++;
-            }
-            inset = input ? (1 - count) : -1;
-
-            // Possibly mirror image
-            if (front != input) {
-                img.mirrorLeftRight();
-            }
-        } else {
-
-            int middle = height / 2;
-            for (int y = 0; y < height; y++) {
-                img.setPixel(0, y, colorTemp);
-            }
-            for (int x = 0; x < 4; x++) {
-                img.setPixel(x, middle - 1, colorTemp);
-                img.setPixel(x, middle, colorTemp);
-                img.setPixel(x, middle + 1, colorTemp);
+                if (fg != null) {
+                    defaultRenderer.setTextNonSelectionColor(fg);
+                } else {
+                    defaultRenderer.setTextNonSelectionColor(Color.black);
+                }
+                defaultRenderer.setOpaque(ConnectionPanel.NIMBUS_LOOK_AND_FEEL && bg != null);
+                return defaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             }
 
-            Graphics2D g = img.getBufferedImage().createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(c);
-            if (input) {
-                g.drawOval(4, middle - 6, 13, 13);
+
+            //JLabel result = new JLabel(value.toString());
+            //if (sel) {
+            //  result.setBorder(BorderFactory.createLineBorder(selectedBorder));
+            //}
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,    row, hasFocus);
+            //setBackground(color);
+            boolean portSelected = (!timer.isRunning() && sel);
+            TreePortWrapper port = (TreePortWrapper)value;
+            ConnectorIcon.IconColor color = portSelected ? selectedColor : (panel.drawPortConnected(port) ? connectedColor : (port.getPort().hasLinkEdges() ? connectionPartnerMissingColor : defaultColor));
+            Color c = color.color;
+            boolean brighter = false;
+            if (panel.mouseOver != null) {
+                boolean mouseOver = (port.getPort() == panel.mouseOver.getPort()) || port.getPort().isConnectedTo(panel.mouseOver.getPort());
+                if (mouseOver) {
+                    c = c.brighter();
+                    brighter = true;
+                }
+            }
+            setBackgroundSelectionColor(c);
+            setBackgroundNonSelectionColor(c);
+
+            setIconTextGap(0);
+            if (!rightTree) {
+                setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+            }
+            //this.setHorizontalTextPosition(SwingConstants.RIGHT);
+            //setOpaque(true);
+            /*result.setFont(c.getFont());
+            result.setForeground(sel ? selected : background);*/
+            ConnectionPanel.HEIGHT = getPreferredSize().height;
+            setIcon(panel.getConnectorIcon(port, rightTree, color, brighter));
+            return this;
+        }
+
+        @Override
+        public void paint(Graphics g) {
+
+            if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
+                if (super.selected) {
+                    g.setColor(backgroundColor.color);
+                    g.setClip(-getX(), 0, parent.getWidth(), getHeight());
+                    g.fillRect(-getX(), 0, parent.getWidth(), getHeight());
+                }
+
+                // copied from super class to ensure that background is filled
+                g.setColor(super.selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
+                if (getComponentOrientation().isLeftToRight()) {
+                    g.fillRect(-1, 0, getWidth() - 4, getHeight());
+                } else {
+                    g.fillRect(0, 0, getWidth() - 5, getHeight());
+                }
+            }
+
+            setForeground(Color.white);
+            super.paint(g);
+            Color temp = g.getColor();
+            g.setColor(backgroundColor.color);
+            g.drawLine(0, 0, getWidth() - 1, 0);
+            if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
+                g.drawLine(0, 1, getWidth() - 1, 1);
+                g.fillRect(getWidth() - 4, 0, 5, getHeight());
+                g.fillRect(-1, 0, 1, getHeight());
+            }
+            g.drawLine(0, getHeight() - 1, getWidth() - 1, getHeight() - 1);
+            g.setColor(temp);
+        }
+
+        public void showSelectionAfter(int l) {
+            timer.stop();
+            if (l > 0) {
+                timer.setInitialDelay(l);
+                timer.start();
             } else {
-                g.fillOval(4, middle - 4, 9, 9);
-            }
-            inset = -3;
-
-            // Possibly mirror image
-            if (front) {
-                img.mirrorLeftRight();
+                parent.repaint();
             }
         }
 
-        TreeIcon ii = new TreeIcon(inset, new ImageIcon(img.getBufferedImage()));
-        iconCache.put(key, ii);
-        return ii;
-    }
-
-    public void showSelectionAfter(int l) {
-        timer.stop();
-        if (l > 0) {
-            timer.setInitialDelay(l);
-            timer.start();
-        } else {
+        public void actionPerformed(ActionEvent e) {
+            // timer ticked;
+            timer.stop();
             parent.repaint();
         }
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        // timer ticked;
-        timer.stop();
-        parent.repaint();
     }
 }

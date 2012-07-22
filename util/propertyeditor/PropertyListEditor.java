@@ -85,7 +85,8 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     private void createComponents(Object object) {
         try {
             gbc.gridy = guielems.size() + 1;
-            assert(object.getClass().equals(list.getElementType()));
+            //assert(object.getClass().equals(list.getElementType()));
+            assert(list.getElementType().isAssignableFrom(object.getClass()));
             List < PropertyAccessor<? >> attributes = list.getElementAccessors(object);
             PropertyEditComponent[] pecs = new PropertyEditComponent[attributes.size()];
             for (int i = 0; i < attributes.size(); i++) {
