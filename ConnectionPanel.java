@@ -438,9 +438,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             return false;
         }
         if (wp.isInputPort()) {
-            return wp.getPort().mayConnectTo(other.getPort());
+            return wp.getPort().mayConnectTo(other.getPort(), false);
         } else {
-            return other.getPort().mayConnectTo(wp.getPort());
+            return other.getPort().mayConnectTo(wp.getPort(), false);
         }
     }
 
@@ -918,7 +918,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     public ConnectorIcon getConnectorIcon(TreePortWrapper port, boolean rightTree, ConnectorIcon.IconColor color, boolean brighter) {
         final ConnectorIcon.Type iconType = new ConnectorIcon.Type();
         boolean rpc = FinrocTypeInfo.isMethodType(port.getPort().getDataType(), true);
-        iconType.set(port.isInputPort() || ((!rightTree) && rpc), (!rpc) && port.getPort().getFlag(PortFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
+        boolean leftTreeRPCServerPort = rpc && port.getPort().getFlag(PortFlags.ACCEPTS_DATA);
+        iconType.set(port.isInputPort() && (!leftTreeRPCServerPort), (!rpc) && port.getPort().getFlag(PortFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
         return ConnectorIcon.getIcon(iconType, HEIGHT);
     }
 

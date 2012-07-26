@@ -102,9 +102,9 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         frameworkElement.init();
         for (String s : connectedTo) {
             if (getPort().isInputPort()) {
-                getPort().connectToSource(s);
+                getPort().connectTo(s, AbstractPort.ConnectDirection.TO_SOURCE, false);
             } else {
-                getPort().connectToTarget(s);
+                getPort().connectTo(s, AbstractPort.ConnectDirection.TO_TARGET, false);
             }
         }
         if (defaultFlags == 0) {
@@ -230,9 +230,9 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
             return;
         }
         if (getPort().isInputPort()) {
-            getPort().connectToSource(other.getUid());
+            getPort().connectTo(other.getUid(), AbstractPort.ConnectDirection.TO_SOURCE, false);
         } else {
-            getPort().connectToTarget(other.getUid());
+            getPort().connectTo(other.getUid(), AbstractPort.ConnectDirection.TO_TARGET, false);
         }
         connectedTo.add(other.getUid());
     }
