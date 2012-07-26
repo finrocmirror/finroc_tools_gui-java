@@ -104,7 +104,7 @@ public class ConnectorIcon extends ImageIcon {
      */
     public static ConnectorIcon getIcon(Type type, int height) {
         ConnectorIcon icon = iconCache[type.getIndexInCache()];
-        if (true) {
+        if (icon == null) {
             // Note with respect to concurrency: Since always the same icons are generated,
             // it does not hurt if concurrent threads generate the same icon in parallel.
             // One of them will be garbage collected.
@@ -279,7 +279,7 @@ public class ConnectorIcon extends ImageIcon {
             if (type.proxy) {
                 g.drawOval(4, 0, middle, middle);
                 g.fillOval(3, height - h4 - 1 - (h4 / 2), h4 + 2, h4 + 2);
-            } else if (inputPort) {
+            } else if (!inputPort) {
                 g.drawOval(4, middle - 6, 13, 13);
             } else {
                 g.fillOval(4, middle - 4, 9, 9);
@@ -287,8 +287,8 @@ public class ConnectorIcon extends ImageIcon {
             icon.defaultLineStart.x = img.getWidth() - 3;
 
             if (type.proxy) {
-                icon.incomingLineStart = new Point(img.getWidth() - 2, h4 + 1);
-                icon.outgoingLineStart = new Point(img.getWidth() - 1, height - h4);
+                icon.outgoingLineStart = new Point(img.getWidth() - 2, h4 + 1);
+                icon.incomingLineStart = new Point(img.getWidth() - 1, height - h4);
             }
         }
 
