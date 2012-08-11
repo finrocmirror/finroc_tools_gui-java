@@ -184,6 +184,7 @@ public class WidgetOutput {
         public void changeDataType(DataTypeReference type) {
             frameworkElement.managedDelete();
             frameworkElement = null;
+            port = null;
             this.type = type;
             restore(getParent());
         }
