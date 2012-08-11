@@ -67,7 +67,7 @@ public class DataTypeEditor extends ComboBoxEditor<DataTypeReference> implements
     }
 
     private void updateButtonState() {
-        importEnumConstants.setEnabled(Enum.class.isAssignableFrom(getCurEditorValue().get().getJavaClass()));
+        importEnumConstants.setEnabled(getCurEditorValue().get().getEnumConstants() != null);
     }
 
     @Override

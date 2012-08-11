@@ -73,9 +73,11 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
     @Override
     public void importEnumConstants(DataTypeReference enumType) {
         choices.clear();
-        for (Object o : enumType.get().getJavaClass().getEnumConstants()) {
-            Enum<?> e = (Enum<?>)o;
-            choices.add(new ComboBoxElement(e.name(), e.ordinal(), e.ordinal(), e.ordinal(), Serialization.serialize(e)));
+        int i = 0;
+        for (Object o : enumType.get().getEnumConstants()) {
+            String customOutput = (o instanceof Enum<?>) ? Serialization.serialize((Enum<?>)o) : (o.toString() + " (" + i + ")");
+            choices.add(new ComboBoxElement(o.toString(), i, i, i, customOutput));
+            i++;
         }
     }
 
