@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -120,7 +121,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     /** PopupMenu */
     protected JPopupMenu popupMenu;
     protected boolean popupOnRight;
-    JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
+    protected JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
 
     /** Tree cell Height */
     public static int HEIGHT = 0;
@@ -444,6 +445,24 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }
     }
 
+    /**
+     * Updates popup menu
+     *
+     * @param treeNode Selected tree node
+     * @param wrapper Selected port
+     */
+    protected void updatePopupMenu(TreeNode treeNode, TreePortWrapper wrapper) {
+        if (wrapper instanceof WidgetPort<?>) {
+            WidgetPort<?> wp = (WidgetPort<?>)wrapper;
+            miCopyUID.setEnabled(false);
+            miCopyLinks.setEnabled(wp.getConnectionLinks().size() > 0);
+            miShowPartner.setEnabled(miCopyLinks.isEnabled() && wp.getConnectionPartners().size() > 0);
+        } else {
+            miCopyUID.setEnabled(!popupOnRight && (wrapper instanceof Uid));
+            miCopyLinks.setEnabled(false);
+            miShowPartner.setEnabled(false);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public void mouseReleased(MouseEvent e) {
@@ -458,18 +477,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Point p2 = getLocationOnScreen();
             popupMenu.show(this, e.getX() + p.x - p2.x, e.getY() + p.y - p2.y);
             saveLastMousePos(e);
-            miRemoveConnections.setEnabled(getTreeNodeFromPos((MJTree<TreePortWrapper>)e.getSource()) != null);
+            TreeNode tn = getTreeNodeFromPos((MJTree<TreePortWrapper>)e.getSource());
+            miRemoveConnections.setEnabled(tn != null);
             TreePortWrapper tnp = getTreePortWrapperFromPos(popupOnRight ? rightTree : leftTree);
-            if (tnp instanceof WidgetPort<?>) {
-                WidgetPort<?> wp = (WidgetPort<?>)tnp;
-                miCopyUID.setEnabled(false);
-                miCopyLinks.setEnabled(wp.getConnectionLinks().size() > 0);
-                miShowPartner.setEnabled(miCopyLinks.isEnabled() && wp.getConnectionPartners().size() > 0);
-            } else {
-                miCopyUID.setEnabled(!popupOnRight && (tnp instanceof Uid));
-                miCopyLinks.setEnabled(false);
-                miShowPartner.setEnabled(false);
-            }
+            updatePopupMenu(tn, tnp);
             return;
         }
 
@@ -762,13 +773,16 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else if (e.getSource() == miCollapseAll) {
             ptree.collapseAll();
         } else if (e.getSource() == miRemoveAllConnections) {
-            for (TreePortWrapper wptnp : rightTree.getObjects()) {
-                removeConnections(wptnp);
-                /*WidgetPort<?> wp = (WidgetPort<?>)wptnp;
-                wp.clearConnections();*/
+            int result = JOptionPane.showConfirmDialog(this, "This will remove all connections (from all ports). Are you sure?", "Are you sure?", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                for (TreePortWrapper wptnp : rightTree.getObjects()) {
+                    removeConnections(wptnp);
+                    /*WidgetPort<?> wp = (WidgetPort<?>)wptnp;
+                    wp.clearConnections();*/
+                }
+                parent.addUndoBufferEntry("Remove all connections");
+                repaint();
             }
-            parent.addUndoBufferEntry("Remove all connections");
-            repaint();
         } else if (e.getSource() == miCopyUID) {
             TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
             String uid = "Element has no UID";
