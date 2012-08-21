@@ -38,6 +38,8 @@ import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.CCPortDataManagerTL;
 import org.finroc.core.port.cc.PortNumeric;
 import org.finroc.core.port.std.PortDataManager;
+import org.finroc.core.portdatabase.UnknownType;
+import org.finroc.core.portdatabase.UnknownTypeListener;
 
 /**
  * @author max
@@ -168,7 +170,7 @@ public class WidgetOutput {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class Custom extends WidgetOutputPort<Port<RRLibSerializable>> {
+    public static class Custom extends WidgetOutputPort<Port<RRLibSerializable>> implements UnknownTypeListener {
 
         /** UID */
         private static final long serialVersionUID = -3991768387448158703L;
@@ -178,6 +180,9 @@ public class WidgetOutput {
 
         @Override
         protected Port createPort() {
+            if (type != null && type.get() == null) {
+                UnknownType.addUnknownTypeListener(this);
+            }
             return new Port(getPci().derive((type == null || type.get() == null) ? CoreNumber.TYPE : type.get()));
         }
 
@@ -215,6 +220,19 @@ public class WidgetOutput {
 
         public void addChangeListener(PortListener l) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", l);
+        }
+
+        @Override
+        public void unknownTypeAdded(UnknownType t) {
+            if (t == type.get()) {
+                changeDataType(type);
+            }
+        }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            UnknownType.removeUnknownTypeListener(this);
         }
     }
 
