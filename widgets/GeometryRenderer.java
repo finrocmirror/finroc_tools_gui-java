@@ -139,24 +139,11 @@ public class GeometryRenderer extends Widget {
         return suggestion;
     }
 
-    public void drawGeometries(Graphics2D g2d) {
-
-        // Draw geometries
-        for (WidgetInput.Std<PaintablePortData> wip : geometry) {
-            Paintable p = wip.getAutoLocked();
-            if (p == null) {
-                continue;
-            }
-            p.paint(g2d);
-        }
-        ThreadLocalCache.get().releaseAllLocks();
-    }
-
     protected class GeometryRendererUI extends WidgetUI implements PortListener<PaintablePortData>, ActionListener, MouseEventListener<Action>, ComponentListener {
 
         Renderer renderer;
         AdvancedMouseListener<Mode, Action> listener;
-        MToolBar toolbar;
+        protected MToolBar toolbar;
         AffineTransform transform = new AffineTransform();
         RulerOfTheForest leftRuler, topRuler;
         RulerOfTheForest.RulerLabel rulerLabel;
@@ -489,6 +476,19 @@ public class GeometryRenderer extends Widget {
         @Override
         public void portChanged(AbstractPort origin, PaintablePortData value) {
             renderer.repaint();
+        }
+
+        public void drawGeometries(Graphics2D g2d) {
+
+            // Draw geometries
+            for (WidgetInput.Std<PaintablePortData> wip : geometry) {
+                Paintable p = wip.getAutoLocked();
+                if (p == null) {
+                    continue;
+                }
+                p.paint(g2d);
+            }
+            ThreadLocalCache.get().releaseAllLocks();
         }
 
 
