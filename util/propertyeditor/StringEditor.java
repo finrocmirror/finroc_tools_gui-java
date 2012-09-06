@@ -51,6 +51,12 @@ public class StringEditor extends PropertyEditComponent<String> {
      */
     private int maxStringLength;
 
+    /** Maximum string length for JTextField editor (to avoid frozen user interface) */
+    private static final int MAX_TEXT_FIELD_STRING_LENGTH = 1000;
+
+    /** Set to true if string is too long for text field. Apply changes will be inactive in this case */
+    private boolean stringTooLong;
+
     public StringEditor() {
         this(0);
     }
@@ -62,7 +68,7 @@ public class StringEditor extends PropertyEditComponent<String> {
     protected void createAndShow() throws Exception {
         if (maxStringLength >= 0) {
             jtc = new JTextField();
-            jtc.setText(getCurWidgetValue());
+            valueUpdated(getCurWidgetValue());
             jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
             if (maxStringLength > 0) {
                 Dimension d = new Dimension(Math.max(TEXTFIELDWIDTH, CHAR_WIDTH * maxStringLength), jtc.getPreferredSize().height);
@@ -91,7 +97,7 @@ public class StringEditor extends PropertyEditComponent<String> {
     @Override
     public void createAndShowMinimal(String s) throws OperationNotSupportedException {
         jtc = new JTextField();
-        jtc.setText(s);
+        valueUpdated(s);
         jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
         jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
         add(jtc);
@@ -105,11 +111,25 @@ public class StringEditor extends PropertyEditComponent<String> {
 
     @Override
     protected void valueUpdated(String t) {
-        jtc.setText(t);
+        if (t == null) {
+            jtc.setText("");
+        } else if (jtc instanceof JTextField && t.length() > MAX_TEXT_FIELD_STRING_LENGTH) {
+            jtc.setText(t.substring(0, 1000) + "...");
+            stringTooLong = true;
+        } else {
+            jtc.setText(t);
+        }
     }
 
     @Override
     public boolean isResizable() {
         return jtc instanceof JTextArea;
+    }
+
+    @Override
+    public void applyChanges() throws Exception {
+        if (!stringTooLong) {
+            super.applyChanges();
+        }
     }
 }
