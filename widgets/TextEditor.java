@@ -37,6 +37,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 
 import org.finroc.plugins.data_types.ContainsStrings;
+import org.finroc.plugins.data_types.StdStringList;
 import org.finroc.plugins.data_types.mca.StringBlackboardBuffer;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -55,6 +56,7 @@ public class TextEditor extends Widget {
     /** Text input and output */
     private WidgetInput.Std<ContainsStrings> textInput;
     private WidgetOutput.Std<StringBlackboardBuffer> textOutput;
+    private WidgetOutput.Std<StdStringList> stringListOutput;
 
     private boolean hideButtons = false;
 
@@ -70,7 +72,7 @@ public class TextEditor extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : StringBlackboardBuffer.TYPE);
+        return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : (forPort == textOutput ? StringBlackboardBuffer.TYPE : StdStringList.TYPE));
     }
 
     class TextEditorUI extends WidgetUI implements ActionListener, PortListener<ContainsStrings> {
@@ -122,21 +124,24 @@ public class TextEditor extends Widget {
             if (e.getSource() == commitButton) {
 
                 StringBlackboardBuffer buffer = textOutput.getUnusedBuffer();
+                StdStringList listBuffer = stringListOutput.getUnusedBuffer();
                 String[] lines = textArea.getText().split("\n");
                 int maxLength = 0;
                 for (String l : lines) {
                     maxLength = Math.max(maxLength, l.length());
                 }
                 buffer.resize(lines.length, lines.length, maxLength + 1, false);
+                listBuffer.setSize(lines.length);
                 for (int i = 0; i < lines.length; i++) {
                     buffer.setString(i, lines[i]);
+                    listBuffer.setString(i, lines[i]);
                 }
                 textOutput.publish(buffer);
+                stringListOutput.publish(listBuffer);
             } else {
                 portChanged(null, null);
             }
         }
-
 
         @Override
         public void portChanged(AbstractPort origin, ContainsStrings value) {
