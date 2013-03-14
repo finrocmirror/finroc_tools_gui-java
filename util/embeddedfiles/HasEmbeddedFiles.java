@@ -24,7 +24,7 @@ import java.util.Collection;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Classes that use embedded files should use this interface, so that the files are saved
  */

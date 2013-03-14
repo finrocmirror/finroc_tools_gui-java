@@ -25,7 +25,7 @@ import java.util.EventListener;
 import org.finroc.core.port.AbstractPort;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Listens to a collection of ports
  */

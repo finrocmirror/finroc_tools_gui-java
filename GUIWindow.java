@@ -25,7 +25,7 @@ import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.core.FrameworkElement;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the main GUI window
  */

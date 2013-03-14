@@ -29,7 +29,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.HasBlittable;
 import org.rrlib.finroc_core_utils.rtti.DataType;
@@ -130,12 +129,12 @@ public class CompressedImage extends Blittable implements HasBlittable {
         Serialization.deserializeFromHexString(this, is);
     }
 
-    @Override @JavaOnly
+    @Override
     public void serialize(XMLNode node) throws Exception {
         node.setContent(Serialization.serialize(this));
     }
 
-    @Override @JavaOnly
+    @Override
     public void deserialize(XMLNode node) throws Exception {
         deserialize(new StringInputStream(node.getTextContent()));
     }

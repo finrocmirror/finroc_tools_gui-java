@@ -30,7 +30,7 @@ import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Classes that can be used for private attributes that are automatically recognized
  * as widget input ports.

@@ -27,7 +27,7 @@ import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.util.propertyeditor.FieldAccessor;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class CustomTypePortAccessor extends FieldAccessor implements EnumConstantsImporter {

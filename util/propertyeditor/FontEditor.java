@@ -32,7 +32,7 @@ import javax.swing.JButton;
 import com.connectina.swing.fontchooser.JFontChooser;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class FontEditor extends PropertyEditComponent<Font> implements ActionListener {

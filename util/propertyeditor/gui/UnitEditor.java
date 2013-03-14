@@ -28,7 +28,7 @@ import org.finroc.core.datatype.Unit;
 import org.finroc.tools.gui.util.propertyeditor.ComboBoxEditor;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Editor for data types: Adds button to editor that lets user
  * import enum constants.

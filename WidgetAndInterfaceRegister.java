@@ -38,7 +38,7 @@ import org.finroc.core.plugin.Plugins;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Register for Widgets and IO-interfaces
  */

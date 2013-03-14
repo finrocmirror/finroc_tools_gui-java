@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.propertyeditor;
 import java.lang.annotation.Annotation;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Base class for adapter classes that allow using type A
  * in Editor for class B.

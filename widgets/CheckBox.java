@@ -38,7 +38,7 @@ import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class CheckBox extends Widget {

@@ -36,7 +36,7 @@ import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.Paintable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Base class for different types of buffered image
  *

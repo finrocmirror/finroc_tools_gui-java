@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class contains some utility functions to help with common reflection tasks
  */

@@ -47,7 +47,7 @@ import org.finroc.core.port.PortListener;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class RadioButtons extends Widget {

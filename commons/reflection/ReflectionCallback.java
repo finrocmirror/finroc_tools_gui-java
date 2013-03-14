@@ -21,7 +21,7 @@
 package org.finroc.tools.gui.commons.reflection;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Interfaces for classes that want to be called whenever some element is reached
  */

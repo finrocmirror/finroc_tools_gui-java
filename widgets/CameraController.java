@@ -60,7 +60,7 @@ import org.rrlib.finroc_core_utils.xml.XMLNode;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class CameraController extends Widget {

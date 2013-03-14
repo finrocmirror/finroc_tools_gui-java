@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.propertyeditor.gui;
 import org.finroc.core.datatype.DataTypeReference;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Interfaces for classes that can import enum constants.
  */

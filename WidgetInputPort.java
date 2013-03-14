@@ -25,7 +25,7 @@ import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortWrapperBase;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class is a input port for a widget
  */

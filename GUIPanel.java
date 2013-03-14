@@ -34,7 +34,7 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class GUIPanel extends DataModelBase<GUI, GUIWindow, Widget> {

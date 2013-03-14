@@ -35,7 +35,7 @@ import org.finroc.core.plugin.Plugins;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Utility class for creating complete, deep clones of objects
  */

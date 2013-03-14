@@ -58,7 +58,7 @@ import org.finroc.core.port.rpc.MethodCallException;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class BehaviourSignals extends Widget {

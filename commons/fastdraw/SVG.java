@@ -48,7 +48,7 @@ import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGPanel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Wraps SVG diagram
  */

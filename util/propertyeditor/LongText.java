@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Marks string attributes containing longer (possibly multi-line text)
  */

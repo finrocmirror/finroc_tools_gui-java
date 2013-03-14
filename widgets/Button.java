@@ -49,7 +49,7 @@ import org.finroc.core.port.PortListener;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class Button extends Widget {

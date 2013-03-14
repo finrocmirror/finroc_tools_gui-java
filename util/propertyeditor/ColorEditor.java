@@ -34,7 +34,7 @@ import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class ColorEditor extends PropertyEditComponent<Color> implements ActionListener {

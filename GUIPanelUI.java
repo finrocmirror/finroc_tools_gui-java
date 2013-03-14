@@ -48,7 +48,7 @@ import org.finroc.tools.gui.util.gui.MPanel;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * View of GUIPanel
  */

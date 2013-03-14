@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.propertyeditor;
 import java.lang.annotation.Annotation;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Abstract interface for accessing a property that can be edited.
  */

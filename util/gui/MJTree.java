@@ -40,7 +40,7 @@ import org.finroc.tools.gui.commons.EventRouter;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * More convenient JTree.
  *

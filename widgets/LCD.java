@@ -53,7 +53,7 @@ import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class LCD extends Widget {

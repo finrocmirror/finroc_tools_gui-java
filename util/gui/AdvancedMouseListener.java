@@ -30,7 +30,7 @@ import java.util.List;
 import javax.swing.event.MouseInputListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * MouseListener with advanced functionality
  */

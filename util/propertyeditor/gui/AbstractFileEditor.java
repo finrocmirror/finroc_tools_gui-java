@@ -40,7 +40,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> implements ActionListener {

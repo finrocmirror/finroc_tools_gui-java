@@ -29,7 +29,7 @@ import java.util.List;
 import org.finroc.tools.gui.commons.Util;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Property Accessor for fields of class
  */

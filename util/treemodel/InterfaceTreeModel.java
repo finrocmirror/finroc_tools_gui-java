@@ -37,7 +37,7 @@ import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Tree Model for interfaces
  */

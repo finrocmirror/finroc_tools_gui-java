@@ -39,7 +39,7 @@ import org.finroc.plugins.data_types.StringList;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Component factory for GUI types
  */

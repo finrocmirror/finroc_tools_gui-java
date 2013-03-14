@@ -23,7 +23,7 @@ package org.finroc.tools.gui.commons.fastdraw;
 import java.awt.image.BufferedImage;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Class for partly transparent images with convex shape.
  * That means each scan line has a certain offset and width <= image width.

@@ -48,7 +48,7 @@ import org.rrlib.finroc_core_utils.log.LogStream;
 import org.finroc.core.util.Files;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class manages embedded files (and makes sure no duplicates are loaded)
  */

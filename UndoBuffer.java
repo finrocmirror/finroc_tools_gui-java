@@ -31,7 +31,7 @@ import javax.swing.JMenuItem;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * UndoBuffer for GUI-Window
  */

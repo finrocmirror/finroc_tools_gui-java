@@ -33,7 +33,7 @@ import org.finroc.tools.gui.util.gui.MPanel;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the superclass for components that will be visible on FastCustomDrawingPanels
  */

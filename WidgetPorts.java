@@ -30,7 +30,7 @@ import org.finroc.core.port.cc.CCPortBase;
 import org.finroc.core.port.std.PortBase;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 @SuppressWarnings("rawtypes")

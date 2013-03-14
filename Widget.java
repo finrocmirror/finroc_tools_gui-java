@@ -51,7 +51,7 @@ import org.finroc.core.port.ThreadLocalCache;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the base class for all widgets used in the GUI
  */

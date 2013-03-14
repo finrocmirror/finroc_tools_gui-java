@@ -41,7 +41,7 @@ import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Class to add/remove listeners from objects and fire events
  *

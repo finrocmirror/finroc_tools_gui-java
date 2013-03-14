@@ -26,7 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * JPanel with some functions for convenience
  */

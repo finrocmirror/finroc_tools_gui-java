@@ -42,7 +42,7 @@ import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.finroc.tools.gui.util.propertyeditor.StandardComponentFactory;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Dialog to edit widget properties. Ultra-generic...
  * GUI elements are automatically created.

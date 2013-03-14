@@ -42,7 +42,7 @@ import org.finroc.core.portdatabase.UnknownType;
 import org.finroc.core.portdatabase.UnknownTypeListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Classes that can be used for private attributes that are automatically recognized
  * as widget output ports.

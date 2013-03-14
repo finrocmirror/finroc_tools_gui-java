@@ -32,7 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class StringEditor extends PropertyEditComponent<String> {

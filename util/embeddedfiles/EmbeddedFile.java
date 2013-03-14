@@ -28,7 +28,7 @@ import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class represents an embedded file in the GUI-File
  * Once loaded it's immutable

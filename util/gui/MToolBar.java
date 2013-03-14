@@ -33,7 +33,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Nice, convenient, higher level toolbar
  */

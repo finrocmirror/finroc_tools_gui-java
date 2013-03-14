@@ -38,7 +38,7 @@ import org.finroc.tools.gui.util.propertyeditor.gui.PropertiesDialog;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Property Editor for widgets
  */

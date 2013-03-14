@@ -34,7 +34,7 @@ import javax.swing.Icon;
 import org.finroc.plugins.data_types.Blittable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Image class that extends BufferedImage.
  * Image manipulation should be reasonably fast using this class.

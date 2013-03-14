@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.embeddedfiles;
 import java.io.File;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * File or directory that lies in file system... if it cannot be embedded in GUI file
  */

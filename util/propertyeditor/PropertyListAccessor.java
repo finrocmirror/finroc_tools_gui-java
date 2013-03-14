@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.propertyeditor;
 import java.util.List;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Abstract interface for an editable list.
  * (Usually implemented by wrapper around a list class)

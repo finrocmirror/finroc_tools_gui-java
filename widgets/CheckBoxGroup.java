@@ -42,7 +42,7 @@ import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  * @author jens
  *
  * Displays list of check boxes created from string list at input port and outputs selected check boxes as bit vector.

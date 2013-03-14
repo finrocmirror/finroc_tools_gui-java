@@ -21,7 +21,7 @@
 package org.finroc.tools.gui.util.propertyeditor;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Handler for cloning objects
  * (related to ObjectCloner class)

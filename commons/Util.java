@@ -40,7 +40,7 @@ import javax.swing.JOptionPane;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class Util {

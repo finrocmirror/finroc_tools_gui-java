@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Valid extensions for abstract files.
  *

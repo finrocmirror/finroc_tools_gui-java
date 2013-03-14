@@ -23,7 +23,7 @@ package org.finroc.tools.gui.commons.fastdraw;
 import java.net.URL;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Image mit Alpha-Information im Pixel
  */

@@ -29,7 +29,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * JDialog with some additional methods for convenience
  */

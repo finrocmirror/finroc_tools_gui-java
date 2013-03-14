@@ -26,7 +26,7 @@ import org.finroc.core.port.PortWrapperBase;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a output port of a widget
  */

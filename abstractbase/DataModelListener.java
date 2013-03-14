@@ -24,7 +24,7 @@ import java.util.EventListener;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Interface for object listening to the data model
  */

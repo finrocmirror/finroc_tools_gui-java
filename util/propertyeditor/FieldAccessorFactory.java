@@ -33,7 +33,7 @@ import org.finroc.tools.gui.commons.reflection.ReflectionHelper;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Scans set of objects for fields and creates respective PropertyEditComponents
  */

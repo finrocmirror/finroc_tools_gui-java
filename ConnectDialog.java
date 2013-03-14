@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 import org.finroc.tools.gui.util.gui.MDialog;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Connect dialog that can be displayed when starting GUI, for instance
  */

@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Marks attributes, that won't be shown in property-Editor
  */

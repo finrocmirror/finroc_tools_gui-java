@@ -56,7 +56,7 @@ import org.finroc.core.RuntimeSettings;
 import org.finroc.core.util.Files;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the main class and contains the top-level control functions.
  */
@@ -490,7 +490,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     }
 
     /**
-     * @author max
+     * @author Max Reichardt
      *
      * Persistent settings in Jmcagui
      */

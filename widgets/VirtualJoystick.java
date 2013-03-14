@@ -45,7 +45,7 @@ import org.finroc.core.port.PortCreationInfo;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class VirtualJoystick extends Picture {

@@ -41,7 +41,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.finroc.core.FrameworkElement;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Base class for all classes implementing the fingui data model
  */

@@ -26,7 +26,7 @@ import java.io.Serializable;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the abstract base class for files that are used in GUIs
  */

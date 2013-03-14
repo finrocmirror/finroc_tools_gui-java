@@ -21,7 +21,7 @@
 package org.finroc.tools.gui.util.propertyeditor;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Creates property editor components
  */

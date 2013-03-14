@@ -31,7 +31,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class PackageContentEnumerator extends ArrayList<String> {

@@ -39,7 +39,7 @@ import java.util.List;
 import org.finroc.tools.gui.commons.EventRouter;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public abstract class UIBase < P extends UIBase <? , ? , ? , ? >, U extends Container, M extends DataModelBase <? , ? , ? >, C extends UIBase <? , ? , ? , ? >> implements DataModelListener, Iterable<C> {

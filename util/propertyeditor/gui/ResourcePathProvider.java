@@ -24,7 +24,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Provides resource folders for file manager.
  *

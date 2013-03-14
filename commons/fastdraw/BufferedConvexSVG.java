@@ -41,7 +41,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.rtti.DataType;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * SVG-Element that is buffered in intermediate buffer
  */

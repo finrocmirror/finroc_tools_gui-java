@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * List of property entries (with possibly multiple attributes)
  */

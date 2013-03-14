@@ -28,7 +28,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Image mit Alpha-Information im Pixel
  */

@@ -29,7 +29,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Singleton Icon Loader. So no icons are loaded multiple times
  */

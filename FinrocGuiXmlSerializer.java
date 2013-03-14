@@ -44,7 +44,7 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class sets up a XStream-Serializer configured to create nice XML-Code for
  * FinrocGUI
@@ -287,7 +287,7 @@ public class FinrocGuiXmlSerializer {
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Generic converter for widgets
  */
@@ -329,7 +329,7 @@ public class FinrocGuiXmlSerializer {
 }*/
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Replace method of Sun14ReflectionProvider, to not visit fields of Widget's superclasses
  */

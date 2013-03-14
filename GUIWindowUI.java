@@ -86,7 +86,7 @@ import org.finroc.core.port.ThreadLocalCache;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener, MouseListener, ConnectionPanel.Owner {

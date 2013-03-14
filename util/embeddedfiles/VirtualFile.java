@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.embeddedfiles;
 import java.io.File;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class VirtualFile extends File {

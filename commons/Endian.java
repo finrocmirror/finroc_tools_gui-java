@@ -21,7 +21,7 @@
 package org.finroc.tools.gui.commons;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * this class is used to convert numbers to correct endian mode
  */

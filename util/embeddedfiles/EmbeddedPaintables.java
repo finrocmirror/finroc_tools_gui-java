@@ -21,7 +21,7 @@
 package org.finroc.tools.gui.util.embeddedfiles;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class EmbeddedPaintables extends AbstractFiles<EmbeddedPaintable> {

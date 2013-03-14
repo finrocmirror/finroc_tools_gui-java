@@ -36,7 +36,7 @@ import org.finroc.core.FrameworkElement;
 import org.finroc.core.RuntimeEnvironment;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class contains the GUI-(data-)model
  */

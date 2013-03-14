@@ -37,7 +37,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Basic Panel that contains property editing components
  */

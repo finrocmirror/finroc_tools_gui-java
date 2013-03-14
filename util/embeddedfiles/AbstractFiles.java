@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.embeddedfiles;
 import java.util.ArrayList;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class AbstractFiles<T extends AbstractFile> extends ArrayList<T> {

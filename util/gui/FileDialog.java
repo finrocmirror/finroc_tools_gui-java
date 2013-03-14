@@ -28,7 +28,7 @@ import javax.swing.filechooser.FileFilter;
 import org.finroc.tools.gui.util.ExtensionFilenameFilter;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * File-Open/Save-Dialog
  */

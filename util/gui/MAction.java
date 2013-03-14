@@ -27,7 +27,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Action with enum-ID
  */

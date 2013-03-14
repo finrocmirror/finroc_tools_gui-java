@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.propertyeditor;
 import java.lang.annotation.Annotation;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Property accessor for single object.
  * (Kind of a loopback accessor wrapper)

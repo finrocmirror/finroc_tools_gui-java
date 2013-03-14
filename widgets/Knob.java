@@ -55,7 +55,7 @@ import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class Knob extends Widget {

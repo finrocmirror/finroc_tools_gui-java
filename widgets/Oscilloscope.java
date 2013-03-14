@@ -44,7 +44,6 @@ import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
@@ -381,5 +380,5 @@ public class Oscilloscope extends Widget {
     }
 
     /** Data type of this class */
-    @Const public final static DataTypeBase TYPE = new DataType<OscilloscopeUI.OscilloscopeFunction>(OscilloscopeUI.OscilloscopeFunction.class);
+    public final static DataTypeBase TYPE = new DataType<OscilloscopeUI.OscilloscopeFunction>(OscilloscopeUI.OscilloscopeFunction.class);
 }

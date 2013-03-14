@@ -28,7 +28,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Slightly enhanced JPopupMenu.
  */

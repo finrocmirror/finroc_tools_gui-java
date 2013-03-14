@@ -23,7 +23,7 @@ package org.finroc.tools.gui.util.gui;
 import java.awt.event.ActionEvent;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * ActionEvent with reference to (M)Action
  */
