@@ -50,9 +50,9 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.BehaviourInfo;
 import org.finroc.plugins.data_types.ContainsStrings;
 import org.rrlib.finroc_core_utils.serialization.PortDataList;
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.rpc.MethodCallException;
 
@@ -77,7 +77,7 @@ public class BehaviourSignals extends Widget {
             return suggestion.derive(ContainsStrings.TYPE);
         } else if (forPort == signals) {
             PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE);
-            pci.setFlag(PortFlags.PUSH_STRATEGY, true);
+            pci.setFlag(FrameworkElementFlags.PUSH_STRATEGY, true);
             return pci;
         } /*else if (forPort == signalsTest) {
             PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE.getListType());

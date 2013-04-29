@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.rrlib.finroc_core_utils.jc.container.SimpleList;
-
 import org.finroc.tools.gui.commons.fastdraw.CompressedImage;
 import org.finroc.tools.gui.plugin.GUIPlugin;
 import org.finroc.tools.gui.util.PackageContentEnumerator;
@@ -105,8 +103,8 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
         //JavaPlugins.loadAllDataTypesInPackage(StringList.class);
         Plugins.loadAllDataTypesInPackage(CompressedImage.class);
 
-        SimpleList<Plugin> plugins = Plugins.getInstance().getPlugins();
-        for (Plugin plugin : plugins.getBackend()) {
+        ArrayList<Plugin> plugins = Plugins.getInstance().getPlugins();
+        for (Plugin plugin : plugins) {
             if (plugin instanceof GUIPlugin) {
                 Class <? extends Widget > [] cs = ((GUIPlugin)plugin).getWidgets();
                 if (cs != null) {
@@ -204,7 +202,7 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
     }
 
     public static List<CreateExternalConnectionAction> getIOInterfaces() {
-        return Plugins.getInstance().getExternalConnections().getBackend();
+        return Plugins.getInstance().getExternalConnections();
     }
 
     public static List < Class <? extends Widget >> getWidgets() {

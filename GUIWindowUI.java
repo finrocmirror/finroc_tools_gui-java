@@ -151,7 +151,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         miConnectMenu = new JMenu("Connect");
         //miDisconnectMenu = new JMenu("Disconnect");
         //miReconnectMenu = new JMenu("Reconnect");
-        for (CreateExternalConnectionAction ioi : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction ioi : Plugins.getInstance().getExternalConnections()) {
             if ((ioi.getFlags() & CreateExternalConnectionAction.REMOTE_EDGE_INFO) == 0) {
                 miConnectMenu.add(new ConnectAction(ioi, false, false));
             }
@@ -905,7 +905,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     }
                     String address = JOptionPane.showInputDialog(null, ioInterface.getName() + ": Please input connection address", ec.getConnectionAddress());
                     if (address != null) {
-                        ec.connect(address);
+                        ec.connect(address, GUIWindowUI.this.getParent().ioInterface.getNewModelHandlerInstance());
                         if (ec.isConnected()) {
                             getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
                             getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());

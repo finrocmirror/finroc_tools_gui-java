@@ -34,10 +34,10 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.tools.gui.util.propertyeditor.gui.EnumConstantsImporter;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.rrlib.finroc_core_utils.serialization.Serialization;
 
@@ -62,7 +62,7 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
     @Override

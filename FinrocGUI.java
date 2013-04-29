@@ -52,6 +52,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.StringList;
 
+import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeSettings;
 import org.finroc.core.util.Files;
 
@@ -97,6 +98,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
         } else {
             FileDialog.setCurrentDirectory(new File("."));
         }
+
+        RuntimeEnvironment.getInstance().setProgramName("fingui");
 
         setModel(new GUI(this));
         arrangeWindows();

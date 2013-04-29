@@ -30,8 +30,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.abstractbase.UIBase;
 import org.finroc.tools.gui.util.PackageContentEnumerator;
 import org.finroc.tools.gui.util.treemodel.InterfaceTreeModel;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
-import org.finroc.plugins.tcp.TCP;
+import org.finroc.plugins.tcp.internal.TCP;
 
 import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
@@ -40,7 +39,7 @@ import org.finroc.core.plugin.Plugins;
 
 public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends GUIUiBase<P, C> implements ConnectionListener {
 
-    /** Interface of MCAGUI */
+    /** Contains all interfaces widgets can be connected to */
     protected transient InterfaceTreeModel ioInterface = new InterfaceTreeModel();
 
 //  /** GUI's InputInterfaces */
@@ -168,15 +167,15 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         fireConnectionEvent(e);
     }
 
-    public PortWrapper getInput(String uid) {
-        getTreeModel();
-        return ioInterface.getInputPort(uid);
-    }
-
-    public PortWrapper getOutput(String uid) {
-        getTreeModel();
-        return ioInterface.getOutputPort(uid);
-    }
+//    public PortWrapper getInput(String uid) {
+//        getTreeModel();
+//        return ioInterface.getInputPort(uid);
+//    }
+//
+//    public PortWrapper getOutput(String uid) {
+//        getTreeModel();
+//        return ioInterface.getOutputPort(uid);
+//    }
 
     public void setLoopTime(long ms) {
         for (ExternalConnection io : getActiveInterfaces()) {
@@ -192,7 +191,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
     public void connect(String address) throws Exception {
         String interfaceName = address.substring(0, address.indexOf(":"));
         String actualAddress = address.substring(interfaceName.length() + 1);
-        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
             if (io.getName().equalsIgnoreCase(interfaceName)) {
                 try {
                     connectImpl(io, actualAddress);
@@ -204,7 +203,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         }
 
         // try default interface
-        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
             if (io.getName().equalsIgnoreCase(TCP.TCP_PORTS_ONLY_NAME)) {
                 try {
                     connectImpl(io, address);
@@ -229,7 +228,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         ioInterface.getRootFrameworkElement().addChild(ec);
         ec.init();
         ec.addConnectionListener(this);
-        ec.connect(address);
+        ec.connect(address, ioInterface.getNewModelHandlerInstance());
         if (ec.isConnected()) {
             if (this instanceof FinrocGUI) {
                 ((FinrocGUI)this).getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();

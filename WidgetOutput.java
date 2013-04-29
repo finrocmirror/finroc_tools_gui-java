@@ -22,17 +22,15 @@ package org.finroc.tools.gui;
 
 import org.finroc.tools.gui.commons.EventRouter;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.datatype.DataTypeReference;
-import org.finroc.plugins.blackboard.BlackboardClient;
-import org.finroc.plugins.blackboard.RawBlackboardClient;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.serialization.PortDataList;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 import org.rrlib.finroc_core_utils.serialization.StringInputStream;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.CCPortDataManagerTL;
@@ -138,35 +136,35 @@ public class WidgetOutput {
         }
     }
 
-    public static class Blackboard<T> extends WidgetOutputPort<RawBlackboardClient.WritePort> {
+    public static class Blackboard<T> { /*extends WidgetOutputPort<RawBlackboardClient.WritePort>*/
 
         /** UID */
         private static final long serialVersionUID = 2712886077657464267L;
 
-        private transient BlackboardClient<T> c;
-
-        @Override
-        protected RawBlackboardClient.WritePort createPort() {
-            PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
-            PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
-            c = new BlackboardClient<T>(pci.toString(), null, pci.getFlag(PortFlags.PUSH_STRATEGY), pci.dataType);
-            //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
-            return c.getWrapped().getWritePort();
-        }
-
-        public void addChangeListener(PortListener<T> listener) {
-            EventRouter.addListener(getClient().getWrapped().getReadPort(), "addPortListenerRaw", listener);
-        }
-
-        public BlackboardClient<T> getClient() {
-            return c;
-        }
-
-        public PortDataList<T> readAutoLocked() {
-            PortDataList<T> result = c.read();
-            ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
-            return result;
-        }
+//        private transient BlackboardClient<T> c;
+//
+//        @Override
+//        protected RawBlackboardClient.WritePort createPort() {
+//            PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
+//            PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
+//            c = new BlackboardClient<T>(pci.toString(), null, pci.getFlag(FrameworkElementFlags.PUSH_STRATEGY), pci.dataType);
+//            //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
+//            return c.getWrapped().getWritePort();
+//        }
+//
+//        public void addChangeListener(PortListener<T> listener) {
+//            EventRouter.addListener(getClient().getWrapped().getReadPort(), "addPortListenerRaw", listener);
+//        }
+//
+//        public BlackboardClient<T> getClient() {
+//            return c;
+//        }
+//
+//        public PortDataList<T> readAutoLocked() {
+//            PortDataList<T> result = c.read();
+//            ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
+//            return result;
+//        }
     }
 
     @SuppressWarnings("rawtypes")

@@ -52,7 +52,6 @@ import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.util.embeddedfiles.FileManager;
 import org.finroc.tools.gui.util.gui.IconManager;
 import org.finroc.tools.gui.util.propertyeditor.gui.ResourcePathProvider;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
 
 import org.finroc.core.plugin.ConnectionListener;
 
@@ -152,6 +151,7 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
                     w.write(c);
                 }
                 w.close();
+                //r.close();  // Don't do this - although Eclipse warns: This will close the zip file
 
                 // read gui
                 ObjectInputStream ois = FinrocGuiXmlSerializer.getInstance().createObjectInputStream(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
@@ -205,9 +205,9 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
     }
 
 
-    public abstract PortWrapper getInput(String uid);
-
-    public abstract PortWrapper getOutput(String uid);
+//    public abstract PortWrapper getInput(String uid);
+//
+//    public abstract PortWrapper getOutput(String uid);
 
     //public abstract List<Plugin> getPlugIns();
 }

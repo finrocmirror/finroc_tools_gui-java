@@ -24,8 +24,8 @@ import org.finroc.tools.gui.commons.EventRouter;
 import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.Port;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 
@@ -52,7 +52,7 @@ public class WidgetInput {
         }
 
         public T getAutoLocked() {
-            if ((super.defaultFlags & PortFlags.PUSH_STRATEGY) != 0 && (!getPort().pushStrategy())) {
+            if ((super.defaultFlags & FrameworkElementFlags.PUSH_STRATEGY) != 0 && (!getPort().pushStrategy())) {
                 getPort().setPushStrategy(true); // we still/soon seem to need push strategy
             }
             return asPort().getAutoLocked();

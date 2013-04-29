@@ -41,10 +41,10 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedFile;
 import org.finroc.tools.gui.util.embeddedfiles.ValidExtensions;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
@@ -78,10 +78,10 @@ public class Button extends Widget {
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == emitValue) {
-            return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+            return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
         }
         if (forPort == buttonPressed) {
-            return suggestion.derive(CoreBoolean.TYPE).derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+            return suggestion.derive(CoreBoolean.TYPE).derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
         }
         return null;
     }

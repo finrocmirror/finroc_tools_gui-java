@@ -39,10 +39,10 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 
 
@@ -74,7 +74,7 @@ public class Slider extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
     class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, PortListener<CoreNumber> {

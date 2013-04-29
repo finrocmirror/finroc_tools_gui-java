@@ -48,9 +48,9 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.themes.Themes;
 
 import org.finroc.plugins.data_types.CameraFeature;
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.std.PortDataManager;
 import org.finroc.core.portdatabase.ReusableGenericObjectManager;
@@ -79,7 +79,7 @@ public class CameraController extends Widget {
         if (forPort == cameraState) {
             return suggestion.derive(CameraFeature.SET_TYPE);
         } else if (forPort == changeRequests) {
-            return suggestion.derive(CameraFeature.TYPE).derive(suggestion.flags | PortFlags.NO_INITIAL_PUSHING);
+            return suggestion.derive(CameraFeature.TYPE).derive(suggestion.flags | FrameworkElementFlags.NO_INITIAL_PUSHING);
         } /*else if (forPort == signalsTest) {
             PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE.getListType());
             return pci;

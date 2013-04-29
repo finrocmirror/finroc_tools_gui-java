@@ -112,6 +112,9 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         temp.add(object);
         TreeNode temp2 = object;
         while (temp2 != getModel().getRoot()) {
+            if (temp2 == null) {
+                return null;
+            }
             temp2 = temp2.getParent();
             temp.addFirst(temp2);
         }

@@ -42,7 +42,6 @@ import org.finroc.tools.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
-import org.finroc.core.CoreFlags;
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElement.ChildIterator;
 import org.finroc.core.LockOrderLevels;
@@ -300,7 +299,7 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
 
     @Override
     protected FrameworkElement createFrameworkElement() {
-        return new FrameworkElement(null, getClass().getSimpleName(), CoreFlags.ALLOWS_CHILDREN, LockOrderLevels.LEAF_GROUP);
+        return new FrameworkElement(null, getClass().getSimpleName(), 0, LockOrderLevels.LEAF_GROUP);
     }
 
     /**

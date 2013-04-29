@@ -65,15 +65,14 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.finroc.core.port.PortFlags;
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
+import org.finroc.core.remote.HasUid;
+import org.finroc.core.remote.PortWrapperTreeNode;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.MJTree;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
-import org.finroc.tools.gui.util.treemodel.TreePortWrapper;
-import org.finroc.tools.gui.util.treemodel.Uid;
 
 
 /**
@@ -90,8 +89,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private static int MAXTRANSPARENTCONNECTIONS = 2;
 
     /** left and right tree */
-    protected MJTree<TreePortWrapper> leftTree;
-    protected MJTree<TreePortWrapper> rightTree;
+    protected MJTree<PortWrapperTreeNode> leftTree;
+    protected MJTree<PortWrapperTreeNode> rightTree;
     private JScrollPane leftScrollPane;
     private JScrollPane rightScrollPane;
 
@@ -111,12 +110,12 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     /** temporary variables for UI behaviour */
     private boolean selectionFromRight;
-    private List<TreePortWrapper> startPoints = new ArrayList<TreePortWrapper>();
-    private MJTree<TreePortWrapper> startPointTree = null;
+    private List<PortWrapperTreeNode> startPoints = new ArrayList<PortWrapperTreeNode>();
+    private MJTree<PortWrapperTreeNode> startPointTree = null;
     private Point lastMousePos;
 
     /** WidgetPort that mouse cursor is currently over - NULL if somewhere else */
-    TreePortWrapper mouseOver = null;
+    PortWrapperTreeNode mouseOver = null;
 
     /** PopupMenu */
     protected JPopupMenu popupMenu;
@@ -134,8 +133,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         parent = win;
 
         // Setup all the scrolling stuff
-        leftTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
-        rightTree = new MJTree<TreePortWrapper>(TreePortWrapper.class, 3);
+        leftTree = new MJTree<PortWrapperTreeNode>(PortWrapperTreeNode.class, 3);
+        rightTree = new MJTree<PortWrapperTreeNode>(PortWrapperTreeNode.class, 3);
         //setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
         setMinimumSize(new Dimension(300, 0));
         rightTree.setBackground(rightBackgroundColor.color);
@@ -274,10 +273,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         Point diff = ((JComponent)e.getSource()).getLocationOnScreen();
         pos.x += diff.x - getLocationOnScreen().x;
         pos.y += diff.y - getLocationOnScreen().y;
-        TreePortWrapper tpw = getTreePortWrapperFromPos(rightTree, pos);
-        MJTree<TreePortWrapper> curTree = (MJTree<TreePortWrapper>)e.getSource();
+        PortWrapperTreeNode tpw = getPortWrapperTreeNodeFromPos(rightTree, pos);
+        MJTree<PortWrapperTreeNode> curTree = (MJTree<PortWrapperTreeNode>)e.getSource();
         if (tpw == null) {
-            tpw = getTreePortWrapperFromPos(leftTree, pos);
+            tpw = getPortWrapperTreeNodeFromPos(leftTree, pos);
         }
 
         if (tpw != mouseOver) {
@@ -298,7 +297,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param tree Tree that we need to set tool tip text of
      * @param element
      */
-    protected void setToolTipText(MJTree<TreePortWrapper> tree, TreePortWrapper element) {
+    protected void setToolTipText(MJTree<PortWrapperTreeNode> tree, PortWrapperTreeNode element) {
         if (element == null || (!(element instanceof WidgetPort<?>))) {
             tree.setToolTipText(null);
             return;
@@ -330,14 +329,14 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         // Welcher Baum wurde gewählt?
         selectionFromRight = (e.getSource() == rightTree);
-        MJTree<TreePortWrapper> selTree = selectionFromRight ? rightTree : leftTree;
-        MJTree<TreePortWrapper> otherTree = selectionFromRight ? leftTree : rightTree;
+        MJTree<PortWrapperTreeNode> selTree = selectionFromRight ? rightTree : leftTree;
+        MJTree<PortWrapperTreeNode> otherTree = selectionFromRight ? leftTree : rightTree;
 
         // existieren Matches?
         boolean allMatches = true;
-        for (TreePortWrapper p1 : selTree.getSelectedObjects()) {
+        for (PortWrapperTreeNode p1 : selTree.getSelectedObjects()) {
             boolean matches = false;
-            for (TreePortWrapper p2 : otherTree.getVisibleObjects()) {
+            for (PortWrapperTreeNode p2 : otherTree.getVisibleObjects()) {
                 if (canConnect(p1, p2)) {
                     matches = true;
                     break;
@@ -348,9 +347,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         // wenn ja, alle Matches im anderen Baum markieren
         if (allMatches) {
-            List<TreePortWrapper> matches = new ArrayList<TreePortWrapper>();
-            for (TreePortWrapper p : otherTree.getVisibleObjects()) {
-                for (TreePortWrapper p2 : selTree.getSelectedObjects()) {
+            List<PortWrapperTreeNode> matches = new ArrayList<PortWrapperTreeNode>();
+            for (PortWrapperTreeNode p : otherTree.getVisibleObjects()) {
+                for (PortWrapperTreeNode p2 : selTree.getSelectedObjects()) {
                     if (canConnect(p, p2)) {
                         matches.add(p);
                     }
@@ -363,7 +362,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         // Startpunkte setzen
         startPoints.clear();
         startPointTree = selTree;
-        for (TreePortWrapper p : selTree.getSelectedObjects()) {
+        for (PortWrapperTreeNode p : selTree.getSelectedObjects()) {
             startPoints.add(p);
         }
     }
@@ -375,7 +374,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param partner Partner Port
      * @return Line starting position
      */
-    protected ConnectorIcon.LineStart getLineStartPosition(PortWrapper port, PortWrapper partner) {
+    protected ConnectorIcon.LineStart getLineStartPosition(PortWrapperTreeNode port, PortWrapperTreeNode partner) {
         if (port instanceof WidgetPort) {
             return ConnectorIcon.LineStart.Default;
         } else {
@@ -389,7 +388,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param lineStart Type of line to determine starting position
      * @return Start point of connection line
      */
-    private Point getLineStartPoint(MJTree<TreePortWrapper> tree, TreePortWrapper p, ConnectorIcon.LineStart lineStart) {
+    private Point getLineStartPoint(MJTree<PortWrapperTreeNode> tree, PortWrapperTreeNode p, ConnectorIcon.LineStart lineStart) {
         Rectangle r2 = tree.getObjectBounds(p, true);  // Bounds vom Eintrag
         Rectangle r = tree.getObjectBounds(p, false);  // Bounds vom Eintrag
 
@@ -424,9 +423,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param o2 port 2
      * @return Answer
      */
-    protected boolean canConnect(TreePortWrapper o1, TreePortWrapper o2) {
+    protected boolean canConnect(PortWrapperTreeNode o1, PortWrapperTreeNode o2) {
         WidgetPort<?> wp = null;
-        TreePortWrapper other = null;
+        PortWrapperTreeNode other = null;
         if ((o1 instanceof WidgetPort<?> && o2 instanceof WidgetPort<?>) || o1 == null || o2 == null) {
             return false;
         } else if (o1 instanceof WidgetPort<?>) {
@@ -451,14 +450,14 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param treeNode Selected tree node
      * @param wrapper Selected port
      */
-    protected void updatePopupMenu(TreeNode treeNode, TreePortWrapper wrapper) {
+    protected void updatePopupMenu(TreeNode treeNode, PortWrapperTreeNode wrapper) {
         if (wrapper instanceof WidgetPort<?>) {
             WidgetPort<?> wp = (WidgetPort<?>)wrapper;
             miCopyUID.setEnabled(false);
             miCopyLinks.setEnabled(wp.getConnectionLinks().size() > 0);
-            miShowPartner.setEnabled(miCopyLinks.isEnabled() && wp.getConnectionPartners().size() > 0);
+            miShowPartner.setEnabled(miCopyLinks.isEnabled() && wp.getPort().isConnected());
         } else {
-            miCopyUID.setEnabled(!popupOnRight && (wrapper instanceof Uid));
+            miCopyUID.setEnabled(!popupOnRight && (wrapper instanceof HasUid));
             miCopyLinks.setEnabled(false);
             miShowPartner.setEnabled(false);
         }
@@ -477,15 +476,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Point p2 = getLocationOnScreen();
             popupMenu.show(this, e.getX() + p.x - p2.x, e.getY() + p.y - p2.y);
             saveLastMousePos(e);
-            TreeNode tn = getTreeNodeFromPos((MJTree<TreePortWrapper>)e.getSource());
+            TreeNode tn = getTreeNodeFromPos((MJTree<PortWrapperTreeNode>)e.getSource());
             miRemoveConnections.setEnabled(tn != null);
-            TreePortWrapper tnp = getTreePortWrapperFromPos(popupOnRight ? rightTree : leftTree);
+            PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(popupOnRight ? rightTree : leftTree);
             updatePopupMenu(tn, tnp);
             return;
         }
 
         saveLastMousePos(e);
-        List<TreePortWrapper> hypo = null;
+        List<PortWrapperTreeNode> hypo = null;
         if (startPoints.size() > 0) {
             hypo = hypotheticalConnection();
         }
@@ -498,8 +497,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             }
         } else {
             // connect
-            MJTree<TreePortWrapper> selTree = selectionFromRight ? rightTree : leftTree;
-            List<TreePortWrapper> srcNodes = selTree.getSelectedObjects();
+            MJTree<PortWrapperTreeNode> selTree = selectionFromRight ? rightTree : leftTree;
+            List<PortWrapperTreeNode> srcNodes = selTree.getSelectedObjects();
             for (int i = 0; i < srcNodes.size(); i++) {
                 connect(srcNodes.get(i), hypo.get(i));
             }
@@ -519,12 +518,12 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param port Port 1
      * @param port2 Port 2
      */
-    protected void connect(TreePortWrapper port, TreePortWrapper port2) {
+    protected void connect(PortWrapperTreeNode port, PortWrapperTreeNode port2) {
         if (port == null || port2 == null) {
             return;
         }
         WidgetPort<?> wp = (WidgetPort<?>)((port instanceof WidgetPort<?>) ? port : port2);
-        PortWrapper other = ((wp == port) ? port2 : port);
+        PortWrapperTreeNode other = ((wp == port) ? port2 : port);
         wp.connectTo(other);
     }
 
@@ -550,13 +549,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         //new Thread().set
 
         if (startPoints.size() > 0 && lastMousePos != null) {
-            List<TreePortWrapper> drawFat = hypotheticalConnection();
+            List<PortWrapperTreeNode> drawFat = hypotheticalConnection();
             if (drawFat == null) {
-                for (TreePortWrapper p : startPoints) {
+                for (PortWrapperTreeNode p : startPoints) {
                     drawLine(g, getLineStartPoint(startPointTree, p, ConnectorIcon.LineStart.Default), lastMousePos, Color.BLACK, false, false);
                 }
             } else {
-                MJTree<TreePortWrapper> otherTree = selectionFromRight ? leftTree : rightTree;
+                MJTree<PortWrapperTreeNode> otherTree = selectionFromRight ? leftTree : rightTree;
                 //((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
                 for (int i = 0; i < startPoints.size(); i++) {
                     if (drawFat.get(i) != null) {
@@ -590,7 +589,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param fromTree Tree to search for connections
      * @param toTree Destination tree
      */
-    protected void drawConnectionsHelper(Graphics g, MJTree<TreePortWrapper> fromTree, MJTree<TreePortWrapper> toTree) {
+    protected void drawConnectionsHelper(Graphics g, MJTree<PortWrapperTreeNode> fromTree, MJTree<PortWrapperTreeNode> toTree) {
         if (!showRightTree) {
             return;
         }
@@ -598,10 +597,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         Rectangle visible = this.getVisibleRect();
 
         // count connections first, to decide if transparent drawing is possible
-        List<TreePortWrapper> temp = fromTree.getVisibleObjects();
+        List<PortWrapperTreeNode> temp = fromTree.getVisibleObjects();
         int count = 0;
         boolean transparent = true;
-        for (TreePortWrapper port : temp) {
+        for (PortWrapperTreeNode port : temp) {
             count += getConnectionPartners(port).size();
             if (count > MAXTRANSPARENTCONNECTIONS) {
                 transparent = false;
@@ -609,12 +608,12 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             }
         }
 
-        for (TreePortWrapper port : temp) {
-            for (PortWrapper port2 : getConnectionPartners(port)) {
+        for (PortWrapperTreeNode port : temp) {
+            for (PortWrapperTreeNode port2 : getConnectionPartners(port)) {
                 if (port2 != null) {
-                    if (toTree.isVisible((TreePortWrapper)port2)) {
+                    if (toTree.isVisible((PortWrapperTreeNode)port2)) {
                         Point p1 = getLineStartPoint(fromTree, port, getLineStartPosition(port, port2));
-                        Point p2 = getLineStartPoint(toTree, (TreePortWrapper)port2, getLineStartPosition(port2, port));
+                        Point p2 = getLineStartPoint(toTree, (PortWrapperTreeNode)port2, getLineStartPosition(port2, port));
                         Color c = connectedColor.color;
                         if (mouseOver != null) {
                             if (mouseOver == port || mouseOver == port2) {
@@ -639,7 +638,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param port Port
      * @return List of ports that port is connected to
      */
-    protected List<PortWrapper> getConnectionPartners(TreePortWrapper port) {
+    protected List<PortWrapperTreeNode> getConnectionPartners(PortWrapperTreeNode port) {
         return ((WidgetPort<?>)port).getConnectionPartners();
     }
 
@@ -664,17 +663,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }*/
     }
 
-    private List<TreePortWrapper> hypotheticalConnection() {
+    private List<PortWrapperTreeNode> hypotheticalConnection() {
 
-        MJTree<TreePortWrapper> selTree = selectionFromRight ? rightTree : leftTree;
-        MJTree<TreePortWrapper> otherTree = selectionFromRight ? leftTree : rightTree;
+        MJTree<PortWrapperTreeNode> selTree = selectionFromRight ? rightTree : leftTree;
+        MJTree<PortWrapperTreeNode> otherTree = selectionFromRight ? leftTree : rightTree;
 
-        TreePortWrapper tn = getTreePortWrapperFromPos(otherTree);
+        PortWrapperTreeNode tn = getPortWrapperTreeNodeFromPos(otherTree);
 
         // can connect to this node?
-        List<TreePortWrapper> nodesToConnect = selTree.getSelectedObjects();
+        List<PortWrapperTreeNode> nodesToConnect = selTree.getSelectedObjects();
         boolean canConnect = false;
-        for (TreePortWrapper srcNode : nodesToConnect) {
+        for (PortWrapperTreeNode srcNode : nodesToConnect) {
             canConnect |= canConnect(tn, srcNode);
         }
         if (!canConnect) {
@@ -683,16 +682,16 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }
 
         // Find "best" connection
-        List<TreePortWrapper> potentialPartners = otherTree.getVisibleObjects();
+        List<PortWrapperTreeNode> potentialPartners = otherTree.getVisibleObjects();
         //System.out.println("visible objects: " + potentialPartners.size());
         int startElement = potentialPartners.indexOf(tn);
         assert(startElement >= 0);
-        List<TreePortWrapper> result = new ArrayList<TreePortWrapper>();
-        for (TreePortWrapper srcNode : nodesToConnect) {
+        List<PortWrapperTreeNode> result = new ArrayList<PortWrapperTreeNode>();
+        for (PortWrapperTreeNode srcNode : nodesToConnect) {
             int i = startElement;
-            TreePortWrapper partner = null;
+            PortWrapperTreeNode partner = null;
             do {
-                TreePortWrapper potentialPartner = potentialPartners.get(i);
+                PortWrapperTreeNode potentialPartner = potentialPartners.get(i);
                 if (canConnect(srcNode, potentialPartner)) {
                     if (!result.contains(potentialPartner)) {
                         partner = potentialPartners.get(i);
@@ -707,15 +706,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return result;
     }
 
-    public TreeNode getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree) {
+    public TreeNode getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree) {
         return getTreeNodeFromPos(otherTree, lastMousePos);
     }
 
-    public TreePortWrapper getTreePortWrapperFromPos(MJTree<TreePortWrapper> otherTree) {
-        return getTreePortWrapperFromPos(otherTree, lastMousePos);
+    public PortWrapperTreeNode getPortWrapperTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree) {
+        return getPortWrapperTreeNodeFromPos(otherTree, lastMousePos);
     }
 
-    public TreeNode getTreeNodeFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
+    public TreeNode getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree, Point pos) {
 
         if (otherTree == rightTree && (!showRightTree)) {
             return null;
@@ -742,17 +741,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return (TreeNode)tp.getLastPathComponent();
     }
 
-    public TreePortWrapper getTreePortWrapperFromPos(MJTree<TreePortWrapper> otherTree, Point pos) {
+    public PortWrapperTreeNode getPortWrapperTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree, Point pos) {
         TreeNode tn = getTreeNodeFromPos(otherTree, pos);
-        if (!(tn instanceof TreePortWrapper)) {
+        if (!(tn instanceof PortWrapperTreeNode)) {
             //System.out.println("3");
             return null;
         }
-        return (TreePortWrapper)tn;
+        return (PortWrapperTreeNode)tn;
     }
 
     public void actionPerformed(ActionEvent e) {
-        MJTree<TreePortWrapper> ptree = popupOnRight ? rightTree : leftTree;
+        MJTree<PortWrapperTreeNode> ptree = popupOnRight ? rightTree : leftTree;
         if (e.getSource() == miSelectAll) {
             ptree.setSelectedObjects(ptree.getObjects(), true);
             ptree.expandAll(20);
@@ -761,7 +760,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else if (e.getSource() == miSelectVisible) {
             ptree.setSelectedObjects(ptree.getVisibleObjects(), true);
         } else if (e.getSource() == miRemoveConnections) {
-            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
+            PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(ptree);
             removeConnections(tnp);
             parent.addUndoBufferEntry("Remove connections");
             repaint();
@@ -775,7 +774,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else if (e.getSource() == miRemoveAllConnections) {
             int result = JOptionPane.showConfirmDialog(this, "This will remove all connections (from all ports). Are you sure?", "Are you sure?", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                for (TreePortWrapper wptnp : rightTree.getObjects()) {
+                for (PortWrapperTreeNode wptnp : rightTree.getObjects()) {
                     removeConnections(wptnp);
                     /*WidgetPort<?> wp = (WidgetPort<?>)wptnp;
                     wp.clearConnections();*/
@@ -784,15 +783,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                 repaint();
             }
         } else if (e.getSource() == miCopyUID) {
-            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
+            PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(ptree);
             String uid = "Element has no UID";
-            if (tnp instanceof Uid) {
-                uid = ((Uid)tnp).getUid();
+            if (tnp instanceof HasUid) {
+                uid = ((HasUid)tnp).getUid();
             }
             Clipboard clipboard = getToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(uid), null);
         } else if (e.getSource() == miCopyLinks) {
-            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
+            PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(ptree);
             String uid = "";
             if (tnp instanceof WidgetPort<?>) {
                 for (String s : ((WidgetPort<?>)tnp).getConnectionLinks()) {
@@ -805,11 +804,11 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Clipboard clipboard = getToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(uid), null);
         } else if (e.getSource() == miShowPartner) {
-            TreePortWrapper tnp = getTreePortWrapperFromPos(ptree);
+            PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(ptree);
             WidgetPort<?> wp = (WidgetPort<?>)tnp;
-            List<PortWrapper> partners = wp.getConnectionPartners();
-            for (PortWrapper partner : partners) {
-                TreePath tp = leftTree.getTreePathFor((TreePortWrapper)partner);
+            List<PortWrapperTreeNode> partners = wp.getConnectionPartners();
+            for (PortWrapperTreeNode partner : partners) {
+                TreePath tp = leftTree.getTreePathFor((PortWrapperTreeNode)partner);
                 leftTree.scrollPathToVisible(tp);
             }
         }
@@ -821,14 +820,14 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      *
      * @param tnp Port
      */
-    protected void removeConnections(TreePortWrapper tnp) {
+    protected void removeConnections(PortWrapperTreeNode tnp) {
         if (tnp instanceof WidgetPort<?>) {
             WidgetPort<?> wp = (WidgetPort<?>)tnp;
             wp.clearConnections();
         } else {
-            for (TreePortWrapper wptnp : rightTree.getObjects()) {
+            for (PortWrapperTreeNode wptnp : rightTree.getObjects()) {
                 WidgetPort<?> wp = (WidgetPort<?>)wptnp;
-                wp.removeConnection(tnp.getPort(), tnp.getUid());
+                wp.removeConnection(tnp.getPort(), ((HasUid)tnp).getUid());
             }
             tnp.getPort().disconnectAll(); // just to make sure...
         }
@@ -917,7 +916,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     /**
      * Draw port connected (green) in tree?
      */
-    public boolean drawPortConnected(TreePortWrapper port) {
+    public boolean drawPortConnected(PortWrapperTreeNode port) {
         return port.getPort().isConnected();
     }
 
@@ -929,11 +928,11 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param iconHeight Icon height
      * @return Connector icon for specified parameters
      */
-    public ConnectorIcon getConnectorIcon(TreePortWrapper port, boolean rightTree, ConnectorIcon.IconColor color, boolean brighter) {
+    public ConnectorIcon getConnectorIcon(PortWrapperTreeNode port, boolean rightTree, ConnectorIcon.IconColor color, boolean brighter) {
         final ConnectorIcon.Type iconType = new ConnectorIcon.Type();
         boolean rpc = FinrocTypeInfo.isMethodType(port.getPort().getDataType(), true);
-        boolean leftTreeRPCServerPort = rpc && port.getPort().getFlag(PortFlags.ACCEPTS_DATA);
-        iconType.set(port.isInputPort() && (!leftTreeRPCServerPort), (!rpc) && port.getPort().getFlag(PortFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
+        boolean leftTreeRPCServerPort = rpc && port.getPort().getFlag(FrameworkElementFlags.ACCEPTS_DATA);
+        iconType.set(port.isInputPort() && (!leftTreeRPCServerPort), (!rpc) && port.getPort().getFlag(FrameworkElementFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
         return ConnectorIcon.getIcon(iconType, HEIGHT);
     }
 
@@ -983,7 +982,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            if (!(value instanceof TreePortWrapper)) {
+            if (!(value instanceof PortWrapperTreeNode)) {
                 Color bg = panel.getBranchBackgroundColor(value);
                 Color fg = panel.getBranchTextColor(value);
                 if (bg != null) {
@@ -1010,7 +1009,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,    row, hasFocus);
             //setBackground(color);
             boolean portSelected = (!timer.isRunning() && sel);
-            TreePortWrapper port = (TreePortWrapper)value;
+            PortWrapperTreeNode port = (PortWrapperTreeNode)value;
             ConnectorIcon.IconColor color = portSelected ? selectedColor : (panel.drawPortConnected(port) ? connectedColor : (port.getPort().hasLinkEdges() ? connectionPartnerMissingColor : defaultColor));
             Color c = color.color;
             boolean brighter = false;

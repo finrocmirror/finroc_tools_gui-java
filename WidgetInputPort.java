@@ -20,8 +20,8 @@
  */
 package org.finroc.tools.gui;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortWrapperBase;
 
 /**
@@ -34,7 +34,7 @@ public abstract class WidgetInputPort < P extends PortWrapperBase > extends Widg
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 8596177899211743789L;
 
-    static PortCreationInfo stdPci = new PortCreationInfo("", PortFlags.INPUT_PORT);
+    static PortCreationInfo stdPci = new PortCreationInfo("", FrameworkElementFlags.INPUT_PORT);
 
     public PortCreationInfo getPci() {
         PortCreationInfo def = stdPci.derive(getDescription());

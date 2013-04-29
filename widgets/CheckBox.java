@@ -31,10 +31,10 @@ import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 
 /**
@@ -65,7 +65,7 @@ public class CheckBox extends Widget {
         if (forPort == boolValue) {
             suggestion = suggestion.derive(CoreBoolean.TYPE);
         }
-        return suggestion.derive(suggestion.flags | PortFlags.ACCEPTS_REVERSE_DATA_PUSH);
+        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
     @SuppressWarnings("rawtypes")
