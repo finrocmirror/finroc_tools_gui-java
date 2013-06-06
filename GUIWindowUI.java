@@ -1,23 +1,24 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
 import java.awt.BorderLayout;
@@ -86,7 +87,7 @@ import org.finroc.core.port.ThreadLocalCache;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
 public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionListener, KeyListener, WindowListener, MenuListener, ChangeListener, MouseListener, ConnectionPanel.Owner {
@@ -151,7 +152,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         miConnectMenu = new JMenu("Connect");
         //miDisconnectMenu = new JMenu("Disconnect");
         //miReconnectMenu = new JMenu("Reconnect");
-        for (CreateExternalConnectionAction ioi : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction ioi : Plugins.getInstance().getExternalConnections()) {
             if ((ioi.getFlags() & CreateExternalConnectionAction.REMOTE_EDGE_INFO) == 0) {
                 miConnectMenu.add(new ConnectAction(ioi, false, false));
             }
@@ -905,7 +906,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                     }
                     String address = JOptionPane.showInputDialog(null, ioInterface.getName() + ": Please input connection address", ec.getConnectionAddress());
                     if (address != null) {
-                        ec.connect(address);
+                        ec.connect(address, GUIWindowUI.this.getParent().ioInterface.getNewModelHandlerInstance());
                         if (ec.isConnected()) {
                             getParent().getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();
                             getParent().getModel().addConnectionAddress(ioInterface.getName() + ":" + ec.getConnectionAddress());

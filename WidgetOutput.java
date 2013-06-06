@@ -1,38 +1,37 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
 import org.finroc.tools.gui.commons.EventRouter;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.datatype.DataTypeReference;
-import org.finroc.plugins.blackboard.BlackboardClient;
-import org.finroc.plugins.blackboard.RawBlackboardClient;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.rrlib.finroc_core_utils.serialization.PortDataList;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 import org.rrlib.finroc_core_utils.serialization.StringInputStream;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.CCPortDataManagerTL;
@@ -42,7 +41,7 @@ import org.finroc.core.portdatabase.UnknownType;
 import org.finroc.core.portdatabase.UnknownTypeListener;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Classes that can be used for private attributes that are automatically recognized
  * as widget output ports.
@@ -138,35 +137,35 @@ public class WidgetOutput {
         }
     }
 
-    public static class Blackboard<T> extends WidgetOutputPort<RawBlackboardClient.WritePort> {
+    public static class Blackboard<T> { /*extends WidgetOutputPort<RawBlackboardClient.WritePort>*/
 
         /** UID */
         private static final long serialVersionUID = 2712886077657464267L;
 
-        private transient BlackboardClient<T> c;
-
-        @Override
-        protected RawBlackboardClient.WritePort createPort() {
-            PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
-            PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
-            c = new BlackboardClient<T>(pci.toString(), null, pci.getFlag(PortFlags.PUSH_STRATEGY), pci.dataType);
-            //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
-            return c.getWrapped().getWritePort();
-        }
-
-        public void addChangeListener(PortListener<T> listener) {
-            EventRouter.addListener(getClient().getWrapped().getReadPort(), "addPortListenerRaw", listener);
-        }
-
-        public BlackboardClient<T> getClient() {
-            return c;
-        }
-
-        public PortDataList<T> readAutoLocked() {
-            PortDataList<T> result = c.read();
-            ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
-            return result;
-        }
+//        private transient BlackboardClient<T> c;
+//
+//        @Override
+//        protected RawBlackboardClient.WritePort createPort() {
+//            PortCreationInfo def = RawBlackboardClient.getDefaultPci().derive(getDescription());
+//            PortCreationInfo pci = getParent().getPortCreationInfo(def, this);
+//            c = new BlackboardClient<T>(pci.toString(), null, pci.getFlag(FrameworkElementFlags.PUSH_STRATEGY), pci.dataType);
+//            //c = new BlackboardClient<T>(pci == null ? def : pci, false, -1);
+//            return c.getWrapped().getWritePort();
+//        }
+//
+//        public void addChangeListener(PortListener<T> listener) {
+//            EventRouter.addListener(getClient().getWrapped().getReadPort(), "addPortListenerRaw", listener);
+//        }
+//
+//        public BlackboardClient<T> getClient() {
+//            return c;
+//        }
+//
+//        public PortDataList<T> readAutoLocked() {
+//            PortDataList<T> result = c.read();
+//            ThreadLocalCache.get().addAutoLock(PortDataManager.getManager(result));
+//            return result;
+//        }
     }
 
     @SuppressWarnings("rawtypes")

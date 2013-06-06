@@ -1,23 +1,24 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui.commons.fastdraw;
 
 import java.awt.Color;
@@ -29,7 +30,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.HasBlittable;
 import org.rrlib.finroc_core_utils.rtti.DataType;
@@ -130,12 +130,12 @@ public class CompressedImage extends Blittable implements HasBlittable {
         Serialization.deserializeFromHexString(this, is);
     }
 
-    @Override @JavaOnly
+    @Override
     public void serialize(XMLNode node) throws Exception {
         node.setContent(Serialization.serialize(this));
     }
 
-    @Override @JavaOnly
+    @Override
     public void deserialize(XMLNode node) throws Exception {
         deserialize(new StringInputStream(node.getTextContent()));
     }

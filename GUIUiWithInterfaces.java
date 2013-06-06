@@ -1,23 +1,24 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
 import java.io.File;
@@ -30,8 +31,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.abstractbase.UIBase;
 import org.finroc.tools.gui.util.PackageContentEnumerator;
 import org.finroc.tools.gui.util.treemodel.InterfaceTreeModel;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
-import org.finroc.plugins.tcp.TCP;
+import org.finroc.plugins.tcp.internal.TCP;
 
 import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
@@ -40,7 +40,7 @@ import org.finroc.core.plugin.Plugins;
 
 public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends GUIUiBase<P, C> implements ConnectionListener {
 
-    /** Interface of MCAGUI */
+    /** Contains all interfaces widgets can be connected to */
     protected transient InterfaceTreeModel ioInterface = new InterfaceTreeModel();
 
 //  /** GUI's InputInterfaces */
@@ -168,15 +168,15 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         fireConnectionEvent(e);
     }
 
-    public PortWrapper getInput(String uid) {
-        getTreeModel();
-        return ioInterface.getInputPort(uid);
-    }
-
-    public PortWrapper getOutput(String uid) {
-        getTreeModel();
-        return ioInterface.getOutputPort(uid);
-    }
+//    public PortWrapper getInput(String uid) {
+//        getTreeModel();
+//        return ioInterface.getInputPort(uid);
+//    }
+//
+//    public PortWrapper getOutput(String uid) {
+//        getTreeModel();
+//        return ioInterface.getOutputPort(uid);
+//    }
 
     public void setLoopTime(long ms) {
         for (ExternalConnection io : getActiveInterfaces()) {
@@ -192,7 +192,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
     public void connect(String address) throws Exception {
         String interfaceName = address.substring(0, address.indexOf(":"));
         String actualAddress = address.substring(interfaceName.length() + 1);
-        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
             if (io.getName().equalsIgnoreCase(interfaceName)) {
                 try {
                     connectImpl(io, actualAddress);
@@ -204,7 +204,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         }
 
         // try default interface
-        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections().getBackend()) {
+        for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
             if (io.getName().equalsIgnoreCase(TCP.TCP_PORTS_ONLY_NAME)) {
                 try {
                     connectImpl(io, address);
@@ -229,7 +229,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         ioInterface.getRootFrameworkElement().addChild(ec);
         ec.init();
         ec.addConnectionListener(this);
-        ec.connect(address);
+        ec.connect(address, ioInterface.getNewModelHandlerInstance());
         if (ec.isConnected()) {
             if (this instanceof FinrocGUI) {
                 ((FinrocGUI)this).getPersistentSettings().lastConnectionAddress = ec.getConnectionAddress();

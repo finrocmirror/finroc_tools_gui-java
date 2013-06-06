@@ -1,23 +1,24 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
 import java.io.Serializable;
@@ -28,18 +29,19 @@ import java.util.List;
 import java.util.Set;
 
 import org.finroc.tools.gui.abstractbase.DataModelBase;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
-import org.finroc.tools.gui.util.treemodel.TreePortWrapper;
 
 import org.finroc.core.FrameworkElement;
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
-import org.finroc.core.port.PortFlags;
 import org.finroc.core.port.PortWrapperBase;
 import org.finroc.core.portdatabase.CCType;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
+import org.finroc.core.remote.HasUid;
+import org.finroc.core.remote.PortWrapperTreeNode;
+import org.finroc.core.remote.RemotePort;
 import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
 
-public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements TreePortWrapper, Serializable {
+public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapperTreeNode, Serializable {
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;
@@ -123,20 +125,22 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         }
     }
 
-    public String getUid() {
-        return "not relevant";
-    }
-
-    public List<PortWrapper> getConnectionPartners() {
-        ArrayList<PortWrapper> r = new ArrayList<PortWrapper>();
-        for (String s : connectedTo) {
-            if (isInputPort()) {
-                r.add(getRoot().getFingui().getOutput(s));
-            } else {
-                r.add(getRoot().getFingui().getInput(s));
+    public List<PortWrapperTreeNode> getConnectionPartners() {
+        ArrayList<PortWrapperTreeNode> result = new ArrayList<PortWrapperTreeNode>();
+        if (port != null) {
+            ArrayList<AbstractPort> connectionPartners = new ArrayList<AbstractPort>();
+            port.getWrapped().getConnectionPartners(connectionPartners, true, true, false);
+            for (AbstractPort port : connectionPartners) {
+                RemotePort[] remotePorts = RemotePort.get(port);
+                if (remotePorts != null) {
+                    for (RemotePort remotePort : remotePorts) {
+                        result.add(remotePort);
+                    }
+                }
             }
         }
-        return r;
+
+        return result;
     }
 
 //  public void addChangeListener(PortListener cl) {
@@ -189,7 +193,7 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
 //  }
 //
 //  @SuppressWarnings("unchecked")
-//  public boolean connectionPossibleTo(PortWrapper pw) {
+//  public boolean connectionPossibleTo(PortWrapperTreeNode pw) {
 //      if (isInputPort()) {
 //          return (!pw.isInputPort() && pw.getPort().getType().isAssignableFrom(port.getType()));
 //      } else {
@@ -197,17 +201,17 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
 //      }
 //  }
 //
-//  public abstract void connectTo(PortWrapper other);
+//  public abstract void connectTo(PortWrapperTreeNode other);
 //
 //  public abstract void connectTo(String uid);
 //
 //  public abstract void interfaceUpdated();
 //
-//  public abstract PortWrapper[] getConnectionPartners();
+//  public abstract PortWrapperTreeNode[] getConnectionPartners();
 //
 //  public abstract void clearConnections();
 //
-//  public abstract void removeConnection(PortWrapper pw);
+//  public abstract void removeConnection(PortWrapperTreeNode pw);
 //
 //  public void setParent(Widget parent) {
 //      this.parent = parent;
@@ -225,16 +229,16 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
 //      port.setDescription(description);
 //  }
 
-    public void connectTo(PortWrapper other) {
+    public void connectTo(PortWrapperTreeNode other) {
         if (getPort().isConnectedTo(other.getPort())) {
             return;
         }
         if (getPort().isInputPort()) {
-            getPort().connectTo(other.getUid(), AbstractPort.ConnectDirection.TO_SOURCE, false);
+            getPort().connectTo(((HasUid)other).getUid(), AbstractPort.ConnectDirection.TO_SOURCE, false);
         } else {
-            getPort().connectTo(other.getUid(), AbstractPort.ConnectDirection.TO_TARGET, false);
+            getPort().connectTo(((HasUid)other).getUid(), AbstractPort.ConnectDirection.TO_TARGET, false);
         }
-        connectedTo.add(other.getUid());
+        connectedTo.add(((HasUid)other).getUid());
     }
 
     /**
@@ -247,10 +251,10 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         if (FinrocTypeInfo.isCCType(p.getDataType()) || (p.getDataType().getJavaClass() != null && (CCType.class.isAssignableFrom(p.getDataType().getJavaClass()) || NumericRepresentation.class.isAssignableFrom(p.getDataType().getJavaClass())))) { // not worth changing strategies for cc types
             return;
         }
-        if (p.getFlag(PortFlags.ACCEPTS_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY) != 0) {
+        if (p.getFlag(FrameworkElementFlags.ACCEPTS_DATA) && (defaultFlags & FrameworkElementFlags.PUSH_STRATEGY) != 0) {
             p.setPushStrategy(push);
         }
-        if (p.getFlag(PortFlags.MAY_ACCEPT_REVERSE_DATA) && (defaultFlags & PortFlags.PUSH_STRATEGY_REVERSE) != 0) {
+        if ((defaultFlags & FrameworkElementFlags.PUSH_STRATEGY_REVERSE) != 0) {
             p.setReversePushStrategy(push);
         }
     }

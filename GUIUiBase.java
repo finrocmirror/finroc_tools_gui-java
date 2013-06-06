@@ -1,23 +1,24 @@
-/**
- * You received this file as part of FinGUI - a universal
- * (Web-)GUI editor for Robotic Systems.
- *
- * Copyright (C) 2007-2010 Max Reichardt
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+//
+// You received this file as part of Finroc
+// A Framework for intelligent robot control
+//
+// Copyright (C) Finroc GbR (finroc.org)
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
 import java.awt.Container;
@@ -52,7 +53,6 @@ import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.util.embeddedfiles.FileManager;
 import org.finroc.tools.gui.util.gui.IconManager;
 import org.finroc.tools.gui.util.propertyeditor.gui.ResourcePathProvider;
-import org.finroc.tools.gui.util.treemodel.PortWrapper;
 
 import org.finroc.core.plugin.ConnectionListener;
 
@@ -152,6 +152,7 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
                     w.write(c);
                 }
                 w.close();
+                //r.close();  // Don't do this - although Eclipse warns: This will close the zip file
 
                 // read gui
                 ObjectInputStream ois = FinrocGuiXmlSerializer.getInstance().createObjectInputStream(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
@@ -205,9 +206,9 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
     }
 
 
-    public abstract PortWrapper getInput(String uid);
-
-    public abstract PortWrapper getOutput(String uid);
+//    public abstract PortWrapper getInput(String uid);
+//
+//    public abstract PortWrapper getOutput(String uid);
 
     //public abstract List<Plugin> getPlugIns();
 }
