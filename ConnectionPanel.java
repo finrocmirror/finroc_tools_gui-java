@@ -210,10 +210,12 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     public void setRightTree(TreeModel tm) {
         if (tm != null) {
+            rightTree.setExpandNewElements(false);
             rightTree.setModel(tm);
             showRightTree = true;
             if (tm.getRoot() instanceof GUIPanel) {
                 ((GUIPanel)tm.getRoot()).addDataModelListener(this);
+                rightTree.setExpandNewElements(true);
             }
             if (getComponentCount() == 1) {
                 add(rightScrollPane);
