@@ -45,7 +45,7 @@ import org.finroc.tools.gui.commons.EventRouter;
  *
  * More convenient JTree.
  *
- * Due to performance, simpleness reasons, only works with TreeModels
+ * Due to reasons of performance and simplicity, only works with TreeModels
  * whose Nodes implement the TreeNode interface.
  */
 public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
@@ -54,7 +54,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     private static final long serialVersionUID = 1166608861920603326L;
 
     /** Type of objects that can be selected */
-    private Class <? extends T > selectableObjectType;
+    private final Class <? extends T > selectableObjectType;
 
     /** temporary variable - for letting selection get smaller at mouse release (for drag & drop) */
     private TreePath[] newSelection;
@@ -68,6 +68,14 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     /** Expanded elements stored by storeExpandedElement() */
     private List<T> storedExpandedElements = null;
 
+    /** Expand all elements added to tree model? */
+    private boolean expandNewElements;
+
+
+    /**
+     * @param selectableObjectType Type of objects that can be selected
+     * @param newModelExpandLevel Up to which level should new model be expanded by default?
+     */
     @SuppressWarnings("unchecked")
     public MJTree(Class<?> selectableObjectType, int newModelExpandLevel) {
         this.selectableObjectType = (Class <? extends T >)selectableObjectType;
@@ -153,6 +161,12 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         return result;
     }
 
+    /**
+     * @param expandNewElements Expand all elements added to tree model?
+     */
+    public void setExpandNewElements(boolean expandNewElements) {
+        this.expandNewElements = expandNewElements;
+    }
 
     @SuppressWarnings("unchecked")
     private void getObjectsHelper(List<T> result, TreeNode curNode) {
@@ -327,10 +341,12 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
 
         @Override
         public void treeNodesInserted(TreeModelEvent e) {
-            //setExpandedState(e.getTreePath(), true);
-            TreePath p = e.getTreePath();
-            for (int i : e.getChildIndices()) {
-                setExpandedState(p.pathByAddingChild(((TreeNode)p.getLastPathComponent()).getChildAt(i)), true);
+            if (expandNewElements) {
+                //setExpandedState(e.getTreePath(), true);
+                TreePath p = e.getTreePath();
+                for (int i : e.getChildIndices()) {
+                    setExpandedState(p.pathByAddingChild(((TreeNode)p.getLastPathComponent()).getChildAt(i)), true);
+                }
             }
         }
     }
