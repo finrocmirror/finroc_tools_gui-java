@@ -106,7 +106,9 @@ public class PropertiesPanel extends JPanel {
             gbcExtra.gridy = componentList.size();
             gbcExtra.gridwidth = 2;
             gbcExtra.weighty = 0.9;
-            add(new JPanel(), gbcExtra);
+            JPanel extraPanel = new JPanel();
+            extraPanel.setOpaque(false);
+            add(extraPanel, gbcExtra);
         }
     }
 
