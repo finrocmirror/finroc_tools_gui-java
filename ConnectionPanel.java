@@ -63,7 +63,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.finroc.core.FrameworkElementFlags;
@@ -453,7 +452,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param treeNode Selected tree node
      * @param wrapper Selected port
      */
-    protected void updatePopupMenu(TreeNode treeNode, PortWrapperTreeNode wrapper) {
+    protected void updatePopupMenu(Object treeNode, PortWrapperTreeNode wrapper) {
         if (wrapper instanceof WidgetPort<?>) {
             WidgetPort<?> wp = (WidgetPort<?>)wrapper;
             miCopyUID.setEnabled(false);
@@ -479,7 +478,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             Point p2 = getLocationOnScreen();
             popupMenu.show(this, e.getX() + p.x - p2.x, e.getY() + p.y - p2.y);
             saveLastMousePos(e);
-            TreeNode tn = getTreeNodeFromPos((MJTree<PortWrapperTreeNode>)e.getSource());
+            Object tn = getTreeNodeFromPos((MJTree<PortWrapperTreeNode>)e.getSource());
             miRemoveConnections.setEnabled(tn != null);
             PortWrapperTreeNode tnp = getPortWrapperTreeNodeFromPos(popupOnRight ? rightTree : leftTree);
             updatePopupMenu(tn, tnp);
@@ -709,7 +708,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return result;
     }
 
-    public TreeNode getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree) {
+    public Object getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree) {
         return getTreeNodeFromPos(otherTree, lastMousePos);
     }
 
@@ -717,7 +716,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return getPortWrapperTreeNodeFromPos(otherTree, lastMousePos);
     }
 
-    public TreeNode getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree, Point pos) {
+    public Object getTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree, Point pos) {
 
         if (otherTree == rightTree && (!showRightTree)) {
             return null;
@@ -741,11 +740,11 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             //System.out.println("2");
             return null;
         }
-        return (TreeNode)tp.getLastPathComponent();
+        return tp.getLastPathComponent();
     }
 
     public PortWrapperTreeNode getPortWrapperTreeNodeFromPos(MJTree<PortWrapperTreeNode> otherTree, Point pos) {
-        TreeNode tn = getTreeNodeFromPos(otherTree, pos);
+        Object tn = getTreeNodeFromPos(otherTree, pos);
         if (!(tn instanceof PortWrapperTreeNode)) {
             //System.out.println("3");
             return null;

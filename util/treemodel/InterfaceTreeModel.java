@@ -26,8 +26,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElementFlags;
@@ -36,29 +38,29 @@ import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.RemoteFrameworkElement;
+import org.finroc.tools.gui.FinrocGUI;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
  * @author Max Reichardt
  *
  * Tree Model for interfaces
  */
-public class InterfaceTreeModel extends DefaultTreeModel {
-
-    /** UID */
-    private static final long serialVersionUID = -5379710469604864477L;
+public class InterfaceTreeModel implements TreeModel {
 
     /** Root node for all interfaces */
-    private final ModelNode root;
+    private final ModelNode root = new ModelNode("Interfaces");
 
     /** Framework element that is parent of all connections */
     private final FrameworkElement externalConnectionParent = new FrameworkElement(RuntimeEnvironment.getInstance(), "Interfaces");
+
+    /** Tree model listener list */
+    private final ArrayList<TreeModelListener> listener = new ArrayList<TreeModelListener>();
 
 //    /** List with active connections */
 //    private final ArrayList<ExternalConnection> activeConnection = new ArrayList<ExternalConnection>();
 
     public InterfaceTreeModel() {
-        super(new ModelNode("Interfaces"));
-        root = (ModelNode)super.getRoot();
         externalConnectionParent.init();
     }
 
@@ -205,42 +207,71 @@ public class InterfaceTreeModel extends DefaultTreeModel {
                 }
 
                 // use alphabetic sorting for framework elements (with interfaces at the front)
-                int index = parent.getChildCount();
-
                 if (parent instanceof RemoteFrameworkElement) {
                     for (int i = 0; i < parent.getChildCount(); i++) {
-                        TreeNode child = parent.getChildAt(i);
-                        if (compare(newChild, (ModelNode)child) < 0) {
-                            InterfaceTreeModel.this.insertNodeInto(newChild, parent, i);
+                        ModelNode child = parent.getChildAt(i);
+                        if (compare(newChild, child) < 0) {
+
+                            //InterfaceTreeModel.this.insertNodeInto(newChild, parent, i);
+                            parent.insertChild(i, newChild);
+                            TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {i}, new Object[] {newChild});
+                            for (int j = listener.size() - 1; j >= 0; j--) {
+                                listener.get(j).treeNodesInserted(event);
+                            }
                             return;
                         }
                     }
                 }
 
-                InterfaceTreeModel.this.insertNodeInto(newChild, parent, index);
+
+                int index = parent.getChildCount();
+
+                //InterfaceTreeModel.this.insertNodeInto(newChild, parent, index);
+                parent.add(newChild);
+                TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {index}, new Object[] {newChild});
+                for (int j = listener.size() - 1; j >= 0; j--) {
+                    listener.get(j).treeNodesInserted(event);
+                }
                 break;
             case CHANGE:
-                node1.setUserObject(name);
-                InterfaceTreeModel.this.nodeChanged(node1);
+                node1.setName(name);
+
+                //InterfaceTreeModel.this.nodeChanged(node1);
+                event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(node1.getParent()), new int[] {node1.getParent().indexOf(node1)}, new Object[] {node1});
+                for (int j = listener.size() - 1; j >= 0; j--) {
+                    listener.get(j).treeNodesChanged(event);
+                }
                 break;
             case REMOVE:
-                parent = (ModelNode)node1.getParent();
+                parent = node1.getParent();
                 if (parent != null) {
-                    index = parent.getIndex(node1);
-                    parent.remove(index);
+                    parent.remove(node1);
+                    /*index = parent.getIndex(node1);
+                    parent.remove(index);*/
                     //modelHandler.getTreeModel().nodesWereRemoved(this, new int[]{index}, new TreeNode[]{child});   // doesn't work :-( => occasional NullPointerExceptions
-                    InterfaceTreeModel.this.nodeStructureChanged(parent);
+
+                    //InterfaceTreeModel.this.nodeStructureChanged(parent);
+                    event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
+                    for (int j = listener.size() - 1; j >= 0; j--) {
+                        listener.get(j).treeStructureChanged(event);
+                    }
                 }
                 break;
             case REPLACE:
-                parent = (ModelNode)node1.getParent();
+                parent = node1.getParent();
                 if (parent != null) {
                     sortNewTreeNode(node2);
-                    index = parent.getIndex(node1);
+                    parent.replace(node1, node2);
+                    /*index = parent.getIndex(node1);
                     assert(index >= 0);
                     parent.remove(node1);
-                    parent.insert(node2, index);
-                    InterfaceTreeModel.this.nodeStructureChanged(parent);
+                    parent.insert(node2, index);*/
+
+                    //InterfaceTreeModel.this.nodeStructureChanged(parent);
+                    event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
+                    for (int j = listener.size() - 1; j >= 0; j--) {
+                        listener.get(j).treeStructureChanged(event);
+                    }
                 }
                 break;
             case SETMODEL:
@@ -287,6 +318,67 @@ public class InterfaceTreeModel extends DefaultTreeModel {
                 sortNewTreeNode((ModelNode)node.getChildAt(i));
             }
         }
+    }
+
+    /**
+     * @param node Node to get tree path of
+     * @return Treepath for this node - as required by SWING
+     */
+    public TreePath getTreePath(ModelNode node) {
+        int elements = 1;
+        ModelNode current = node;
+        while (current.getParent() != null) {
+            elements++;
+            current = current.getParent();
+        }
+
+        Object[] result = new Object[elements];
+        current = node;
+        int index = elements - 1;
+        while (current != null) {
+            result[index] = current;
+            index--;
+            current = current.getParent();
+        }
+
+        return new TreePath(result);
+    }
+
+    @Override
+    public Object getChild(Object parent, int index) {
+        return ((ModelNode)parent).getChildAt(index);
+    }
+
+    @Override
+    public int getChildCount(Object parent) {
+        return ((ModelNode)parent).getChildCount();
+    }
+
+    @Override
+    public boolean isLeaf(Object node) {
+        return ((ModelNode)node).getChildCount() == 0;
+    }
+
+    @Override
+    public void valueForPathChanged(TreePath path, Object newValue) {
+        FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "InterfaceTreeModel", "Changing values is not supported");
+    }
+
+    @Override
+    public int getIndexOfChild(Object parent, Object child) {
+        return ((ModelNode)parent).indexOf((ModelNode)child);
+    }
+
+    @Override
+    public void addTreeModelListener(TreeModelListener l) {
+        if (!listener.contains(l)) {
+            listener.add(l);
+        }
+    }
+
+    @Override
+    public void removeTreeModelListener(TreeModelListener l) {
+        listener.remove(l);
     }
 
 //    public InterfaceTreeModel() {

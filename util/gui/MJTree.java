@@ -37,6 +37,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.finroc.core.remote.ModelNode;
 import org.finroc.tools.gui.commons.EventRouter;
 
 
@@ -46,9 +47,9 @@ import org.finroc.tools.gui.commons.EventRouter;
  * More convenient JTree.
  *
  * Due to reasons of performance and simplicity, only works with TreeModels
- * whose Nodes implement the TreeNode interface.
+ * whose Nodes implement the TreeNode interface - or consists of ModelNodes
  */
-public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
+public class MJTree<T> extends JTree implements MouseListener {
 
     /** UID */
     private static final long serialVersionUID = 1166608861920603326L;
@@ -116,23 +117,33 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
         newSelection = overwriteMouseRelease ? temp : newSelection;
     }
 
-    public TreePath getTreePathFor(TreeNode object) {
-        LinkedList<TreeNode> temp = new LinkedList<TreeNode>();
+    public TreePath getTreePathFor(Object object) {
+        LinkedList<Object> temp = new LinkedList<Object>();
         temp.add(object);
-        TreeNode temp2 = object;
+        Object temp2 = object;
         while (temp2 != getModel().getRoot()) {
             if (temp2 == null) {
                 return null;
             }
-            temp2 = temp2.getParent();
+            temp2 = getParent(temp2);
             temp.addFirst(temp2);
         }
         return new TreePath(temp.toArray());
     }
 
+    private Object getParent(Object node) {
+        if (node instanceof TreeNode) {
+            return ((TreeNode)node).getParent();
+        } else if (node instanceof ModelNode) {
+            return ((ModelNode)node).getParent();
+        }
+        return null;
+    }
+
+
     public void setModel(TreeModel tm) {
-        if (tm.getRoot() != null && !(tm.getRoot() instanceof TreeNode)) {
-            throw new RuntimeException("MJTree only works for Trees with TreeNodes as nodes");
+        if (tm.getRoot() != null && !((tm.getRoot() instanceof TreeNode) || (tm.getRoot() instanceof ModelNode))) {
+            throw new RuntimeException("MJTree only works for Trees with TreeNodes or ModelNodes as nodes");
         }
         if (getModel() == tm) {
             return;
@@ -146,7 +157,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     public List<T> getObjects() {
         List<T> result = new ArrayList<T>();
         if (getModel().getRoot() != null) {
-            getObjectsHelper(result, (TreeNode)getModel().getRoot());
+            getObjectsHelper(result, getModel().getRoot());
         }
         return result;
     }
@@ -169,13 +180,13 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     }
 
     @SuppressWarnings("unchecked")
-    private void getObjectsHelper(List<T> result, TreeNode curNode) {
+    private void getObjectsHelper(List<T> result, Object curNode) {
         if (hasCorrectType(curNode)) {
             result.add((T)curNode);
         }
 
-        for (int i = 0; i < curNode.getChildCount(); i++) {
-            getObjectsHelper(result, curNode.getChildAt(i));
+        for (int i = 0; i < getModel().getChildCount(curNode); i++) {
+            getObjectsHelper(result, getModel().getChild(curNode, i));
         }
     }
 
@@ -310,19 +321,19 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     }
 
     public void expandAll(int expandLevel) {
-        expandAllHelper((TreeNode)getModel().getRoot(), true, new LinkedList<TreeNode>(), expandLevel);
+        expandAllHelper(getModel().getRoot(), true, new LinkedList<Object>(), expandLevel);
     }
     public void collapseAll() {
-        expandAllHelper((TreeNode)getModel().getRoot(), false, new LinkedList<TreeNode>(), 20);
+        expandAllHelper(getModel().getRoot(), false, new LinkedList<Object>(), 20);
     }
-    private void expandAllHelper(TreeNode tn, boolean expand, List<TreeNode> curPath, int levelsLeft) {
+    private void expandAllHelper(Object tn, boolean expand, List<Object> curPath, int levelsLeft) {
         if (levelsLeft == 0) {
             return;
         }
         curPath.add(tn);
-        if (!tn.isLeaf()) {
-            for (int i = 0; i < tn.getChildCount(); i++) {
-                expandAllHelper(tn.getChildAt(i), expand, curPath, levelsLeft - 1);
+        if (!getModel().isLeaf(tn)) {
+            for (int i = 0; i < getModel().getChildCount(tn); i++) {
+                expandAllHelper(getModel().getChild(tn, i), expand, curPath, levelsLeft - 1);
             }
             if (expand || curPath.size() > 1) {
                 setExpandedState(new TreePath(curPath.toArray()), expand);
@@ -345,7 +356,7 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
                 //setExpandedState(e.getTreePath(), true);
                 TreePath p = e.getTreePath();
                 for (int i : e.getChildIndices()) {
-                    setExpandedState(p.pathByAddingChild(((TreeNode)p.getLastPathComponent()).getChildAt(i)), true);
+                    setExpandedState(p.pathByAddingChild(getModel().getChild(p.getLastPathComponent(), i)), true);
                 }
             }
         }
@@ -354,9 +365,9 @@ public class MJTree<T extends TreeNode> extends JTree implements MouseListener {
     /**
      * Expand element and all parent nodes
      *
-     * @param tn TreeNode
+     * @param tn Element to expand
      */
-    public void expandToElement(TreeNode tn) {
+    public void expandToElement(Object tn) {
         TreePath tp = getTreePathFor(tn);
         while (tp != null && tp.getPath().length > 0) {
             expandPath(tp);
