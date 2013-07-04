@@ -512,7 +512,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 model.getParent().replaceChild(model, newModel);
                 setModel(newModel);
             } else if (src == miDebugConsole) {
-                new DebugConsole(this);
+                //new DebugConsole(this);
             } else if (src == miFrameworkElementDump) {
                 RuntimeEnvironment.getInstance().printStructure();
             } else if (src == miChangePanelName || src == pmiChangePanelName) {

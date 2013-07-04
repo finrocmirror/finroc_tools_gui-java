@@ -34,6 +34,7 @@ import org.finroc.tools.gui.util.PackageContentEnumerator;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
 import org.finroc.core.plugin.Plugin;
 import org.finroc.core.plugin.Plugins;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 
 
 /**
@@ -93,9 +94,13 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
         // load core widgets
         for (String s : new PackageContentEnumerator(this, WIDGETPACKAGENAME)) {
             if (s.endsWith(".class")) {
-                Class <? extends Widget > c = (Class <? extends Widget >)Class.forName(getClass().getPackage().getName() + "." + WIDGETPACKAGENAME + "." + s.substring(0, s.length() - 6));
-                if (Widget.class.isAssignableFrom(c)) {
-                    this.add(c);
+                try {
+                    Class <? extends Widget > c = (Class <? extends Widget >)Class.forName(getClass().getPackage().getName() + "." + WIDGETPACKAGENAME + "." + s.substring(0, s.length() - 6));
+                    if (Widget.class.isAssignableFrom(c)) {
+                        this.add(c);
+                    }
+                } catch (NoClassDefFoundError e) {
+                    FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "WidgetAndInterfaceRegister", "Error loading widget " + s + ": " + e.getMessage() + " . Deleting 'build/java' might solve this issue.");
                 }
             }
         }

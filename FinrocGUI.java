@@ -66,7 +66,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
     /** Constants that may be changed */
     public static final boolean USE_SYSTEM_CLIPBOARD = true;
-    public static final boolean SHOWDEBUGMENU = true;
+    public static final boolean SHOWDEBUGMENU = false;
 
     /** File under which the GUI was saved, null if it hasn't been saved yet */
     private transient File guifile = null;
