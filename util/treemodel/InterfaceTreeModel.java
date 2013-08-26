@@ -304,7 +304,7 @@ public class InterfaceTreeModel implements TreeModel {
         public int compare(ModelNode node1, ModelNode node2) {
             ElementClass class1 = getNodeClass(node1);
             ElementClass class2 = getNodeClass(node2);
-            return class1.ordinal() < class2.ordinal() ? -1 : (class1.ordinal() > class2.ordinal() ? 1 : (node1.toString().compareTo(node2.toString())));
+            return class1.ordinal() < class2.ordinal() ? -1 : (class1.ordinal() > class2.ordinal() ? 1 : (node1.toString().compareToIgnoreCase(node2.toString())));
         }
 
         /**
