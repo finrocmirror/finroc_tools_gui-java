@@ -114,6 +114,6 @@ public class GuiComponentFactory implements ComponentFactory, Comparator<DataTyp
 
     @Override
     public int compare(DataTypeReference o1, DataTypeReference o2) {
-        return o1.toString().compareTo(o2.toString());
+        return o1.toString().compareToIgnoreCase(o2.toString());
     }
 }

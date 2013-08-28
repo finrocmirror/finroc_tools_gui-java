@@ -61,7 +61,7 @@ public class DataTypeEditor extends ComboBoxEditor<DataTypeReference> implements
         if (importer != null) {
             importEnumConstants = new JButton("Import Enum Constants");
             importEnumConstants.addActionListener(this);
-            add(importEnumConstants, BorderLayout.EAST);
+            add(importEnumConstants, BorderLayout.WEST);
             jcmb.addActionListener(this);
             updateButtonState();
         }
