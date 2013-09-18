@@ -127,7 +127,9 @@ public class FileManager {
         EmbeddedFile ef = new EmbeddedFile(Long.parseLong(ze.getName().split("/")[1]), data.length);
         files.put(ef, data);
 
-        ef.init(this);
+        if (!ef.init(this)) {
+            throw new Exception("Could not load file " + ef.getFileName());
+        }
         printStatus();
     }
 
@@ -173,7 +175,9 @@ public class FileManager {
             for (Entry<EmbeddedFile, byte[]> ef : files.entrySet()) {
                 if (ObjectCloner.equal(ef.getValue(), data)) {
                     newfile.setUid(ef.getKey().getUid());
-                    newfile.init(this);
+                    if (!newfile.init(this)) {
+                        throw new Exception("Could not load file " + newfile.getFileName());
+                    }
                     return (T)newfile;
                 }
             }
@@ -182,7 +186,9 @@ public class FileManager {
             printStatus();
         }
 
-        abstractNewfile.init(this);
+        if (!abstractNewfile.init(this)) {
+            throw new Exception("Could not load file " + abstractNewfile.getFileName());
+        }
         return (T)abstractNewfile;
     }
 

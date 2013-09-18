@@ -49,8 +49,9 @@ public class ExternalFile extends AbstractFile {
     }
 
     @Override
-    void init(FileManager efm) {
+    boolean init(FileManager efm) {
         updateRelativeFilename(efm);
+        return true;
     }
 
     /**

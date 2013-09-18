@@ -65,7 +65,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
     }
 
     @Override
-    void init(FileManager efm) {
+    boolean init(FileManager efm) {
         if (originalBounds == null || paintInstance == null) {
 
             // init paint Instance
@@ -73,8 +73,8 @@ public class EmbeddedPaintable extends EmbeddedFile {
                 try {
                     paintInstance = getPaintable(efm);
                 } catch (Exception e) {
-                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
-                    return;
+                    //FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+                    return false;
                 }
             }
 
@@ -94,6 +94,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
                 centerY = ((BufferedImageRGB)paintInstance).getHeight() / 2;
             }
         }
+        return true;
     }
 
     public void paintToCenter(Graphics2D g, FileManager efm) {

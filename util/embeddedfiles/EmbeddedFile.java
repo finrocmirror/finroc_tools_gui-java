@@ -62,10 +62,10 @@ public class EmbeddedFile extends AbstractFile {
         this.uid = uid;
     }
 
-    /**
-     * Called after loading
-     */
-    void init(FileManager efm) {}
+    @Override
+    boolean init(FileManager efm) {
+        return true;
+    }
 
     public byte[] getData(FileManager efm) {
         if (efm == null) {

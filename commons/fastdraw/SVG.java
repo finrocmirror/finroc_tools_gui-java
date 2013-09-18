@@ -114,6 +114,9 @@ public class SVG implements Paintable {
         SVGUniverse universe = SVGCache.getSVGUniverse();
         uri = universe.loadSVG(new BufferedReader(new InputStreamReader(is)), "FastDraw-" + id);
         diagram = universe.getDiagram(uri);
+        if (diagram.getRoot() == null) {
+            throw new Exception("Could not load SVG file");
+        }
     }
 
     public SVGElement getElement(String elementName) {

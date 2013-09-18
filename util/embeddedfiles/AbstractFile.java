@@ -68,8 +68,10 @@ public abstract class AbstractFile implements Serializable {
 
     /**
      * Called after loading
+     *
+     * @return True if file was successfully initialized and can be used
      */
-    abstract void init(FileManager efm);
+    abstract boolean init(FileManager efm);
 
     /** @return The filename - when last seen/loaded */
     public String getFileName() {
