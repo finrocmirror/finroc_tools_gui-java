@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util.gui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
@@ -179,4 +181,17 @@ public class MToolBar extends JToolBar {
         buttonRegister.clear();
         super.removeAll();
     }
+
+    @Override
+    public void addSeparator() {
+        if (this.getLayout() instanceof BoxLayout) {
+            JToolBar.Separator s = new JToolBar.Separator(null);
+            add(s);
+            s.setSeparatorSize(new Dimension(s.getPreferredSize().width, this.getPreferredSize().height - 5));
+        } else {
+            super.addSeparator();
+        }
+    }
+
+
 }

@@ -23,7 +23,6 @@ package org.finroc.tools.gui;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -151,8 +150,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         leftScrollPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         leftScrollPane.setBorder(BorderFactory.createEmptyBorder());
         rightScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        add(leftScrollPane, BorderLayout.WEST);
-        add(rightScrollPane, BorderLayout.CENTER);
+        add(leftScrollPane);
+        add(rightScrollPane);
 
         // setup renderer
         leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, false, this));
