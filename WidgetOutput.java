@@ -23,15 +23,12 @@ package org.finroc.tools.gui;
 
 import org.finroc.tools.gui.commons.EventRouter;
 
-import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.datatype.DataTypeReference;
 import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.serialization.PortDataList;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 import org.rrlib.finroc_core_utils.serialization.StringInputStream;
 import org.finroc.core.port.Port;
-import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.CCPortDataManagerTL;

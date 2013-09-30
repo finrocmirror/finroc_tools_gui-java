@@ -55,6 +55,8 @@ import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeSettings;
+import org.finroc.core.plugin.CreateExternalConnectionAction;
+import org.finroc.core.plugin.Plugins;
 import org.finroc.core.util.Files;
 
 /**
@@ -82,6 +84,21 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
     /** Is Control-Key currently pressed? */
     private transient boolean ctrlPressed = false;
+
+    /** Contains information about connect tasks specified via command line */
+    static class ConnectTask {
+
+        /** Type of connection */
+        String connectionType;
+
+        /** Address of connection */
+        String address;
+
+        public ConnectTask(String connectionType, String address) {
+            this.connectionType = connectionType;
+            this.address = address;
+        }
+    }
 
     public FinrocGUI() throws Exception {
 
@@ -394,16 +411,33 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
         // parse command line arguments
         final List<String> loadTasks = new ArrayList<String>();
-        final List<String> connectTasks = new ArrayList<String>();
+        final List<ConnectTask> connectTasks = new ArrayList<ConnectTask>();
         boolean shiny = true;
         for (String arg : args) {
             if (arg.startsWith("--connect=")) {
-                connectTasks.add(arg.substring(10));
+                connectTasks.add(new ConnectTask(null, arg.substring("--connect=".length())));
+            } else if (arg.startsWith("--connect-with=")) {
+                String trimmedArg = arg.substring("--connect-with=".length());
+                if (!trimmedArg.contains(":")) {
+                    connectTasks.add(new ConnectTask(trimmedArg, ""));
+                } else {
+                    connectTasks.add(new ConnectTask(trimmedArg.substring(0, trimmedArg.indexOf(":")), trimmedArg.substring(trimmedArg.indexOf(":") + 1)));
+                }
             } else if (arg.equals("-h") || arg.equals("--help")) {
                 printHelp();
                 return;
             } else if (arg.equals("--classic")) {
                 shiny = false;
+            } else if (arg.equals("--list-connection-types")) {
+                RuntimeEnvironment.getInstance();
+                System.out.println("\nAvailable connection types:\n");
+                for (CreateExternalConnectionAction ceca : Plugins.getInstance().getExternalConnections()) {
+                    if ((ceca.getFlags() & CreateExternalConnectionAction.REMOTE_EDGE_INFO) == 0) {
+                        System.out.println("  " + ceca.getName());
+                    }
+                }
+                System.out.println();
+                return;
             } else if (arg.startsWith("-")) {
                 System.out.println("Unsupported option: " + arg);
                 printHelp();
@@ -430,7 +464,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
         }
 
 
-        // start Jmcagui in separate Thread (recommended in Java Tutorials)
+        // start Fingui in separate Thread (recommended in Java Tutorials)
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -444,9 +478,40 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
                     // connect at startup?
                     boolean connected = false;
-                    for (String ct : connectTasks) {
-                        fingui.connect(ct);
-                        connected = true;
+                    for (ConnectTask ct : connectTasks) {
+                        String connectionType = ct.connectionType;
+
+                        // Determine default connection type
+                        if (connectionType == null && (!loadTasks.isEmpty())) {
+                            connectionType = fingui.getModel().getDefaultConnectionType();
+                            if (connectionType == null && fingui.getModel().getConnectionList().size() > 0) {
+
+                                // if all past connections used the same connection type, use this
+                                boolean allSame = true;
+                                String first = fingui.getModel().getConnectionList().get(0);
+                                String type = first.substring(0, first.indexOf(":"));
+                                for (int i = 1; i < fingui.getModel().getConnectionList().size(); i++) {
+                                    String entry = fingui.getModel().getConnectionList().get(i);
+                                    allSame &= entry.substring(0, entry.indexOf(":")).equalsIgnoreCase(type);
+                                }
+                                if (allSame) {
+                                    connectionType = type;
+                                    System.out.println("Provided GUI file does not provide default connection type, but all past connections used: " + connectionType);
+                                }
+                            }
+                        }
+
+                        if (connectionType == null) {
+                            // Show dialog so that user can select
+                            connectionType = new ConnectionTypeDialog((JFrame)fingui.children.get(0).asComponent(), fingui).showDialog();
+                        }
+
+                        if (connectionType != null) {
+                            fingui.connect(connectionType, ct.address);
+                            connected = true;
+                        } else {
+                            System.out.println("Could determine default connection type. Not connecting to " + ct.address);
+                        }
                     }
 
                     // Show dialog for choosing connection?

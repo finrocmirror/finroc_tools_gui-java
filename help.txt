@@ -6,11 +6,14 @@ Start fingui using specified options and optionally loading specified file.
 
 available options:
 
---classic   Use Java Swing classic look and feel
---connect=[<connection type>:]<address>
+--classic                 Use Java Swing classic look and feel
+--connect=<address>       Connects with the specified address using the default 
+                          connection type stored in the specified .fingui file
+--list-connection-types   Prints a list with the available connection types
 
-   Connect to specified address using specified connection type. If no
-   connection type is specified, "TCP ports only" is used.
+--connect-with=<connection type>:<address>
+
+   Connect to specified address using the specified connection type.
    Example: fingui --connect=TCP:localhost:4444
 
   

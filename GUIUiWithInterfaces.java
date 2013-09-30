@@ -31,7 +31,6 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.abstractbase.UIBase;
 import org.finroc.tools.gui.util.PackageContentEnumerator;
 import org.finroc.tools.gui.util.treemodel.InterfaceTreeModel;
-import org.finroc.plugins.tcp.internal.TCP;
 
 import org.finroc.core.plugin.ConnectionListener;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
@@ -184,18 +183,27 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
         }
     }
 
+
     /**
      * Connect interface (Syntax: <interface class name>:<address>)
      *
      * @param address <interface class name>:<address>
      */
     public void connect(String address) throws Exception {
-        String interfaceName = address.substring(0, address.indexOf(":"));
-        String actualAddress = address.substring(interfaceName.length() + 1);
+        connect(address.substring(0, address.indexOf(":")), address.substring(address.indexOf(":") + 1));
+    }
+
+    /**
+     * Connect interface
+     *
+     * @param connectionType Connection type (CreateExternalConnectionAction.getName())
+     * @param address Connection address (whatever connection type requires
+     */
+    public void connect(String connectionType, String address) throws Exception {
         for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
-            if (io.getName().equalsIgnoreCase(interfaceName)) {
+            if (io.getName().equalsIgnoreCase(connectionType)) {
                 try {
-                    connectImpl(io, actualAddress);
+                    connectImpl(io, address);
                 } catch (Exception e) {
                     throw new Exception("Couldn't connect to " + address + ".", e);
                 }
@@ -203,6 +211,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
             }
         }
 
+        /*
         // try default interface
         for (CreateExternalConnectionAction io : Plugins.getInstance().getExternalConnections()) {
             if (io.getName().equalsIgnoreCase(TCP.TCP_PORTS_ONLY_NAME)) {
@@ -213,7 +222,7 @@ public abstract class GUIUiWithInterfaces < P extends UIBase <? , ? , ? , ? >, C
                 }
                 return;
             }
-        }
+        }*/
 
         throw new Exception("Couldn't find robot interface to connect to '" + address + "'");
     }

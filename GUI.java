@@ -63,6 +63,9 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
     @NotInPropertyEditor
     private int editMode = GUIWindowUIBase.EditMode.editObject.ordinal();
 
+    /** Default connection type to use (e.g. if only address is specified on command line) */
+    private String defaultConnectionType;
+
     /** List of connections that should be displayed as options for connecting GUI - usually the list is filled with past connections */
     private StringList connectionList;
 
@@ -151,6 +154,20 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
         if (!connectionList.contains(connectionAddress)) {
             connectionList.add(connectionAddress);
         }
+    }
+
+    /**
+     * @return Default connection type to use (e.g. if only address is specified on command line)
+     */
+    public String getDefaultConnectionType() {
+        return defaultConnectionType;
+    }
+
+    /**
+     * @param defaultConnectionType Default connection type to use (e.g. if only address is specified on command line)
+     */
+    public void setDefaultConnectionType(String defaultConnectionType) {
+        this.defaultConnectionType = defaultConnectionType;
     }
 
 }
