@@ -127,7 +127,7 @@ public class GeometryRenderer extends Widget {
         return new GeometryRendererUI();
     }
 
-    enum Action { Point, Move, Zoom, Rotate, ResetPoint, Home, MouseOver, Center, Watch, Deselect }
+    enum Action { Point, Move, Zoom, Rotate, ResetPoint, Home, MouseOver, Center, Watch, Deselect, WheelZoom }
     enum Mode { Normal, Move, Zoom, Rotate}
 
     @Override
@@ -172,12 +172,14 @@ public class GeometryRenderer extends Widget {
             listener = new AdvancedMouseListener<Mode, Action>();
             renderer.addMouseListener(listener);
             renderer.addMouseMotionListener(listener);
+            renderer.addMouseWheelListener(listener);
             listener.addMouseAction(AdvancedMouseListener.EventType.PressDragMove, AdvancedMouseListener.Button.Left, Mode.Normal, Action.Point, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.Release, AdvancedMouseListener.Button.Left, Mode.Normal, Action.ResetPoint, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.DragMove, AdvancedMouseListener.Button.Left, Mode.Rotate, Action.Rotate, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.DragMove, AdvancedMouseListener.Button.Left, Mode.Zoom, Action.Zoom, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.DragMove, AdvancedMouseListener.Button.Left, Mode.Move, Action.Move, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.DragMove, AdvancedMouseListener.Button.Middle, null, Action.Zoom, this);
+            listener.addMouseAction(AdvancedMouseListener.EventType.Wheel, null, null, Action.WheelZoom, this);
             listener.addMouseAction(AdvancedMouseListener.EventType.MouseOver, null, null, Action.MouseOver, this);
             listener.setMode(Mode.Normal);
 
@@ -278,6 +280,12 @@ public class GeometryRenderer extends Widget {
                     clickX.publish(0);
                     clickY.publish(0);
                 }
+                break;
+            case WheelZoom:
+                stopTracking();
+                zoom *= Math.pow(0.97, source.getLastWheelMove() * 1.5);
+                renderer.repaint();
+                updateRulers();
                 break;
             case Zoom:
                 stopTracking();
