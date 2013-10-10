@@ -37,25 +37,24 @@ import java.util.List;
 
 
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
-import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
+import org.finroc.tools.gui.WidgetPorts;
+import org.finroc.tools.gui.WidgetPortsListener;
 import org.finroc.tools.gui.WidgetUI;
+import org.finroc.tools.gui.themes.Theme;
 
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.finroc.plugins.data_types.BehaviourInfo;
-import org.finroc.plugins.data_types.ContainsStrings;
-import org.rrlib.finroc_core_utils.serialization.PortDataList;
-import org.finroc.core.FrameworkElementFlags;
+import org.finroc.plugins.data_types.BehaviorStatus;
+import org.finroc.plugins.data_types.PaintablePortData;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.finroc.core.port.PortListener;
-import org.finroc.core.port.rpc.MethodCallException;
+
+import sun.swing.BakedArrayList;
 
 
 /**
@@ -67,24 +66,19 @@ public class BehaviourSignals extends Widget {
     /** UID */
     private static final long serialVersionUID = -83683824582007L;
 
-    /** Blackboards */
-    public WidgetInput.Std<ContainsStrings> names;
-    public WidgetOutput.Blackboard<BehaviourInfo> signals;
-    //public WidgetInput.Std<PortDataList<BehaviourInfo>> signalsTest;
+    /** Ports: Status inputs */
+    public WidgetPorts<WidgetInput.Std<BehaviorStatus>> statusInputs =
+        new WidgetPorts<WidgetInput.Std<BehaviorStatus>>("Behavior Status", 3, WidgetInput.Std.class, this);
+
+    /** Parameters */
+    public int numberOfStatusInputs = 3;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        if (forPort == names) {
-            return suggestion.derive(ContainsStrings.TYPE);
-        } else if (forPort == signals) {
-            PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE);
-            pci.setFlag(FrameworkElementFlags.PUSH_STRATEGY, true);
-            return pci;
-        } /*else if (forPort == signalsTest) {
-            PortCreationInfo pci = suggestion.derive(BehaviourInfo.TYPE.getListType());
-            return pci;
-        }*/
-        return null;
+        if (statusInputs != null && forPort.getDescription().startsWith("Behavior Status")) {
+            return suggestion.derive(BehaviorStatus.TYPE);
+        }
+        return suggestion;
     }
 
     @Override
@@ -97,8 +91,7 @@ public class BehaviourSignals extends Widget {
         return new BehaviourSignalsUI();
     }
 
-    @SuppressWarnings("rawtypes")
-    class BehaviourSignalsUI extends WidgetUI implements PortListener {
+    class BehaviourSignalsUI extends WidgetUI implements WidgetPortsListener {
 
         /** UID */
         private static final long serialVersionUID = -27396902858121219L;
@@ -111,11 +104,9 @@ public class BehaviourSignals extends Widget {
         private Insets padInsets = new Insets(0, 0, 2, 0);
         int bbElemSize = -1;
 
-        @SuppressWarnings("unchecked")
         BehaviourSignalsUI() {
             super(RenderMode.Swing);
-            signals.addChangeListener(this);
-            names.addChangeListener(this);
+            statusInputs.addChangeListener(this);
             //signalsTest.addChangeListener(this);
             setLayout(new GridBagLayout());
 
@@ -127,13 +118,10 @@ public class BehaviourSignals extends Widget {
             gbc.anchor = GridBagConstraints.NORTHEAST;
             add(reference, gbc);
             gbc.anchor = GridBagConstraints.NORTH;
-            JLabel auto = new JLabel("Auto");
-            JLabel enable = new JLabel("Enable");
+            JLabel auto = new JLabel("Stimulation");
             auto.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            enable.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
             gbc.weightx = 0;
             add(auto, gbc);
-            add(enable, gbc);
             gbc.anchor = GridBagConstraints.NORTHWEST;
             gbc.weightx = 0.1;
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -155,7 +143,7 @@ public class BehaviourSignals extends Widget {
             gbc.insets = nullInsets;
             gbc.weightx = 0;
             gbc.weighty = 0.1;
-            portChanged(null, null);
+            widgetPropertiesChanged();
         }
 
         @Override
@@ -168,45 +156,29 @@ public class BehaviourSignals extends Widget {
 
         @Override
         public void widgetPropertiesChanged() {
+            statusInputs.setSize(numberOfStatusInputs);
+            initPorts();
 
+            // entries changed ?
+            while (entries.size() < numberOfStatusInputs) {
+                entries.add(new Entry(entries.size() + 1));
+            }
+            while (entries.size() > numberOfStatusInputs) {
+                entries.remove(entries.size() - 1).clear();
+            }
         }
 
         @Override
-        public void portChanged(AbstractPort origin, Object value) {
+        public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
+            int index = origin.indexOf(port);
+            if (origin == statusInputs && index >= 0) {
+                BehaviorStatus status = (BehaviorStatus)value;
 
-            PortDataList<BehaviourInfo> bil = signals.readAutoLocked();
-            //PortDataList<BehaviourInfo> bil = signalsTest.getAutoLocked();
-            ContainsStrings strings = names.getAutoLocked();
+                // Ensure that we have a line below the last entry
+                gbc.insets = (index == entries.size() - 1) ? padInsets : nullInsets;
 
-            // no data ?
-            if (bil == null || strings == null || bil.size() <= 0 || strings.stringCount() <= 0) {
-                while (entries.size() > 0) {
-                    entries.remove(0).clear();
-                }
-                releaseAllLocks();
-                return;
+                entries.get(index).update(status);
             }
-
-            // entries changed ?
-            while (entries.size() < bil.size()) {
-                entries.add(new Entry(entries.size() + 1));
-            }
-            while (entries.size() > bil.size()) {
-                entries.remove(entries.size() - 1).clear();
-            }
-
-            // update values
-            for (int i = 0; i < entries.size(); i++) {
-                BehaviourInfo bi = bil.get(i);
-                //entries.get(i).update(bi, (bi.beh_id >= strings.size()) ? "" : strings.get(bi.beh_id));
-
-                // Rand unter letzter Zeile sicherstellen
-                gbc.insets = (i == entries.size() - 1) ? padInsets : nullInsets;
-
-                entries.get(i).update(bi, (i >= strings.stringCount()) ? "" : strings.getString(i).toString());
-            }
-
-            releaseAllLocks();
         }
 
         @Override
@@ -218,31 +190,36 @@ public class BehaviourSignals extends Widget {
 
         class Entry implements ActionListener {
             JLabel label;
-            JCheckBox auto, enable;
+            //JCheckBox auto, enable;
+            JComboBox stimulationMode;
             MBar activation, rating, activity;
-            BehaviourInfo info;
+            BehaviorStatus info;
             final int index;
 
             public Entry(int lineIndex) {
                 index = lineIndex - 1;
                 label = new JLabel();
-                auto = new JCheckBox();
-                enable = new JCheckBox();
-                activation = new MBar(new Color(0.5f, 0.5f, 1));
-                activity = new MBar(new Color(0.5f, 1, 0.5f));
-                rating = new MBar(new Color(1, 0.5f, 0.5f));
-                auto.addActionListener(this);
-                enable.addActionListener(this);
-                auto.setOpaque(false);
-                enable.setOpaque(false);
+                stimulationMode = new JComboBox(BehaviorStatus.StimulationMode.values());
+                //activation = new MBar(new Color(0.5f, 0.5f, 1));
+                //Color background = new Color(0.5f, 0.6f, 1, 0.2f);
+                //Color background = new Color(0, 0, 0.15f, 0.05f);
+                Color background = new Color(1, 1, 0.7f, 0.2f);
+                activation = new MBar(new Color(1, 0.97f, 0f, 0.43f), background);
+                activity = new MBar(new Color(0.05f, 0.75f, 0, 0.4f), background);
+                rating = new MBar(new Color(1, 0.2f, 0f, 0.47f), background);
+                stimulationMode.addActionListener(this);
+                stimulationMode.setOpaque(false);
 
                 gbc.gridy = lineIndex;
                 gbc.anchor = GridBagConstraints.EAST;
                 gbc.fill = GridBagConstraints.NONE;
                 add(label, gbc);
-                add(auto, gbc);
                 gbc.anchor = GridBagConstraints.CENTER;
-                add(enable, gbc);
+                gbc.insets.left = 3;
+                gbc.insets.right = 3;
+                add(stimulationMode, gbc);
+                gbc.insets.left = 0;
+                gbc.insets.right = 0;
                 gbc.anchor = GridBagConstraints.WEST;
                 gbc.fill = GridBagConstraints.BOTH;
                 add(activation, gbc);
@@ -250,37 +227,35 @@ public class BehaviourSignals extends Widget {
                 add(rating, gbc);
             }
 
-            public void update(BehaviourInfo bi, String descr) {
-                label.setText(descr);
-                auto.setSelected(bi.auto_mode);
-                enable.setSelected(bi.enabled);
-                activation.setValue(bi.activation);
-                activity.setValue(bi.activity);
-                rating.setValue(bi.target_rating);
+            public void update(BehaviorStatus status) {
+                label.setText(status.name);
+                stimulationMode.setSelectedItem(status.stimulationMode);
+                activation.setValue(status.activation);
+                activity.setValue(status.activity);
+                rating.setValue(status.targetRating);
             }
 
             public void clear() {
                 remove(activity);
-                remove(auto);
-                remove(enable);
+                remove(stimulationMode);
                 remove(activation);
                 remove(label);
                 remove(rating);
             }
 
-            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
+                // TODO
 
                 // hehe... we only send one byte... asynchronously
-                PortDataList<BehaviourInfo> buf = (PortDataList<BehaviourInfo>)signals.getClient().getUnusedChangeBuffer();
-                buf.resize(1);
-                buf.get(0).enabled = enable.isSelected();
-                buf.get(0).auto_mode = auto.isSelected();
-                try {
-                    signals.getClient().commitAsynchChange((PortDataList)buf, index, 0);
-                } catch (MethodCallException e1) {
-                    log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
-                }
+//                PortDataList<BehaviourInfo> buf = (PortDataList<BehaviourInfo>)signals.getClient().getUnusedChangeBuffer();
+//                buf.resize(1);
+//                buf.get(0).enabled = enable.isSelected();
+//                buf.get(0).auto_mode = auto.isSelected();
+//                try {
+//                    signals.getClient().commitAsynchChange((PortDataList)buf, index, 0);
+//                } catch (MethodCallException e1) {
+//                    log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
+//                }
             }
         }
     }
@@ -292,11 +267,14 @@ class MBar extends JPanel {
     private static final long serialVersionUID = 7958656286249229217L;
 
     public double curValue;
-    public Color color;
-    public static Color background = new Color(255, 255, 220);
+    public Color color, background;
+    //public static Color background = new Color(240, 245, 255);
+    //public static Color background = new Color(240, 245, 255);
 
-    public MBar(Color color) {
+    public MBar(Color color, Color background) {
         this.color = color;
+        this.background = background;
+        this.setOpaque(false);
         this.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 4));
     }
 
