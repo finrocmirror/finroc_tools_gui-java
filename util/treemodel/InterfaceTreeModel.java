@@ -85,16 +85,14 @@ public class InterfaceTreeModel implements TreeModel {
      * @return Child with the specified qualified name. Null if no such child exists.
      */
     public ModelNode getChildByQualifiedName(String qualifiedName, char separator) {
-        String[] singleNames = qualifiedName.split("" + separator);
-        if (singleNames[0].equals(root.toString())) {
-            ModelNode currentNode = root;
-            for (int i = 1; i < singleNames.length; i++) {
-                currentNode = currentNode.getChildByName(singleNames[i]);
-                if (currentNode == null) {
-                    return null;
-                }
+        String rootString = root.toString();
+        if (qualifiedName.startsWith(rootString)) {
+            if (qualifiedName.length() == rootString.length()) {
+                return root;
             }
-            return currentNode;
+            if (qualifiedName.charAt(rootString.length()) == separator) {
+                return root.getChildByQualifiedName(qualifiedName, rootString.length() + 1, separator);
+            }
         }
         return null;
     }

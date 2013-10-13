@@ -40,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -47,21 +48,23 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetPorts;
 import org.finroc.tools.gui.WidgetPortsListener;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.tools.gui.themes.Theme;
 
 import org.finroc.plugins.data_types.BehaviorStatus;
-import org.finroc.plugins.data_types.PaintablePortData;
+import org.finroc.plugins.data_types.Ib2cServiceClient;
+import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-
-import sun.swing.BakedArrayList;
+import org.finroc.core.remote.ModelNode;
+import org.finroc.core.remote.PortWrapperTreeNode;
+import org.finroc.core.remote.RemotePort;
+import org.finroc.core.remote.RemoteRuntime;
 
 
 /**
  * @author Max Reichardt
  *
  */
-public class BehaviourSignals extends Widget {
+public class BehaviorSignals extends Widget {
 
     /** UID */
     private static final long serialVersionUID = -83683824582007L;
@@ -72,6 +75,12 @@ public class BehaviourSignals extends Widget {
 
     /** Parameters */
     public int numberOfStatusInputs = 3;
+
+    /**
+     * Global client port for ib2c service
+     * May only be accessed by AWT thread for thread-safety (is reconnected)
+     */
+    private static transient Ib2cServiceClient ib2cServiceClientPort;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
@@ -89,6 +98,17 @@ public class BehaviourSignals extends Widget {
     @Override
     protected WidgetUI createWidgetUI() {
         return new BehaviourSignalsUI();
+    }
+
+    /**
+     * Obtains service port client instance (creates it if necessary)
+     * May only be accessed by AWT thread for thread-safety
+     */
+    private static Ib2cServiceClient getIb2cServiceClientPort() {
+        if (ib2cServiceClientPort == null) {
+            ib2cServiceClientPort = new Ib2cServiceClient("Ib2c Service Client", RuntimeEnvironment.getInstance());
+        }
+        return ib2cServiceClientPort;
     }
 
     class BehaviourSignalsUI extends WidgetUI implements WidgetPortsListener {
@@ -169,16 +189,22 @@ public class BehaviourSignals extends Widget {
         }
 
         @Override
-        public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
-            int index = origin.indexOf(port);
-            if (origin == statusInputs && index >= 0) {
-                BehaviorStatus status = (BehaviorStatus)value;
+        public void portChanged(final WidgetPorts<?> origin, final AbstractPort port, final Object value) {
+            SwingUtilities.invokeLater(new Runnable() {
 
-                // Ensure that we have a line below the last entry
-                gbc.insets = (index == entries.size() - 1) ? padInsets : nullInsets;
+                @Override
+                public void run() {
+                    int index = origin.indexOf(port);
+                    if (origin == statusInputs && index >= 0) {
+                        BehaviorStatus status = (BehaviorStatus)value;
 
-                entries.get(index).update(status);
-            }
+                        // Ensure that we have a line below the last entry
+                        gbc.insets = (index == entries.size() - 1) ? padInsets : nullInsets;
+
+                        entries.get(index).update(status);
+                    }
+                }
+            });
         }
 
         @Override
@@ -195,6 +221,8 @@ public class BehaviourSignals extends Widget {
             MBar activation, rating, activity;
             BehaviorStatus info;
             final int index;
+            int remoteModuleHandle;
+            BehaviorStatus.StimulationMode currentStimulationMode = BehaviorStatus.StimulationMode.Auto;
 
             public Entry(int lineIndex) {
                 index = lineIndex - 1;
@@ -229,10 +257,12 @@ public class BehaviourSignals extends Widget {
 
             public void update(BehaviorStatus status) {
                 label.setText(status.name);
+                currentStimulationMode = status.stimulationMode;
                 stimulationMode.setSelectedItem(status.stimulationMode);
                 activation.setValue(status.activation);
                 activity.setValue(status.activity);
                 rating.setValue(status.targetRating);
+                remoteModuleHandle = status.moduleHandle;
             }
 
             public void clear() {
@@ -244,18 +274,35 @@ public class BehaviourSignals extends Widget {
             }
 
             public void actionPerformed(ActionEvent e) {
-                // TODO
+                if (stimulationMode.getSelectedItem() == currentStimulationMode) {
+                    return;
+                }
+                currentStimulationMode = (BehaviorStatus.StimulationMode)stimulationMode.getSelectedItem();
 
-                // hehe... we only send one byte... asynchronously
-//                PortDataList<BehaviourInfo> buf = (PortDataList<BehaviourInfo>)signals.getClient().getUnusedChangeBuffer();
-//                buf.resize(1);
-//                buf.get(0).enabled = enable.isSelected();
-//                buf.get(0).auto_mode = auto.isSelected();
-//                try {
-//                    signals.getClient().commitAsynchChange((PortDataList)buf, index, 0);
-//                } catch (MethodCallException e1) {
-//                    log(LogLevel.LL_WARNING, logDomain, "Warning: Couldn't commit behaviour info blackboard change");
-//                }
+                try {
+                    if (remoteModuleHandle != 0) {
+                        for (PortWrapperTreeNode portNode : statusInputs.get(index).getConnectionPartners()) {
+
+                            // find runtime parent
+                            RemotePort port = (RemotePort)portNode;
+                            RemoteRuntime runtime = RemoteRuntime.find(port);
+                            ModelNode servicePortNode = runtime.getChildByQualifiedName(Ib2cServiceClient.QUALIFIED_PORT_NAME, '/');
+                            if (!(servicePortNode instanceof RemotePort)) {
+                                //log(LogLevel.LL_WARNING, logDomain, "Could not find remote ib2c service port");
+                                System.out.println("Could not find remote ib2c service port"); // TODO: proper log message (after update)
+                                break;
+                            }
+
+                            Ib2cServiceClient clientPort = getIb2cServiceClientPort();
+                            clientPort.getWrapped().disconnectAll();
+                            clientPort.connectTo(((RemotePort)servicePortNode).getPort());
+                            clientPort.setStimulationMode(remoteModuleHandle, (BehaviorStatus.StimulationMode)stimulationMode.getSelectedItem());
+                            clientPort.getWrapped().disconnectAll();
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace(); // TODO: proper log message (after update)
+                }
             }
         }
     }
