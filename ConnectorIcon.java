@@ -112,7 +112,7 @@ public class ConnectorIcon extends ImageIcon {
             icon = createIcon(type, height);
             iconCache[type.getIndexInCache()] = icon;
         } else if (icon.getIconHeight() != height) {
-            FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "ConnectorIcon", "Icons of different size not properly supported yet"); // Could be added with reasonable effort
+            FinrocGUI.logDomain.log(LogLevel.WARNING, "ConnectorIcon", "Icons of different size not properly supported yet"); // Could be added with reasonable effort
             return createIcon(type, height);
         }
         return icon;

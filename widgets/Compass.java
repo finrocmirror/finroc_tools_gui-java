@@ -88,7 +88,7 @@ public class Compass extends Widget {
             svgSize = Math.min(svgWidth, svgHeight);
             halfSVGSize = svgSize / 2;
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "Compass", e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, "Compass", e);
         }
     }
 

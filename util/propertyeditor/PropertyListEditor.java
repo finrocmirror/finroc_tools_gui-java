@@ -106,20 +106,20 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                     try {
                         wpec.createAndShowMinimal(wpec.getCurWidgetValue());
                     } catch (Exception e) {
-                        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
-                        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e); // skip this property
+                        logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
+                        logDomain.log(LogLevel.WARNING, getLogDescription(), e); // skip this property
                     }
                     pecs[i] = wpec;
                     gbc.gridx = i;
                     listPanel.add(wpec, gbc);
                 } else {
-                    logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
+                    logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
                 }
             }
 
             guielems.add(pecs);
         } catch (Exception e) {
-            PropertiesPanel.logDomain.log(LogLevel.LL_ERROR, "PropertyListEditor", e);
+            PropertiesPanel.logDomain.log(LogLevel.ERROR, "PropertyListEditor", e);
             JOptionPane.showMessageDialog(null, e.getClass().getName() + "\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

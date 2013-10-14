@@ -141,7 +141,7 @@ public class BufferedConvexSVG extends BufferedImageRGBConvexShape {
                 initColor();
             }
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
             return;
         }
         Point newDest = new Point(dest.x + xOffset - sourceArea.x, dest.y + yOffset - sourceArea.y);

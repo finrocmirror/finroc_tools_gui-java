@@ -93,7 +93,7 @@ public class AbstractFilesEditor extends PropertyEditComponent<AbstractFiles<Abs
                     EmbeddedFile ef = parent.getEmbeddedFileManager().loadFile(f, list.getFileClass());
                     return ef;
                 } catch (Exception ex) {
-                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), ex);
+                    FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), ex);
                     JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }

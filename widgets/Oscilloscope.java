@@ -144,7 +144,7 @@ public class Oscilloscope extends Widget {
             // create thread
             thread = new OscilloscopeThread();
             thread.start();
-            log(LogLevel.LL_DEBUG, logDomain, "Oscilloscope Thread started.");
+            log(LogLevel.DEBUG, logDomain, "Oscilloscope Thread started.");
 
             signals.addChangeListener(this);
             widgetPropertiesChanged();
@@ -228,7 +228,7 @@ public class Oscilloscope extends Widget {
             public void mainLoopCallback() throws Exception {
                 if (!isVisible()) {
                     stopLoop(); // disposed
-                    log(LogLevel.LL_DEBUG, logDomain, "Oscilloscope Thread stopped.");
+                    log(LogLevel.DEBUG, logDomain, "Oscilloscope Thread stopped.");
                     return;
                 }
 
@@ -242,7 +242,7 @@ public class Oscilloscope extends Widget {
                     }
                     repaint();
                 } catch (Exception e) {
-                    log(LogLevel.LL_DEBUG_WARNING, logDomain, "Oscilloscope Thread skipped loop, because of temporary exception");
+                    log(LogLevel.DEBUG_WARNING, logDomain, "Oscilloscope Thread skipped loop, because of temporary exception");
                 }
             }
         }

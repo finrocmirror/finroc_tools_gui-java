@@ -50,7 +50,7 @@ public class FPSDetector {
         //System.out.println(time1 - System.currentTimeMillis());
         long diff = System.currentTimeMillis() - lastOutput;
         if (diff > 1000) {
-            FinrocGUI.logDomain.log(LogLevel.LL_USER, "FPSDetector", ((frameCount * 1000) / diff) + " fps   " + maxTime);
+            FinrocGUI.logDomain.log(LogLevel.USER, "FPSDetector", ((frameCount * 1000) / diff) + " fps   " + maxTime);
             frameCount = 0;
             lastOutput = System.currentTimeMillis();
             maxTime = 0;

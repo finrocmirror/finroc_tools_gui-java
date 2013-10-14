@@ -189,22 +189,20 @@ public class BehaviorSignals extends Widget {
         }
 
         @Override
-        public void portChanged(final WidgetPorts<?> origin, final AbstractPort port, final Object value) {
-            SwingUtilities.invokeLater(new Runnable() {
+        public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
+            try {
+                int index = origin.indexOf(port);
+                if (origin == statusInputs && index >= 0) {
+                    BehaviorStatus status = (BehaviorStatus)value;
 
-                @Override
-                public void run() {
-                    int index = origin.indexOf(port);
-                    if (origin == statusInputs && index >= 0) {
-                        BehaviorStatus status = (BehaviorStatus)value;
+                    // Ensure that we have a line below the last entry  TODO: Does this make sense here?
+                    //gbc.insets = (index == entries.size() - 1) ? padInsets : nullInsets;
 
-                        // Ensure that we have a line below the last entry
-                        gbc.insets = (index == entries.size() - 1) ? padInsets : nullInsets;
-
-                        entries.get(index).update(status);
-                    }
+                    entries.get(index).update(status);
                 }
-            });
+            } catch (Exception e) {
+                // not entirely thread-safe (for efficiency reasons; AWT Data strutures are not modified => not corrupted) - so okay...
+            }
         }
 
         @Override
@@ -255,14 +253,26 @@ public class BehaviorSignals extends Widget {
                 add(rating, gbc);
             }
 
-            public void update(BehaviorStatus status) {
-                label.setText(status.name);
-                currentStimulationMode = status.stimulationMode;
-                stimulationMode.setSelectedItem(status.stimulationMode);
-                activation.setValue(status.activation);
-                activity.setValue(status.activity);
-                rating.setValue(status.targetRating);
-                remoteModuleHandle = status.moduleHandle;
+            public void update(final BehaviorStatus status) {
+                if ((!status.name.equals(label.getText())) || currentStimulationMode != status.stimulationMode || activation.getValue() != status.activation ||
+                        activity.getValue() != status.activity || rating.getValue() != status.targetRating) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (!status.name.equals(label.getText())) {
+                                label.setText(status.name);
+                            }
+                            currentStimulationMode = status.stimulationMode;
+                            stimulationMode.setSelectedItem(status.stimulationMode);
+                            activation.setValue(status.activation);
+                            activity.setValue(status.activity);
+                            rating.setValue(status.targetRating);
+                            remoteModuleHandle = status.moduleHandle;
+                        }
+
+                    });
+                }
             }
 
             public void clear() {
@@ -346,7 +356,9 @@ class MBar extends JPanel {
     }
 
     public void setValue(double curValue) {
-        this.curValue = curValue;
-        repaint();
+        if (curValue != this.curValue) {
+            this.curValue = curValue;
+            repaint();
+        }
     }
 }

@@ -411,7 +411,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
      * @param push Push values if this is default?
      */
     private void updatePortStrategies(GUIPanel gp, boolean push) {
-        FinrocGUI.logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, "GUIWindowUI", "Setting strategies of panel " + gp.toString() + " to " + push);
+        FinrocGUI.logDomain.log(LogLevel.DEBUG_VERBOSE_1, "GUIWindowUI", "Setting strategies of panel " + gp.toString() + " to " + push);
         for (Widget w : gp.getChildren()) {
             for (WidgetPort<?> wp : w.getChildren()) {
                 wp.updateStrategy(push);
@@ -608,7 +608,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             addUndoBufferEntry("Paste");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(ui, "Cannot import current clipboard contents", "Paste Operation failed", JOptionPane.ERROR_MESSAGE);
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "GUIWindowUI", e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, "GUIWindowUI", e);
         }
     }
 

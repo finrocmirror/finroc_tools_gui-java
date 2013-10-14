@@ -320,7 +320,7 @@ public class GeometryRenderer extends Widget {
                     //transform.invert();
                     Util.invert(transform);
                 } catch (NoninvertibleTransformException e) {
-                    log(LogLevel.LL_ERROR, logDomain, e);
+                    log(LogLevel.ERROR, logDomain, e);
                 }
                 temp = new Point2D.Double(source.getDiffToLastPosX(), source.getDiffToLastPosY());
                 temp = transform.transform(temp, null);
@@ -395,7 +395,7 @@ public class GeometryRenderer extends Widget {
                 //transform.invert();  // only in Java 1.6
                 Util.invert(transform);
             } catch (NoninvertibleTransformException e) {
-                log(LogLevel.LL_ERROR, logDomain, e);
+                log(LogLevel.ERROR, logDomain, e);
             }
             Point2D.Double temp = new Point2D.Double(p.x, p.y);
             return transform.transform(temp, null);

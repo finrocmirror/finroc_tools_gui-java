@@ -128,7 +128,7 @@ public class Knob extends Widget {
             svgSize = Math.min(svgWidth, svgHeight);
             halfSVGSize = svgSize / 2;
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "Knob", e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, "Knob", e);
         }
     }
 

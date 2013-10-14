@@ -359,7 +359,7 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
-        FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "InterfaceTreeModel", "Changing values is not supported");
+        FinrocGUI.logDomain.log(LogLevel.ERROR, "InterfaceTreeModel", "Changing values is not supported");
     }
 
     @Override

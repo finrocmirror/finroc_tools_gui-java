@@ -100,7 +100,7 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
                         this.add(c);
                     }
                 } catch (NoClassDefFoundError e) {
-                    FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "WidgetAndInterfaceRegister", "Error loading widget " + s + ": " + e.getMessage() + " . Deleting 'build/java' might solve this issue.");
+                    FinrocGUI.logDomain.log(LogLevel.WARNING, "WidgetAndInterfaceRegister", "Error loading widget " + s + ": " + e.getMessage() + " . Deleting 'build/java' might solve this issue.");
                 }
             }
         }

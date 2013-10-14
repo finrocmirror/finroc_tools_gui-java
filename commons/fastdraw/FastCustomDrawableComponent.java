@@ -106,7 +106,7 @@ public abstract class FastCustomDrawableComponent extends MPanel {
                             renderToCache(cache, size, resized);
                             changed = false;
                         } catch (OperationNotSupportedException e) {
-                            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+                            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
                         }
                     }
                 }

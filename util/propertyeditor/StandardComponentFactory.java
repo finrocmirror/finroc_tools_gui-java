@@ -90,7 +90,7 @@ public class StandardComponentFactory implements ComponentFactory {
             Enum[] values = (Enum[])m.invoke(null);
             return values;
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "EnumEditor", e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, "EnumEditor", e);
         }
         return new Enum[0];
     }

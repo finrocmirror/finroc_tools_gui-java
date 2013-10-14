@@ -86,13 +86,13 @@ public class PropertiesPanel extends JPanel {
                         break;
                     }
                 } catch (Exception e) {
-                    logDomain.log(LogLevel.LL_ERROR, getLogDescription(), e);
+                    logDomain.log(LogLevel.ERROR, getLogDescription(), e);
                 }
             }
             if (wpec != null) {
                 componentList.add(wpec);
             } else {
-                logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
+                logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
             }
         }
 
@@ -124,7 +124,7 @@ public class PropertiesPanel extends JPanel {
         try {
             comp.createAndShow();
         } catch (Exception e) {
-            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), e);
+            logDomain.log(LogLevel.ERROR, getLogDescription(), e);
         }
 
         // Create label?

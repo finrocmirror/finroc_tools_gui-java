@@ -186,7 +186,7 @@ public class LCD extends Widget {
                 }
                 updateColors(false);
             } catch (Exception e) {
-                log(LogLevel.LL_ERROR, logDomain, e);
+                log(LogLevel.ERROR, logDomain, e);
             }
             widgetPropertiesChanged();
         }
@@ -347,7 +347,7 @@ public class LCD extends Widget {
             try {
                 updateColors(warn);
             } catch (Exception e) {
-                log(LogLevel.LL_ERROR, logDomain, e);
+                log(LogLevel.ERROR, logDomain, e);
             }
             Rectangle firstBlock = new Rectangle(renderSize.width - blockWidth, (renderSize.height - blockHeight) / 2, blockWidth, blockHeight);
             for (int i = s.length() - 1; i >= 0; i--) {
@@ -446,7 +446,7 @@ public class LCD extends Widget {
 
             List<String> blocks = blocksForDigits.get(digit);
             if (blocks == null) {
-                log(LogLevel.LL_WARNING, logDomain, "warning in LCD Widget: Cannot render digit " + digit);
+                log(LogLevel.WARNING, logDomain, "warning in LCD Widget: Cannot render digit " + digit);
             }
             for (String s : allBlocks) {
                 if (blocks.contains(s)) {

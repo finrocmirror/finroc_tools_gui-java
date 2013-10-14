@@ -211,7 +211,7 @@ public class FileManager {
         for (byte[] data : files.values()) {
             space += data.length;
         }
-        FinrocGUI.logDomain.log(LogLevel.LL_DEBUG, "FileManager", "File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
+        FinrocGUI.logDomain.log(LogLevel.DEBUG, "FileManager", "File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
     }
 
     byte[] getData(long uid) {
@@ -232,7 +232,7 @@ public class FileManager {
      */
     public String getRelativeFilename(File file, String current) {
         if (file == null) {
-            FinrocGUI.logDomain.log(LogLevel.LL_WARNING, "FileManager", "Cannot locate external file/folder: " + current);
+            FinrocGUI.logDomain.log(LogLevel.WARNING, "FileManager", "Cannot locate external file/folder: " + current);
             return current;
         }
 
@@ -327,7 +327,7 @@ public class FileManager {
             }
         }
 
-        LogStream ls = FinrocGUI.logDomain.getLogStream(LogLevel.LL_WARNING, "FileManager");
+        LogStream ls = FinrocGUI.logDomain.getLogStream(LogLevel.WARNING, "FileManager");
         ls.append("warning: file " + relFilename + " not found in resource paths... ");
 
         // hmm... not found - maybe the absolute file name is still the same

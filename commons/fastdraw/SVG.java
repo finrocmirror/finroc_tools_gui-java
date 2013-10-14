@@ -94,10 +94,10 @@ public class SVG implements Paintable {
 
         byte[] temp = urlCache.get(svgUrl);
         if (temp == null) {
-            FinrocGUI.logDomain.log(LogLevel.LL_DEBUG, "SVG", "Loading SVG " + svgUrl);
+            FinrocGUI.logDomain.log(LogLevel.DEBUG, "SVG", "Loading SVG " + svgUrl);
             temp = Util.readStreamFully(svgUrl.openStream());
             urlCache.put(svgUrl, temp);
-            FinrocGUI.logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, "SVG", "SVG " + svgUrl + " loaded");
+            FinrocGUI.logDomain.log(LogLevel.DEBUG_VERBOSE_1, "SVG", "SVG " + svgUrl + " loaded");
         }
         return new SVG(new ByteArrayInputStream(temp));
     }
@@ -200,7 +200,7 @@ public class SVG implements Paintable {
         try {
             bounds = diagram.getRoot().getBoundingBox();
         } catch (SVGException e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
         }
         return bounds;
     }

@@ -116,7 +116,7 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
         try {
             ImageIO.write(wrapped, "png", file);
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
         }
     }
 

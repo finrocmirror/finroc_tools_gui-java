@@ -166,7 +166,7 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         try {
             ReflectionHelper.visitAllFields(getClass(), true, true, this, 1);
         } catch (Exception e) {
-            log(LogLevel.LL_ERROR, logDomain, e);
+            log(LogLevel.ERROR, logDomain, e);
         }
         return embeddedFiles;
     }

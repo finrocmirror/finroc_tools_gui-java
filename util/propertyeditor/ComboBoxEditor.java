@@ -55,7 +55,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
             jcmb = new JComboBox(values);
             valueUpdated(getCurWidgetValue());
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
         }
         jcmb.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jcmb.getPreferredSize().height));
         add(jcmb, BorderLayout.CENTER);
@@ -68,7 +68,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
             jcmb = new JComboBox(values);
             valueUpdated(object);
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
         }
         add(jcmb);
         jcmb.setEnabled(isModifiable());

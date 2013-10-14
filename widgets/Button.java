@@ -134,7 +134,7 @@ public class Button extends Widget {
                     Icon icon = new ImageIcon(ImageIO.read(iconFile.getInputStream(getRoot().getEmbeddedFileManager())));
                     button.setIcon(icon);
                 } catch (Exception e) {
-                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+                    FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
                 }
             }
             portChanged(null, null);

@@ -98,7 +98,7 @@ public class FieldAccessorFactory {
                 }, 0);
             }
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), e);
+            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
         }
         return componentsList;
     }

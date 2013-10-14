@@ -98,7 +98,7 @@ public class AbstractFileEditor extends PropertyEditComponent<AbstractFile> impl
                 curFileText.setText(embeddedFile.toString());
                 return;
             } catch (Exception ex) {
-                FinrocGUI.logDomain.log(LogLevel.LL_ERROR, toString(), ex);
+                FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), ex);
                 JOptionPane.showMessageDialog(null, ex.getMessage());
             }
         }

@@ -203,7 +203,7 @@ public class WidgetOutput {
                 } else {
                     ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
                 }
-                logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
+                logDomain.log(LogLevel.ERROR, getLogDescription(), "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
             }
         }
 

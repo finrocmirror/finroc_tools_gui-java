@@ -232,7 +232,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     }
 
     public void showErrorMessage(Exception e) {
-        FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "FinrocGUI", e);
+        FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
         JOptionPane.showMessageDialog(null, e.getClass().getName() + "\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -528,7 +528,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
                     }
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, e.getMessage());
-                    FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "FinrocGUI", e);
+                    FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
                     System.exit(-1);
                 }
             }
@@ -598,7 +598,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
             try {
                 FinrocGuiXmlSerializer.getInstance().toXML(this, new BufferedWriter(new FileWriter(SETTINGSFILE)));
             } catch (Exception e) {
-                FinrocGUI.logDomain.log(LogLevel.LL_ERROR, "FinrocGUI", e);
+                FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
             }
         }
 
