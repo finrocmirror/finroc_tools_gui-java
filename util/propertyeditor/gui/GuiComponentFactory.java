@@ -53,7 +53,7 @@ public class GuiComponentFactory implements ComponentFactory, Comparator<DataTyp
         parent = propertiesDialog;
     }
 
-    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public PropertyEditComponent<?> createComponent(PropertyAccessor<?> acc, PropertiesPanel panel) throws Exception {
         Class<?> type = acc.getType();

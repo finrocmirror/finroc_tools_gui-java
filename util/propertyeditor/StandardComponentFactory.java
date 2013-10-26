@@ -38,7 +38,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  */
 public class StandardComponentFactory implements ComponentFactory {
 
-    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public PropertyEditComponent<?> createComponent(PropertyAccessor<?> acc, PropertiesPanel panel) throws Exception {
         Class<?> type = acc.getType();
@@ -100,7 +100,7 @@ public class StandardComponentFactory implements ComponentFactory {
      */
     public class ContainsStringsAdapter extends PropertyAccessorAdapter<ContainsStrings, String> {
 
-        @SuppressWarnings( { "rawtypes", "unchecked" })
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         public ContainsStringsAdapter(PropertyAccessor wrapped) {
             super(wrapped, String.class);
         }

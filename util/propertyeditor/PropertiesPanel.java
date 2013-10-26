@@ -73,7 +73,7 @@ public class PropertiesPanel extends JPanel {
      * @param properties List with properties to create components for
      * @param labelAlignmentLeft Align labels on left hand side?
      */
-    @SuppressWarnings( { "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     public void init(Collection <? extends PropertyAccessor<? >> properties, boolean labelAlignmentLeft) {
         componentList.clear();
 

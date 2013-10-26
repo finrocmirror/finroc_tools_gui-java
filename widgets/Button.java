@@ -65,7 +65,7 @@ public class Button extends Widget {
 
     /** Button parameters */
     public String text = "Button";
-    @ValidExtensions( { "jpg", "png", "gif" })
+    @ValidExtensions({ "jpg", "png", "gif" })
     public EmbeddedFile iconFile;
     public double emitValuePush = 1;
     public double emitValueRelease = 0;
@@ -91,7 +91,7 @@ public class Button extends Widget {
         return "Button" + (text.length() == 0 ? "" : (" (\"" + text + "\")"));
     }
 
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     class ButtonUI extends WidgetUI implements ActionListener, MouseListener, PortListener {
 
         /** UID */
