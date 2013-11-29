@@ -39,6 +39,7 @@ import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.RemoteFrameworkElement;
+import org.finroc.core.remote.RemoteRuntime;
 import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
@@ -66,6 +67,9 @@ public class InterfaceTreeModel implements TreeModel {
 
     /** Current list with elements to show initially */
     private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
+
+    /** Show network elements in finstruct (not necessary and confusing for application developers; Finroc developers can be interested) */
+    public final boolean SHOW_NETWORK_ELEMENTS = false;
 
     public InterfaceTreeModel() {
         externalConnectionParent.init();
@@ -160,7 +164,7 @@ public class InterfaceTreeModel implements TreeModel {
     private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
 
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
-    private enum ElementClass { INTERFACE, NONPORT, PORT }
+    private enum ElementClass { INTERFACE, NONPORT, PORT, NETWORK_ELEMENT }
 
     /**
      * Contains information on an element to show initially
@@ -348,6 +352,9 @@ public class InterfaceTreeModel implements TreeModel {
         private ElementClass getNodeClass(ModelNode node) {
             if (node instanceof RemoteFrameworkElement) {
                 int flags = ((RemoteFrameworkElement)node).getFlags();
+                if ((flags & FrameworkElementFlags.NETWORK_ELEMENT) != 0) {
+                    return ElementClass.NETWORK_ELEMENT;
+                }
                 if ((flags & FrameworkElementFlags.PORT) != 0) {
                     return ElementClass.PORT;
                 }
@@ -431,6 +438,15 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public int getChildCount(Object parent) {
+        if ((!SHOW_NETWORK_ELEMENTS) && (parent instanceof RemoteRuntime)) {
+            // only return number non-network elements
+            for (int i = 0; i < ((ModelNode)parent).getChildCount(); i++) {
+                ModelNode child = ((ModelNode)parent).getChildAt(i);
+                if (child instanceof RemoteFrameworkElement && (((RemoteFrameworkElement)child).getFlags() & FrameworkElementFlags.NETWORK_ELEMENT) != 0) {
+                    return i;
+                }
+            }
+        }
         return ((ModelNode)parent).getChildCount();
     }
 
