@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util.treemodel;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -59,6 +60,12 @@ public class InterfaceTreeModel implements TreeModel {
 
 //    /** List with active connections */
 //    private final ArrayList<ExternalConnection> activeConnection = new ArrayList<ExternalConnection>();
+
+    /** Tag that indicates that an element should be shown initially */
+    private static final String INITIAL_SHOW_TAG = "initially show in tools:";
+
+    /** Current list with elements to show initially */
+    private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
 
     public InterfaceTreeModel() {
         externalConnectionParent.init();
@@ -115,11 +122,60 @@ public class InterfaceTreeModel implements TreeModel {
         return new SingleInterfaceHandler();
     }
 
+    /**
+     * @return Element to show initially, if any such elements has appeared
+     */
+    public RemoteFrameworkElement getElementToShowInitially() {
+        RemoteFrameworkElement result = null;
+        int resultPriority = Integer.MIN_VALUE;
+        for (ElementToShowInitially entry : elementsToShowInitially) {
+            RemoteFrameworkElement element = entry.element.get();
+            if (element != null && element.isNodeAncestor(root)) {
+                if (entry.priority > resultPriority) {
+                    result = element;
+                    resultPriority = entry.priority;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * (may only be called by Java AWT Thread)
+     * @return Returns list with elements marked as to be shown initially that were added since the last call to this function.
+     */
+    public List<RemoteFrameworkElement> getAndClearElementsToShowInitially() {
+        ArrayList<RemoteFrameworkElement> result = new ArrayList<RemoteFrameworkElement>();
+        for (ElementToShowInitially toShow : elementsToShowInitially) {
+            RemoteFrameworkElement element = toShow.element.get();
+            if (element != null) {
+                result.add(element);
+            }
+        }
+        elementsToShowInitially.clear();
+        return result;
+    }
+
     /** Helper enum for ModelHandler implementation below: Opcodes */
     private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
 
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
     private enum ElementClass { INTERFACE, NONPORT, PORT }
+
+    /**
+     * Contains information on an element to show initially
+     */
+    private class ElementToShowInitially {
+
+        /** Reference to element */
+        WeakReference<RemoteFrameworkElement> element;
+
+        /** Timestamp when it was discovered */
+        long discovered;
+
+        /** Priority that was set for initial viewing */
+        int priority;
+    }
 
     /**
      * Model handler for single external connection
@@ -199,6 +255,7 @@ public class InterfaceTreeModel implements TreeModel {
                 ModelNode parent = node1;
                 ModelNode newChild = node2;
                 sortNewTreeNode(newChild);
+                checkForElementsToShow(newChild);
 
                 if (newChild.getParent() == parent) {
                     return;
@@ -259,6 +316,7 @@ public class InterfaceTreeModel implements TreeModel {
                 parent = node1.getParent();
                 if (parent != null) {
                     sortNewTreeNode(node2);
+                    checkForElementsToShow(node2);
                     parent.replace(node1, node2);
                     /*index = parent.getIndex(node1);
                     assert(index >= 0);
@@ -314,6 +372,30 @@ public class InterfaceTreeModel implements TreeModel {
             }
             for (int i = 0; i < node.getChildCount(); i++) {
                 sortNewTreeNode((ModelNode)node.getChildAt(i));
+            }
+        }
+
+        /**
+         * Check element and all of its subelements for elements to initially show
+         */
+        private void checkForElementsToShow(ModelNode node) {
+            if (node instanceof RemoteFrameworkElement) {
+                List<String> tags = ((RemoteFrameworkElement)node).getTags();
+                if (tags != null) {
+                    for (String tag : tags) {
+                        if (tag.startsWith(INITIAL_SHOW_TAG)) {
+                            ElementToShowInitially toShow = new ElementToShowInitially();
+                            toShow.element = new WeakReference<RemoteFrameworkElement>((RemoteFrameworkElement)node);
+                            toShow.discovered = System.currentTimeMillis();
+                            toShow.priority = Integer.parseInt(tag.substring(INITIAL_SHOW_TAG.length()));
+                            elementsToShowInitially.add(toShow);
+                            break;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < node.getChildCount(); i++) {
+                checkForElementsToShow((ModelNode)node.getChildAt(i));
             }
         }
     }

@@ -360,6 +360,13 @@ public class MJTree<T> extends JTree implements MouseListener {
                 }
             }
         }
+
+        @Override
+        public void treeStructureChanged(TreeModelEvent e) {
+            storeExpandedElements();
+            super.treeStructureChanged(e);
+            restoreExpandedElements();
+        }
     }
 
     /**
@@ -380,6 +387,7 @@ public class MJTree<T> extends JTree implements MouseListener {
      * (expansion state can be restored by calling restoreExpandedElements() )
      */
     public void storeExpandedElements() {
+        // TODO: do this clean (also non-ports) and efficient
         storedExpandedElements = getVisibleObjects();
     }
 
