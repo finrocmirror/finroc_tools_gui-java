@@ -102,7 +102,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     public static final ConnectorIcon.IconColor connectionPartnerMissingColor = new ConnectorIcon.IconColor(new Color(120, 10, 10));
 
     /** show right tree? */
-    private boolean showRightTree;
+    protected boolean showRightTree;
 
     /** parent window */
     private Owner parent;
