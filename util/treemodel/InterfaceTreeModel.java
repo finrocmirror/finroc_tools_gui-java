@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util.treemodel;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,11 +34,13 @@ import javax.swing.tree.TreePath;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElementFlags;
+import org.finroc.core.FrameworkElementTags;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.RemoteFrameworkElement;
+import org.finroc.core.remote.RemoteRuntime;
 import org.finroc.tools.gui.FinrocGUI;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
@@ -59,6 +62,15 @@ public class InterfaceTreeModel implements TreeModel {
 
 //    /** List with active connections */
 //    private final ArrayList<ExternalConnection> activeConnection = new ArrayList<ExternalConnection>();
+
+    /** Tag that indicates that an element should be shown initially */
+    private static final String INITIAL_SHOW_TAG = "initially show in tools:";
+
+    /** Current list with elements to show initially */
+    private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
+
+    /** Show hidden elements in finstruct (not necessary and confusing for application developers; Finroc developers can be interested) */
+    public final boolean SHOW_HIDDEN_ELEMENTS = false;
 
     public InterfaceTreeModel() {
         externalConnectionParent.init();
@@ -115,11 +127,60 @@ public class InterfaceTreeModel implements TreeModel {
         return new SingleInterfaceHandler();
     }
 
+    /**
+     * @return Element to show initially, if any such elements has appeared
+     */
+    public RemoteFrameworkElement getElementToShowInitially() {
+        RemoteFrameworkElement result = null;
+        int resultPriority = Integer.MIN_VALUE;
+        for (ElementToShowInitially entry : elementsToShowInitially) {
+            RemoteFrameworkElement element = entry.element.get();
+            if (element != null && element.isNodeAncestor(root)) {
+                if (entry.priority > resultPriority) {
+                    result = element;
+                    resultPriority = entry.priority;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * (may only be called by Java AWT Thread)
+     * @return Returns list with elements marked as to be shown initially that were added since the last call to this function.
+     */
+    public List<RemoteFrameworkElement> getAndClearElementsToShowInitially() {
+        ArrayList<RemoteFrameworkElement> result = new ArrayList<RemoteFrameworkElement>();
+        for (ElementToShowInitially toShow : elementsToShowInitially) {
+            RemoteFrameworkElement element = toShow.element.get();
+            if (element != null) {
+                result.add(element);
+            }
+        }
+        elementsToShowInitially.clear();
+        return result;
+    }
+
     /** Helper enum for ModelHandler implementation below: Opcodes */
     private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
 
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
-    private enum ElementClass { INTERFACE, NONPORT, PORT }
+    private enum ElementClass { INTERFACE, NONPORT, PORT, HIDDEN }
+
+    /**
+     * Contains information on an element to show initially
+     */
+    private class ElementToShowInitially {
+
+        /** Reference to element */
+        WeakReference<RemoteFrameworkElement> element;
+
+        /** Timestamp when it was discovered */
+        long discovered;
+
+        /** Priority that was set for initial viewing */
+        int priority;
+    }
 
     /**
      * Model handler for single external connection
@@ -198,7 +259,9 @@ public class InterfaceTreeModel implements TreeModel {
             case ADD:
                 ModelNode parent = node1;
                 ModelNode newChild = node2;
+                markHiddenElements(newChild);
                 sortNewTreeNode(newChild);
+                checkForElementsToShow(newChild);
 
                 if (newChild.getParent() == parent) {
                     return;
@@ -258,7 +321,9 @@ public class InterfaceTreeModel implements TreeModel {
             case REPLACE:
                 parent = node1.getParent();
                 if (parent != null) {
+                    markHiddenElements(node2);
                     sortNewTreeNode(node2);
+                    checkForElementsToShow(node2);
                     parent.replace(node1, node2);
                     /*index = parent.getIndex(node1);
                     assert(index >= 0);
@@ -289,6 +354,9 @@ public class InterfaceTreeModel implements TreeModel {
          */
         private ElementClass getNodeClass(ModelNode node) {
             if (node instanceof RemoteFrameworkElement) {
+                if (node.isHidden(false)) {
+                    return ElementClass.HIDDEN;
+                }
                 int flags = ((RemoteFrameworkElement)node).getFlags();
                 if ((flags & FrameworkElementFlags.PORT) != 0) {
                     return ElementClass.PORT;
@@ -306,6 +374,21 @@ public class InterfaceTreeModel implements TreeModel {
         }
 
         /**
+         * Checks all elements for hidden flag
+         */
+        private void markHiddenElements(ModelNode node) {
+            if (SHOW_HIDDEN_ELEMENTS) {
+                return;
+            }
+            if (node instanceof RemoteFrameworkElement && ((RemoteFrameworkElement)node).isTagged(FrameworkElementTags.HIDDEN_IN_TOOLS)) {
+                node.setHidden(true);
+            }
+            for (int i = 0; i < node.getChildCount(); i++) {
+                markHiddenElements((ModelNode)node.getChildAt(i));
+            }
+        }
+
+        /**
          * Sorts elements of specified node and all of its subnodes recursively.
          */
         public void sortNewTreeNode(ModelNode node) {
@@ -314,6 +397,30 @@ public class InterfaceTreeModel implements TreeModel {
             }
             for (int i = 0; i < node.getChildCount(); i++) {
                 sortNewTreeNode((ModelNode)node.getChildAt(i));
+            }
+        }
+
+        /**
+         * Check element and all of its subelements for elements to initially show
+         */
+        private void checkForElementsToShow(ModelNode node) {
+            if (node instanceof RemoteFrameworkElement) {
+                List<String> tags = ((RemoteFrameworkElement)node).getTags();
+                if (tags != null) {
+                    for (String tag : tags) {
+                        if (tag.startsWith(INITIAL_SHOW_TAG)) {
+                            ElementToShowInitially toShow = new ElementToShowInitially();
+                            toShow.element = new WeakReference<RemoteFrameworkElement>((RemoteFrameworkElement)node);
+                            toShow.discovered = System.currentTimeMillis();
+                            toShow.priority = Integer.parseInt(tag.substring(INITIAL_SHOW_TAG.length()));
+                            elementsToShowInitially.add(toShow);
+                            break;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < node.getChildCount(); i++) {
+                checkForElementsToShow((ModelNode)node.getChildAt(i));
             }
         }
     }
@@ -349,6 +456,15 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public int getChildCount(Object parent) {
+        if (parent instanceof RemoteRuntime) {
+            // only return number of non-hidden elements
+            for (int i = 0; i < ((ModelNode)parent).getChildCount(); i++) {
+                ModelNode child = ((ModelNode)parent).getChildAt(i);
+                if (child.isHidden(false)) {
+                    return i;
+                }
+            }
+        }
         return ((ModelNode)parent).getChildCount();
     }
 
