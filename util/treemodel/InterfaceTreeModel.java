@@ -34,6 +34,7 @@ import javax.swing.tree.TreePath;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElementFlags;
+import org.finroc.core.FrameworkElementTags;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.plugin.ExternalConnection;
 import org.finroc.core.remote.ModelHandler;
@@ -68,8 +69,8 @@ public class InterfaceTreeModel implements TreeModel {
     /** Current list with elements to show initially */
     private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
 
-    /** Show network elements in finstruct (not necessary and confusing for application developers; Finroc developers can be interested) */
-    public final boolean SHOW_NETWORK_ELEMENTS = false;
+    /** Show hidden elements in finstruct (not necessary and confusing for application developers; Finroc developers can be interested) */
+    public final boolean SHOW_HIDDEN_ELEMENTS = false;
 
     public InterfaceTreeModel() {
         externalConnectionParent.init();
@@ -164,7 +165,7 @@ public class InterfaceTreeModel implements TreeModel {
     private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
 
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
-    private enum ElementClass { INTERFACE, NONPORT, PORT, NETWORK_ELEMENT }
+    private enum ElementClass { INTERFACE, NONPORT, PORT, HIDDEN }
 
     /**
      * Contains information on an element to show initially
@@ -258,6 +259,7 @@ public class InterfaceTreeModel implements TreeModel {
             case ADD:
                 ModelNode parent = node1;
                 ModelNode newChild = node2;
+                markHiddenElements(newChild);
                 sortNewTreeNode(newChild);
                 checkForElementsToShow(newChild);
 
@@ -319,6 +321,7 @@ public class InterfaceTreeModel implements TreeModel {
             case REPLACE:
                 parent = node1.getParent();
                 if (parent != null) {
+                    markHiddenElements(node2);
                     sortNewTreeNode(node2);
                     checkForElementsToShow(node2);
                     parent.replace(node1, node2);
@@ -351,10 +354,10 @@ public class InterfaceTreeModel implements TreeModel {
          */
         private ElementClass getNodeClass(ModelNode node) {
             if (node instanceof RemoteFrameworkElement) {
-                int flags = ((RemoteFrameworkElement)node).getFlags();
-                if ((flags & FrameworkElementFlags.NETWORK_ELEMENT) != 0) {
-                    return ElementClass.NETWORK_ELEMENT;
+                if (node.isHidden(false)) {
+                    return ElementClass.HIDDEN;
                 }
+                int flags = ((RemoteFrameworkElement)node).getFlags();
                 if ((flags & FrameworkElementFlags.PORT) != 0) {
                     return ElementClass.PORT;
                 }
@@ -368,6 +371,21 @@ public class InterfaceTreeModel implements TreeModel {
             ElementClass class1 = getNodeClass(node1);
             ElementClass class2 = getNodeClass(node2);
             return class1.ordinal() < class2.ordinal() ? -1 : (class1.ordinal() > class2.ordinal() ? 1 : (node1.toString().compareToIgnoreCase(node2.toString())));
+        }
+
+        /**
+         * Checks all elements for hidden flag
+         */
+        private void markHiddenElements(ModelNode node) {
+            if (SHOW_HIDDEN_ELEMENTS) {
+                return;
+            }
+            if (node instanceof RemoteFrameworkElement && ((RemoteFrameworkElement)node).isTagged(FrameworkElementTags.HIDDEN_IN_TOOLS)) {
+                node.setHidden(true);
+            }
+            for (int i = 0; i < node.getChildCount(); i++) {
+                markHiddenElements((ModelNode)node.getChildAt(i));
+            }
         }
 
         /**
@@ -438,11 +456,11 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public int getChildCount(Object parent) {
-        if ((!SHOW_NETWORK_ELEMENTS) && (parent instanceof RemoteRuntime)) {
-            // only return number non-network elements
+        if (parent instanceof RemoteRuntime) {
+            // only return number of non-hidden elements
             for (int i = 0; i < ((ModelNode)parent).getChildCount(); i++) {
                 ModelNode child = ((ModelNode)parent).getChildAt(i);
-                if (child instanceof RemoteFrameworkElement && (((RemoteFrameworkElement)child).getFlags() & FrameworkElementFlags.NETWORK_ELEMENT) != 0) {
+                if (child.isHidden(false)) {
                     return i;
                 }
             }
