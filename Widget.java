@@ -41,7 +41,8 @@ import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.tools.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElement.ChildIterator;
@@ -166,7 +167,7 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         try {
             ReflectionHelper.visitAllFields(getClass(), true, true, this, 1);
         } catch (Exception e) {
-            log(LogLevel.ERROR, logDomain, e);
+            Log.log(LogLevel.ERROR, this, e);
         }
         return embeddedFiles;
     }

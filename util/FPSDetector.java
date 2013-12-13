@@ -21,8 +21,8 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util;
 
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -50,7 +50,7 @@ public class FPSDetector {
         //System.out.println(time1 - System.currentTimeMillis());
         long diff = System.currentTimeMillis() - lastOutput;
         if (diff > 1000) {
-            FinrocGUI.logDomain.log(LogLevel.USER, "FPSDetector", ((frameCount * 1000) / diff) + " fps   " + maxTime);
+            Log.log(LogLevel.USER, "FPSDetector", ((frameCount * 1000) / diff) + " fps   " + maxTime);
             frameCount = 0;
             lastOutput = System.currentTimeMillis();
             maxTime = 0;

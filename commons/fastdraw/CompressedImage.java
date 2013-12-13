@@ -32,15 +32,17 @@ import javax.imageio.ImageIO;
 
 import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.HasBlittable;
-import org.rrlib.finroc_core_utils.rtti.DataType;
-import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.Serialization;
-import org.rrlib.finroc_core_utils.serialization.StringInputStream;
-import org.rrlib.finroc_core_utils.serialization.StringOutputStream;
-import org.rrlib.finroc_core_utils.xml.XMLNode;
+import org.rrlib.serialization.BinaryInputStream;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.Serialization;
+import org.rrlib.serialization.StringInputStream;
+import org.rrlib.serialization.StringOutputStream;
+import org.rrlib.serialization.StringSerializable;
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.serialization.rtti.DataType;
+import org.rrlib.xml.XMLNode;
 
-public class CompressedImage extends Blittable implements HasBlittable {
+public class CompressedImage extends Blittable implements HasBlittable, StringSerializable, XMLSerializable {
 
     private byte[] compressedData;
     private int dataSize;
@@ -105,7 +107,7 @@ public class CompressedImage extends Blittable implements HasBlittable {
     }
 
     @Override
-    public void deserialize(InputStreamBuffer is) {
+    public void deserialize(BinaryInputStream is) {
         int size = is.readInt();
         if (compressedData.length < size) {
             compressedData = new byte[size * 2]; // keep some bytes for reserve...
@@ -115,7 +117,7 @@ public class CompressedImage extends Blittable implements HasBlittable {
     }
 
     @Override
-    public void serialize(OutputStreamBuffer os) {
+    public void serialize(BinaryOutputStream os) {
         os.writeInt(dataSize);
         os.write(compressedData, 0, dataSize);
     }

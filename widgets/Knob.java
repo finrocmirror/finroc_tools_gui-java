@@ -39,7 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
 
 import org.finroc.plugins.data_types.Angle;
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetOutput;
@@ -51,8 +50,9 @@ import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.NumericRepresentation;
 
 
 /**
@@ -128,7 +128,7 @@ public class Knob extends Widget {
             svgSize = Math.min(svgWidth, svgHeight);
             halfSVGSize = svgSize / 2;
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, "Knob", e);
+            Log.log(LogLevel.ERROR, e);
         }
     }
 

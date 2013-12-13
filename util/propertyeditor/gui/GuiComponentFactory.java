@@ -37,7 +37,7 @@ import org.finroc.tools.gui.util.propertyeditor.StringEditor;
 import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.datatype.Unit;
 import org.finroc.plugins.data_types.StringList;
-import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
+import org.rrlib.serialization.rtti.DataTypeBase;
 
 /**
  * @author Max Reichardt

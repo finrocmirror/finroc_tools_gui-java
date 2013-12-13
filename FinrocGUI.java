@@ -48,9 +48,6 @@ import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.util.gui.FileDialog;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
 import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.RuntimeEnvironment;
@@ -58,6 +55,8 @@ import org.finroc.core.RuntimeSettings;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
 import org.finroc.core.plugin.Plugins;
 import org.finroc.core.util.Files;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -78,9 +77,6 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
     /** Persistent GUI Settings */
     private Settings persistentSettings;
-
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("gui");
 
     /** Is Control-Key currently pressed? */
     private transient boolean ctrlPressed = false;
@@ -232,7 +228,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     }
 
     public void showErrorMessage(Exception e) {
-        FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
+        Log.log(LogLevel.ERROR, this, e);
         JOptionPane.showMessageDialog(null, e.getClass().getName() + "\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -528,7 +524,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
                     }
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, e.getMessage());
-                    FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
+                    Log.log(LogLevel.ERROR, this, e);
                     System.exit(-1);
                 }
             }
@@ -598,7 +594,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
             try {
                 FinrocGuiXmlSerializer.getInstance().toXML(this, new BufferedWriter(new FileWriter(SETTINGSFILE)));
             } catch (Exception e) {
-                FinrocGUI.logDomain.log(LogLevel.ERROR, "FinrocGUI", e);
+                Log.log(LogLevel.ERROR, this, e);
             }
         }
 

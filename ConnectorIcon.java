@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -112,7 +113,7 @@ public class ConnectorIcon extends ImageIcon {
             icon = createIcon(type, height);
             iconCache[type.getIndexInCache()] = icon;
         } else if (icon.getIconHeight() != height) {
-            FinrocGUI.logDomain.log(LogLevel.WARNING, "ConnectorIcon", "Icons of different size not properly supported yet"); // Could be added with reasonable effort
+            Log.log(LogLevel.WARNING, "Icons of different size not properly supported yet"); // Could be added with reasonable effort
             return createIcon(type, height);
         }
         return icon;

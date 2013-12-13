@@ -46,11 +46,12 @@ import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 import org.finroc.plugins.data_types.PartWiseLinearFunction;
-import org.rrlib.finroc_core_utils.rtti.DataType;
-import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
+import org.rrlib.serialization.rtti.DataType;
+import org.rrlib.serialization.rtti.DataTypeBase;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 
@@ -144,7 +145,7 @@ public class Oscilloscope extends Widget {
             // create thread
             thread = new OscilloscopeThread();
             thread.start();
-            log(LogLevel.DEBUG, logDomain, "Oscilloscope Thread started.");
+            Log.log(LogLevel.DEBUG, this, "Oscilloscope Thread started.");
 
             signals.addChangeListener(this);
             widgetPropertiesChanged();
@@ -228,7 +229,7 @@ public class Oscilloscope extends Widget {
             public void mainLoopCallback() throws Exception {
                 if (!isVisible()) {
                     stopLoop(); // disposed
-                    log(LogLevel.DEBUG, logDomain, "Oscilloscope Thread stopped.");
+                    Log.log(LogLevel.DEBUG, this, "Oscilloscope Thread stopped.");
                     return;
                 }
 
@@ -242,7 +243,7 @@ public class Oscilloscope extends Widget {
                     }
                     repaint();
                 } catch (Exception e) {
-                    log(LogLevel.DEBUG_WARNING, logDomain, "Oscilloscope Thread skipped loop, because of temporary exception");
+                    Log.log(LogLevel.DEBUG_WARNING, this, "Oscilloscope Thread skipped loop, because of temporary exception");
                 }
             }
         }

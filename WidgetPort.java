@@ -39,7 +39,7 @@ import org.finroc.core.portdatabase.FinrocTypeInfo;
 import org.finroc.core.remote.HasUid;
 import org.finroc.core.remote.PortWrapperTreeNode;
 import org.finroc.core.remote.RemotePort;
-import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
+import org.rrlib.serialization.NumericRepresentation;
 
 public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapperTreeNode, Serializable {
 

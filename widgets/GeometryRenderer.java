@@ -66,7 +66,8 @@ import org.finroc.tools.gui.util.gui.MToolBar;
 import org.finroc.tools.gui.util.gui.MouseEventListener;
 import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
 import org.finroc.plugins.data_types.Pose2D;
@@ -320,7 +321,7 @@ public class GeometryRenderer extends Widget {
                     //transform.invert();
                     Util.invert(transform);
                 } catch (NoninvertibleTransformException e) {
-                    log(LogLevel.ERROR, logDomain, e);
+                    Log.log(LogLevel.ERROR, e);
                 }
                 temp = new Point2D.Double(source.getDiffToLastPosX(), source.getDiffToLastPosY());
                 temp = transform.transform(temp, null);
@@ -395,7 +396,7 @@ public class GeometryRenderer extends Widget {
                 //transform.invert();  // only in Java 1.6
                 Util.invert(transform);
             } catch (NoninvertibleTransformException e) {
-                log(LogLevel.ERROR, logDomain, e);
+                Log.log(LogLevel.ERROR, e);
             }
             Point2D.Double temp = new Point2D.Double(p.x, p.y);
             return transform.transform(temp, null);

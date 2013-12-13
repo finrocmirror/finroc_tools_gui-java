@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
 import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
 
 

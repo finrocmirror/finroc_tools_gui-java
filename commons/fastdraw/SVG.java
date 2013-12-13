@@ -35,9 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.commons.Util;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
 
 import com.kitfox.svg.SVGCache;
@@ -94,10 +94,10 @@ public class SVG implements Paintable {
 
         byte[] temp = urlCache.get(svgUrl);
         if (temp == null) {
-            FinrocGUI.logDomain.log(LogLevel.DEBUG, "SVG", "Loading SVG " + svgUrl);
+            Log.log(LogLevel.DEBUG, "Loading SVG " + svgUrl);
             temp = Util.readStreamFully(svgUrl.openStream());
             urlCache.put(svgUrl, temp);
-            FinrocGUI.logDomain.log(LogLevel.DEBUG_VERBOSE_1, "SVG", "SVG " + svgUrl + " loaded");
+            Log.log(LogLevel.DEBUG_VERBOSE_1, "SVG " + svgUrl + " loaded");
         }
         return new SVG(new ByteArrayInputStream(temp));
     }
@@ -200,7 +200,7 @@ public class SVG implements Paintable {
         try {
             bounds = diagram.getRoot().getBoundingBox();
         } catch (SVGException e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
         return bounds;
     }

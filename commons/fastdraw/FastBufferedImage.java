@@ -31,8 +31,8 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Blittable;
 import org.finroc.plugins.data_types.Paintable;
 
@@ -116,7 +116,7 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
         try {
             ImageIO.write(wrapped, "png", file);
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
     }
 

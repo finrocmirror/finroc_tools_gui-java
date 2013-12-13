@@ -33,12 +33,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
-import org.rrlib.finroc_core_utils.jc.log.LogUser;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-
 import org.finroc.core.FrameworkElement;
 
 /**
@@ -47,7 +43,7 @@ import org.finroc.core.FrameworkElement;
  * Base class for all classes implementing the fingui data model
  */
 @SuppressWarnings("rawtypes")
-public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > extends LogUser implements Serializable, TreeNode {
+public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > implements Serializable, TreeNode {
 
     /** UID */
     private static final long serialVersionUID = -8960599158692149672L;
@@ -68,8 +64,6 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     /** Framework element (backend) corresponding to this Data model element */
     protected transient FrameworkElement frameworkElement = null;
 
-    /** log domain for gui */
-    public transient LogDomain logDomain = FinrocGUI.logDomain;
 
     public DataModelBase(P parent) {
         if (parent != null) {
@@ -98,9 +92,6 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
         }
         for (C child : children) {
             child.restore(this);
-        }
-        if (logDomain == null) {
-            logDomain = FinrocGUI.logDomain;
         }
         initialized = true;
     }

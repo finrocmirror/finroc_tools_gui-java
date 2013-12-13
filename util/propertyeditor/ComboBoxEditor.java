@@ -27,8 +27,8 @@ import java.awt.Dimension;
 import javax.naming.OperationNotSupportedException;
 import javax.swing.JComboBox;
 
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -55,7 +55,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
             jcmb = new JComboBox(values);
             valueUpdated(getCurWidgetValue());
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
         jcmb.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jcmb.getPreferredSize().height));
         add(jcmb, BorderLayout.CENTER);
@@ -68,7 +68,7 @@ public class ComboBoxEditor<T> extends PropertyEditComponent<T> {
             jcmb = new JComboBox(values);
             valueUpdated(object);
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
         add(jcmb);
         jcmb.setEnabled(isModifiable());

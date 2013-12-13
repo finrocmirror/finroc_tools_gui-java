@@ -56,7 +56,7 @@ import org.finroc.plugins.data_types.StringList;
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
-import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
+import org.rrlib.serialization.NumericRepresentation;
 
 public class LED extends Widget {
 

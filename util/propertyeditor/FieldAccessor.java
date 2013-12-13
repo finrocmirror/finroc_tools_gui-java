@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.finroc.tools.gui.commons.Util;
+import org.rrlib.serialization.Serialization;
 
 /**
  * @author Max Reichardt
@@ -58,7 +59,7 @@ public class FieldAccessor implements PropertyAccessor {
     @Override
     public Object get() {
         try {
-            return ObjectCloner.clone(property.get(objects.get(0)));
+            return Serialization.deepCopy(property.get(objects.get(0)));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +69,7 @@ public class FieldAccessor implements PropertyAccessor {
     public void set(Object newValue) {
         try {
             for (Object o : objects) {
-                property.set(o, ObjectCloner.clone(newValue));
+                property.set(o, Serialization.deepCopy(newValue));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

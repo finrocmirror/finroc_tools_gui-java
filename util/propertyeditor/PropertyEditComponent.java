@@ -26,8 +26,7 @@ import java.awt.BorderLayout;
 import javax.naming.OperationNotSupportedException;
 import javax.swing.JPanel;
 
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.log.LogDomain;
+import org.rrlib.serialization.Serialization;
 
 /**
  * @author Max Reichardt
@@ -53,9 +52,6 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     /** current value */
     private T curValue;
 
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("property_editor");
-
     public PropertyEditComponent() {
         setLayout(new BorderLayout());
     }
@@ -66,8 +62,8 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     public void applyChanges() throws Exception {
         T newValue = getCurEditorValue();
         if (isModifiable() && (curValue == null || !curValue.equals(newValue))) {
-            property.set(ObjectCloner.clone(newValue));
-            curValue = ObjectCloner.clone(newValue);
+            property.set(Serialization.deepCopy(newValue));
+            curValue = Serialization.deepCopy(newValue);
         }
     }
 
@@ -84,7 +80,7 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     /** update value (overwrites any changes in editor) */
     public void updateValue() throws Exception {
         curValue = property.get();
-        valueUpdated(ObjectCloner.clone(curValue));
+        valueUpdated(Serialization.deepCopy(curValue));
     }
 
     /**

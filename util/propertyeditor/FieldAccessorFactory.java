@@ -28,10 +28,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.commons.reflection.ReflectionCallback;
 import org.finroc.tools.gui.commons.reflection.ReflectionHelper;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -98,7 +98,7 @@ public class FieldAccessorFactory {
                 }, 0);
             }
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
         return componentsList;
     }

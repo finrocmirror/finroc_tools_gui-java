@@ -37,9 +37,9 @@ import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGElement;
 import com.kitfox.svg.SVGElementException;
 
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.rtti.DataType;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.rtti.DataType;
 
 /**
  * @author Max Reichardt
@@ -141,7 +141,7 @@ public class BufferedConvexSVG extends BufferedImageRGBConvexShape {
                 initColor();
             }
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+            Log.log(LogLevel.ERROR, this, e);
             return;
         }
         Point newDest = new Point(dest.x + xOffset - sourceArea.x, dest.y + yOffset - sourceArea.y);

@@ -32,11 +32,11 @@ import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.themes.Theme;
-import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.rrlib.serialization.BinarySerializable;
 
 
 public class Label extends Widget {
@@ -44,7 +44,7 @@ public class Label extends Widget {
     /** UID */
     private static final long serialVersionUID = -1817091621155537442L;
 
-    WidgetInput.Std<RRLibSerializable> text;
+    WidgetInput.Std<BinarySerializable> text;
 
     Color textColor = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL);
 
@@ -62,7 +62,7 @@ public class Label extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(RRLibSerializable.TYPE);
+        return suggestion.derive(BinarySerializable.TYPE);
     }
 
     @SuppressWarnings("rawtypes")

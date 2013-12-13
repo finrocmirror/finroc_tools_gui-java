@@ -41,8 +41,8 @@ import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.RemoteFrameworkElement;
 import org.finroc.core.remote.RemoteRuntime;
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -475,7 +475,7 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
-        FinrocGUI.logDomain.log(LogLevel.ERROR, "InterfaceTreeModel", "Changing values is not supported");
+        Log.log(LogLevel.ERROR, this, "Changing values is not supported");
     }
 
     @Override

@@ -27,8 +27,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.finroc.plugins.data_types.ContainsStrings;
-import org.finroc.tools.gui.FinrocGUI;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -90,7 +90,7 @@ public class StandardComponentFactory implements ComponentFactory {
             Enum[] values = (Enum[])m.invoke(null);
             return values;
         } catch (Exception e) {
-            FinrocGUI.logDomain.log(LogLevel.ERROR, "EnumEditor", e);
+            Log.log(LogLevel.ERROR, e);
         }
         return new Enum[0];
     }

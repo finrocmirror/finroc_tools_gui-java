@@ -25,9 +25,10 @@ import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.datatype.DataTypeReference;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
-import org.rrlib.finroc_core_utils.serialization.StringInputStream;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.BinarySerializable;
+import org.rrlib.serialization.StringInputStream;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
@@ -45,7 +46,7 @@ import org.finroc.core.portdatabase.UnknownTypeListener;
  */
 public class WidgetOutput {
 
-    public static class Std<T extends RRLibSerializable> extends WidgetOutputPort<Port<T>> {
+    public static class Std<T extends BinarySerializable> extends WidgetOutputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 6646515051948353004L;
@@ -71,7 +72,7 @@ public class WidgetOutput {
     /**
      * Deprecated: Don't use this in new widgets
      */
-    public static class CC<T extends RRLibSerializable> extends WidgetOutputPort<Port<T>> {
+    public static class CC<T extends BinarySerializable> extends WidgetOutputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = -6522086680079332096L;
@@ -166,7 +167,7 @@ public class WidgetOutput {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class Custom extends WidgetOutputPort<Port<RRLibSerializable>> implements UnknownTypeListener {
+    public static class Custom extends WidgetOutputPort<Port<BinarySerializable>> implements UnknownTypeListener {
 
         /** UID */
         private static final long serialVersionUID = -3991768387448158703L;
@@ -191,10 +192,10 @@ public class WidgetOutput {
         }
 
         public synchronized void publishFromString(String s) {
-            RRLibSerializable buffer = asPort().getUnusedBuffer();
+            BinarySerializable buffer = asPort().getUnusedBuffer();
             StringInputStream sis = new StringInputStream(s);
             try {
-                buffer.deserialize(sis);
+                buffer = (BinarySerializable)sis.readObject(buffer.getClass());
                 asPort().publish(buffer);
                 buffer = null;
             } catch (Exception ex) {
@@ -203,7 +204,7 @@ public class WidgetOutput {
                 } else {
                     ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
                 }
-                logDomain.log(LogLevel.ERROR, getLogDescription(), "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
+                Log.log(LogLevel.ERROR, this, "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
             }
         }
 

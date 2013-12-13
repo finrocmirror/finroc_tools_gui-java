@@ -33,9 +33,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.finroc.tools.gui.themes.Themes;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -64,9 +63,6 @@ public class PropertiesPanel extends JPanel {
         //setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
     }
 
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("property_editor");
-
     /**
      * Initialize panel
      *
@@ -86,13 +82,13 @@ public class PropertiesPanel extends JPanel {
                         break;
                     }
                 } catch (Exception e) {
-                    logDomain.log(LogLevel.ERROR, getLogDescription(), e);
+                    Log.log(LogLevel.ERROR, this, e);
                 }
             }
             if (wpec != null) {
                 componentList.add(wpec);
             } else {
-                logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
+                Log.log(LogLevel.WARNING, this, "Cannot find component type for type " + property.getType().getName()); // skip this property
             }
         }
 
@@ -124,7 +120,7 @@ public class PropertiesPanel extends JPanel {
         try {
             comp.createAndShow();
         } catch (Exception e) {
-            logDomain.log(LogLevel.ERROR, getLogDescription(), e);
+            Log.log(LogLevel.ERROR, this, e);
         }
 
         // Create label?
@@ -153,13 +149,6 @@ public class PropertiesPanel extends JPanel {
         gbcComp.weightx = 0.9;
         gbcComp.weighty = comp.isResizable() ? 0.2 : 0.0001;
         add(comp, gbcComp);
-    }
-
-    /**
-     * @return log description
-     */
-    private String getLogDescription() {
-        return getClass().getSimpleName();
     }
 
     /**

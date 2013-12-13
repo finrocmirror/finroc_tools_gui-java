@@ -40,11 +40,11 @@ import java.util.zip.ZipOutputStream;
 
 import javax.swing.tree.TreeNode;
 
-import org.finroc.tools.gui.FinrocGUI;
-import org.finroc.tools.gui.util.propertyeditor.ObjectCloner;
 import org.finroc.tools.gui.util.propertyeditor.gui.ResourcePathProvider;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.log.LogStream;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.logging.LogStream;
+import org.rrlib.serialization.Serialization;
 
 import org.finroc.core.util.Files;
 
@@ -173,7 +173,7 @@ public class FileManager {
 
             // Is file with same data already loaded?
             for (Entry<EmbeddedFile, byte[]> ef : files.entrySet()) {
-                if (ObjectCloner.equal(ef.getValue(), data)) {
+                if (Serialization.equals(ef.getValue(), data)) {
                     newfile.setUid(ef.getKey().getUid());
                     if (!newfile.init(this)) {
                         throw new Exception("Could not load file " + newfile.getFileName());
@@ -195,7 +195,7 @@ public class FileManager {
     public synchronized void importFile(EmbeddedFile newfile, byte[] data) {
         // Is file with same data already loaded?
         for (Entry<EmbeddedFile, byte[]> ef : files.entrySet()) {
-            if (ObjectCloner.equal(ef.getValue(), data)) {
+            if (Serialization.equals(ef.getValue(), data)) {
                 newfile.setUid(ef.getKey().getUid());
                 newfile.init(this);
                 return;
@@ -211,7 +211,7 @@ public class FileManager {
         for (byte[] data : files.values()) {
             space += data.length;
         }
-        FinrocGUI.logDomain.log(LogLevel.DEBUG, "FileManager", "File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
+        Log.log(LogLevel.DEBUG, this, "File loaded. Currently " + files.size() + " files loaded (" + space + " bytes).");
     }
 
     byte[] getData(long uid) {
@@ -232,7 +232,7 @@ public class FileManager {
      */
     public String getRelativeFilename(File file, String current) {
         if (file == null) {
-            FinrocGUI.logDomain.log(LogLevel.WARNING, "FileManager", "Cannot locate external file/folder: " + current);
+            Log.log(LogLevel.WARNING, this, "Cannot locate external file/folder: " + current);
             return current;
         }
 
@@ -327,7 +327,7 @@ public class FileManager {
             }
         }
 
-        LogStream ls = FinrocGUI.logDomain.getLogStream(LogLevel.WARNING, "FileManager");
+        LogStream ls = Log.getLogStream(LogLevel.WARNING, this);
         ls.append("warning: file " + relFilename + " not found in resource paths... ");
 
         // hmm... not found - maybe the absolute file name is still the same

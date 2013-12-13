@@ -34,7 +34,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
@@ -47,7 +46,8 @@ import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -134,7 +134,7 @@ public class Button extends Widget {
                     Icon icon = new ImageIcon(ImageIO.read(iconFile.getInputStream(getRoot().getEmbeddedFileManager())));
                     button.setIcon(icon);
                 } catch (Exception e) {
-                    FinrocGUI.logDomain.log(LogLevel.ERROR, toString(), e);
+                    Log.log(LogLevel.ERROR, this, e);
                 }
             }
             portChanged(null, null);

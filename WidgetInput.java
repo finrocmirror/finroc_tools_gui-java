@@ -22,8 +22,8 @@
 package org.finroc.tools.gui;
 
 import org.finroc.tools.gui.commons.EventRouter;
-import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
-import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
+import org.rrlib.serialization.BinarySerializable;
+import org.rrlib.serialization.NumericRepresentation;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.Port;
@@ -38,7 +38,7 @@ import org.finroc.core.port.ThreadLocalCache;
  */
 public class WidgetInput {
 
-    public static class Std<T extends RRLibSerializable> extends WidgetInputPort<Port<T>> {
+    public static class Std<T extends BinarySerializable> extends WidgetInputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 4446496337106684704L;
@@ -63,7 +63,7 @@ public class WidgetInput {
     /**
      * Deprecated: Don't use this in new widgets
      */
-    public static class CC<T extends RRLibSerializable> extends WidgetInputPort<Port<T>> {
+    public static class CC<T extends BinarySerializable> extends WidgetInputPort<Port<T>> {
 
         /** UID */
         private static final long serialVersionUID = 2195466520164567898L;

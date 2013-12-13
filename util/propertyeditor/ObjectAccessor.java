@@ -23,6 +23,8 @@ package org.finroc.tools.gui.util.propertyeditor;
 
 import java.lang.annotation.Annotation;
 
+import org.rrlib.serialization.Serialization;
+
 /**
  * @author Max Reichardt
  *
@@ -53,7 +55,7 @@ public class ObjectAccessor<T> implements PropertyAccessor<T> {
 
     @Override
     public T get() throws Exception {
-        return ObjectCloner.clone(wrapped);
+        return Serialization.deepCopy(wrapped);
     }
 
     @Override

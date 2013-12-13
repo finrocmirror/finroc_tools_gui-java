@@ -41,9 +41,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.finroc.tools.gui.commons.Util;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 @SuppressWarnings("rawtypes")
 public class PropertyListEditor extends PropertyEditComponent < PropertyListAccessor<? >> implements ChangeListener {
@@ -56,9 +55,6 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
     List<PropertyEditComponent[]> guielems = new ArrayList<PropertyEditComponent[]>();
     GridBagConstraints gbc = new GridBagConstraints();
     JSpinner spinner;
-
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("property_editor");
 
     /** Factories to use to create components from accessors */
     private final ComponentFactory[] componentFactories;
@@ -106,29 +102,22 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                     try {
                         wpec.createAndShowMinimal(wpec.getCurWidgetValue());
                     } catch (Exception e) {
-                        logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
-                        logDomain.log(LogLevel.WARNING, getLogDescription(), e); // skip this property
+                        Log.log(LogLevel.WARNING, this, "Cannot create minimal component type for type " + property.getType().getName()); // skip this property
+                        Log.log(LogLevel.WARNING, this, e); // skip this property
                     }
                     pecs[i] = wpec;
                     gbc.gridx = i;
                     listPanel.add(wpec, gbc);
                 } else {
-                    logDomain.log(LogLevel.WARNING, getLogDescription(), "Cannot find component type for type " + property.getType().getName()); // skip this property
+                    Log.log(LogLevel.WARNING, this, "Cannot find component type for type " + property.getType().getName()); // skip this property
                 }
             }
 
             guielems.add(pecs);
         } catch (Exception e) {
-            PropertiesPanel.logDomain.log(LogLevel.ERROR, "PropertyListEditor", e);
+            Log.log(LogLevel.ERROR, this, e);
             JOptionPane.showMessageDialog(null, e.getClass().getName() + "\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    /**
-     * @return log description
-     */
-    private String getLogDescription() {
-        return getClass().getSimpleName();
     }
 
     @Override

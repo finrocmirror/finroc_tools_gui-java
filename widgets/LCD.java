@@ -42,9 +42,10 @@ import org.finroc.tools.gui.commons.fastdraw.BufferedConvexSVG;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
 import org.finroc.tools.gui.themes.Theme;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.serialization.EnumValue;
-import org.rrlib.finroc_core_utils.serialization.NumericRepresentation;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.EnumValue;
+import org.rrlib.serialization.NumericRepresentation;
 
 import org.finroc.core.datatype.CoreBoolean;
 import org.finroc.core.datatype.CoreNumber;
@@ -186,7 +187,7 @@ public class LCD extends Widget {
                 }
                 updateColors(false);
             } catch (Exception e) {
-                log(LogLevel.ERROR, logDomain, e);
+                Log.log(LogLevel.ERROR, this, e);
             }
             widgetPropertiesChanged();
         }
@@ -347,7 +348,7 @@ public class LCD extends Widget {
             try {
                 updateColors(warn);
             } catch (Exception e) {
-                log(LogLevel.ERROR, logDomain, e);
+                Log.log(LogLevel.ERROR, this, e);
             }
             Rectangle firstBlock = new Rectangle(renderSize.width - blockWidth, (renderSize.height - blockHeight) / 2, blockWidth, blockHeight);
             for (int i = s.length() - 1; i >= 0; i--) {
@@ -446,7 +447,7 @@ public class LCD extends Widget {
 
             List<String> blocks = blocksForDigits.get(digit);
             if (blocks == null) {
-                log(LogLevel.WARNING, logDomain, "warning in LCD Widget: Cannot render digit " + digit);
+                Log.log(LogLevel.WARNING, this, "Cannot render digit " + digit);
             }
             for (String s : allBlocks) {
                 if (blocks.contains(s)) {

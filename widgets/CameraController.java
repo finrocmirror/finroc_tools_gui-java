@@ -55,9 +55,9 @@ import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.std.PortDataManager;
 import org.finroc.core.portdatabase.ReusableGenericObjectManager;
-import org.rrlib.finroc_core_utils.serialization.Serialization;
-import org.rrlib.finroc_core_utils.xml.XMLDocument;
-import org.rrlib.finroc_core_utils.xml.XMLNode;
+import org.rrlib.serialization.Serialization;
+import org.rrlib.xml.XMLDocument;
+import org.rrlib.xml.XMLNode;
 
 
 /**

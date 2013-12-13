@@ -40,7 +40,7 @@ import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
-import org.rrlib.finroc_core_utils.serialization.Serialization;
+import org.rrlib.serialization.Serialization;
 
 
 public class ComboBox extends Widget implements EnumConstantsImporter {
