@@ -49,6 +49,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.util.gui.FileDialog;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.plugins.data_types.StringList;
+import org.finroc.plugins.tcp.Peer;
 
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.RuntimeSettings;
@@ -80,6 +81,9 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
     /** Is Control-Key currently pressed? */
     private transient boolean ctrlPressed = false;
+
+    /** Dummy variable in order to create dependency to TCP plugin - at least as long as there is no other network transport available */
+    static final Peer TCP_DEPENDENCY = null;
 
     /** Contains information about connect tasks specified via command line */
     static class ConnectTask {
