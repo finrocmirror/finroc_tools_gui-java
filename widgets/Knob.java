@@ -65,34 +65,34 @@ public class Knob extends Widget {
     private static final long serialVersionUID = 193567299267933L;
 
     /** Value output port */
-    private WidgetOutput.Std<Angle> value;
+    public WidgetOutput.Std<Angle> value;
 
     /** Current value input */
-    private WidgetInput.Numeric measuredValue;
+    public WidgetInput.Numeric measuredValue;
 
     /** Parameters */
-    private double minimum = 0, maximum = 360;
+    public double minimum = 0, maximum = 360;
 
     /** Where does scale begin and end? (degree) */
-    private double scaleBeginAngle = 0, scaleArcLength = 360;
+    public double scaleBeginAngle = 0, scaleArcLength = 360;
 
     /** Number of segments scale should have */
-    private int scaleSegments = 8;
+    public int scaleSegments = 8;
 
     /** Clockwise knob? */
-    private boolean clockwise = true;
+    public boolean clockwise = true;
 
     /** Ring Background */
-    private Color ringBackground = Color.black;
+    public Color ringBackground = Color.black;
 
     /** Ring Indication Color */
-    private Color ringIndication = new Color(255, 102, 0);
+    public Color ringIndication = new Color(255, 102, 0);
 
     /** Show ticks? Show labels? */
-    private boolean showTicks = true, showLabels = true;
+    public boolean showTicks = true, showLabels = true;
 
     /** Current value */
-    private transient double currentValue;
+    public transient double currentValue;
 
     /** SVG resources */
     private static SVG svgBack, svgIndicator;

@@ -31,6 +31,7 @@ import org.finroc.tools.gui.commons.fastdraw.CompressedImage;
 import org.finroc.tools.gui.plugin.GUIPlugin;
 import org.finroc.tools.gui.util.PackageContentEnumerator;
 
+import org.finroc.core.RuntimeSettings;
 import org.finroc.core.plugin.CreateExternalConnectionAction;
 import org.finroc.core.plugin.Plugin;
 import org.finroc.core.plugin.Plugins;
@@ -62,7 +63,6 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
     private static List<GUICodec> guiCodecs = new ArrayList<GUICodec>();
 
     /** Variables to globally query in which mode Jmcagui is running */
-    public static boolean appletMode = false;
     public static boolean serverMode = false;
 
     public static void init(GUIUiBase <? , ? > base) {
@@ -122,7 +122,7 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
             }
         }
 
-        if (!appletMode) {
+        if (!RuntimeSettings.isRunningInApplet()) {
             for (Class<?> c : this) {
                 FinrocGuiXmlSerializer.getInstance().alias(c.getSimpleName(), c);
                 for (Class<?> inner : c.getClasses()) {
@@ -202,9 +202,11 @@ public class WidgetAndInterfaceRegister extends ArrayList < Class <? extends Wid
         // sort widgets alphabetically
         Collections.sort(this, this);
 
-        ClassLoader cl = Plugins.getInstance().getPluginClassLoader();
-        if (cl != null) {
-            FinrocGuiXmlSerializer.getInstance().setClassLoader(cl);
+        if (!RuntimeSettings.isRunningInApplet()) {
+            ClassLoader cl = Plugins.getInstance().getPluginClassLoader();
+            if (cl != null) {
+                FinrocGuiXmlSerializer.getInstance().setClassLoader(cl);
+            }
         }
     }
 

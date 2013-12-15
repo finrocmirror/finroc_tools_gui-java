@@ -77,17 +77,17 @@ public class VideoRenderer extends Widget {
     public int imageIndexInSource;
 
     /** Shows or hides the tool bar*/
-    private boolean hideToolbar = true;
+    public boolean hideToolbar = true;
 
     /** Activates image scaling */
-    private boolean scaleImage = false;
+    public boolean scaleImage = false;
 
     /** Indicates whether to keep image aspect ration or not */
-    private boolean keepAspectRatio = true;
+    public boolean keepAspectRatio = true;
 
-    private ScaleMode scaleMode = ScaleMode.scaleFast;
+    public ScaleMode scaleMode = ScaleMode.scaleFast;
 
-    private java.lang.String fileExtension = "png";
+    public java.lang.String fileExtension = "png";
 
     @Override
     protected WidgetUI createWidgetUI() {

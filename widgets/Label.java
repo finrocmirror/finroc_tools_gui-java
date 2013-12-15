@@ -44,11 +44,11 @@ public class Label extends Widget {
     /** UID */
     private static final long serialVersionUID = -1817091621155537442L;
 
-    WidgetInput.Std<BinarySerializable> text;
+    public WidgetInput.Std<BinarySerializable> text;
 
-    Color textColor = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL);
+    public Color textColor = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL);
 
-    float fontSize = 36;
+    public float fontSize = 36;
 
     @Override
     protected void setDefaultColors() {

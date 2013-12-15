@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,11 +46,13 @@ import org.finroc.tools.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.Serialization;
 import org.rrlib.xml.XMLNode;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElement.ChildIterator;
 import org.finroc.core.LockOrderLevels;
+import org.finroc.core.RuntimeSettings;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.ThreadLocalCache;
 
@@ -154,15 +157,13 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
      * init Ports
      */
     protected void initPorts() {
-        if (!WidgetAndInterfaceRegister.appletMode) { // Browser GUI doesn't need to reinitialize ports
-            children.clear();
-            try {
-                ReflectionHelper.visitAllFields(getClass(), true, true, this, 0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            fireDataModelEvent(DataModelListener.Event.ChildrenChanged, this);
+        children.clear();
+        try {
+            ReflectionHelper.visitAllFields(getClass(), false, true, this, 0);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+        fireDataModelEvent(DataModelListener.Event.ChildrenChanged, this);
     }
 
     public synchronized Collection<AbstractFile> getEmbeddedFiles() {
@@ -327,18 +328,48 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
 
     @Override
     public void serialize(XMLNode node) throws Exception {
-        serialize(node, "bounds", bounds);
+        serialize(node.addChildNode("bounds"), bounds);
         node.addChildNode("label").setContent(label);
-        serialize(node, "labelColor", labelColor);
-        serialize(node, "background", background);
+        serialize(node.addChildNode("labelColor"), labelColor);
+        serialize(node.addChildNode("background"), background);
 //        XMLNode fileNode = node.addChildNode("embeddedFiles");
 //        for (AbstractFile file : embeddedFiles) {
 //            FileManager.serializeFile(fileNode, file);
 //        }
+
+        // Serialize all public fields of widget
+        ArrayList<Field> fields = getFieldsToSerialize(this.getClass());
+        for (Field field : fields) {
+            Object value = field.get(this);
+            if (value != null) {
+                genericSerialize(node.addChildNode(field.getName()), value);
+            }
+        }
+    }
+
+    /**
+     * Generic serialization of an object to an XML node
+     * (similar to Serialization.serialize - but with additional support for some e.g. AWT types)
+     *
+     * @param node Node to serialize to
+     * @param object Object to serialize
+     */
+    public static void genericSerialize(XMLNode node, Object object) throws Exception {
+        if (object instanceof Color) {
+            serialize(node, (Color)object);
+        } else if (object instanceof Rectangle) {
+            serialize(node, (Rectangle)object);
+        } else {
+            Serialization.serialize(node, object);
+        }
     }
 
     @Override
     public void deserialize(XMLNode node) throws Exception {
+
+        // Deserialize all public fields of widget
+        ArrayList<Field> fields = getFieldsToSerialize(this.getClass());
+
         super.children.clear();
         for (XMLNode child : node.children()) {
             try {
@@ -354,6 +385,14 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
 //                    for (XMLNode fileNode : child.children()) {
 //                        embeddedFiles.add(FileManager.deserializeFile(fileNode));
 //                    }
+                } else {
+                    for (Field field : fields) {
+                        if (field.getName().equals(child.getName())) {
+                            System.out.println("Deserializing field " + field.getName());
+                            field.set(this, genericDeserialize(child, field.get(this), field.getType()));
+                            break;
+                        }
+                    }
                 }
             } catch (Exception e) {
                 Log.log(LogLevel.ERROR, e);
@@ -361,13 +400,51 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         }
     }
 
+    /**
+     * Generic deserialization of an object from an XML node
+     * (similar to Serialization.deserialize - but with additional support for some e.g. AWT types)
+     *
+     * @param node Node to deserialize from
+     * @param deserializeTo Object to call deserialize() on (optional; will contain result of deserialization, in case type is a mutable type)
+     * @param type Type object must have
+     * @return Deserialized object (new object for immutable types, provided object in case of a mutable type)
+     */
+    public static Object genericDeserialize(XMLNode node, Object deserializeTo, Class<?> type) throws Exception {
+        if (type.equals(Color.class)) {
+            return deserializeColor(node);
+        } else if (type.equals(Rectangle.class)) {
+            return deserializeRectangle(node);
+        } else {
+            return Serialization.deserialize(node, deserializeTo, type);
+        }
+    }
+
     // Helper methods for convenient serialization of e.g. AWT elements //
-    public static void serialize(XMLNode node, String nodeName, Rectangle rect) throws Exception {
-        XMLNode childNode = node.addChildNode(nodeName);
-        childNode.addChildNode("x").setContent("" + rect.x);
-        childNode.addChildNode("y").setContent("" + rect.y);
-        childNode.addChildNode("width").setContent("" + rect.width);
-        childNode.addChildNode("height").setContent("" + rect.height);
+
+    /**
+     * Gets fields to serialize when serializing or deserializing a widget to a fingui file
+     *
+     * @param widgetClass Widget class to check
+     * @return List of (public) fields
+     */
+    private static ArrayList<Field> getFieldsToSerialize(Class<?> widgetClass) {
+        ArrayList<Field> result = new ArrayList<Field>();
+        for (Field field : widgetClass.getFields()) {
+            if ((!Modifier.isTransient(field.getModifiers())) && (!Modifier.isStatic(field.getModifiers()))) {
+                result.add(field);
+            }
+        }
+        if (!widgetClass.getSuperclass().equals(Widget.class)) {
+            result.addAll(getFieldsToSerialize(widgetClass.getSuperclass()));
+        }
+        return result;
+    }
+
+    public static void serialize(XMLNode node, Rectangle rect) throws Exception {
+        node.addChildNode("x").setContent("" + rect.x);
+        node.addChildNode("y").setContent("" + rect.y);
+        node.addChildNode("width").setContent("" + rect.width);
+        node.addChildNode("height").setContent("" + rect.height);
     }
 
     public static Rectangle deserializeRectangle(XMLNode node) throws Exception {
@@ -389,12 +466,11 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         return rect;
     }
 
-    public static void serialize(XMLNode node, String nodeName, Color color) throws Exception {
-        XMLNode childNode = node.addChildNode(nodeName);
-        childNode.addChildNode("red").setContent("" + color.getRed());
-        childNode.addChildNode("green").setContent("" + color.getGreen());
-        childNode.addChildNode("blue").setContent("" + color.getBlue());
-        childNode.addChildNode("alpha").setContent("" + color.getAlpha());
+    public static void serialize(XMLNode node, Color color) throws Exception {
+        node.addChildNode("red").setContent("" + color.getRed());
+        node.addChildNode("green").setContent("" + color.getGreen());
+        node.addChildNode("blue").setContent("" + color.getBlue());
+        node.addChildNode("alpha").setContent("" + color.getAlpha());
     }
 
     public static Color deserializeColor(XMLNode node) throws Exception {

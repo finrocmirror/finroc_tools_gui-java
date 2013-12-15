@@ -54,9 +54,9 @@ public class MultipleBars extends Widget {
     /** UID */
     private static final long serialVersionUID = -6261570734653832685L;
 
-    PropertyList<BarProperty> bars = new PropertyList<BarProperty>(BarProperty.class, 25);
-    WidgetPorts<WidgetInput.Numeric> inputs = new WidgetPorts<WidgetInput.Numeric>("input", 2, WidgetInput.Numeric.class, this);
-    Color barBackground = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_BACKGROUND).brighter();
+    public PropertyList<BarProperty> bars = new PropertyList<BarProperty>(BarProperty.class, 25);
+    public WidgetPorts<WidgetInput.Numeric> inputs = new WidgetPorts<WidgetInput.Numeric>("input", 2, WidgetInput.Numeric.class, this);
+    public Color barBackground = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_BACKGROUND).brighter();
 
     public MultipleBars() {
         // 2 bars by default

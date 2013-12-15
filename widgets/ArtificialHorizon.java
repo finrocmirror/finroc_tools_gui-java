@@ -71,13 +71,13 @@ public class ArtificialHorizon extends Widget {
     }
 
     /** Sky Color */
-    private Color sky = new Color(0.4f, 0.9f, 1.0f);
+    public Color sky = new Color(0.4f, 0.9f, 1.0f);
 
     /** Ground color for small angles */
-    private Color farGround = new Color(0.2f, 1.0f, 0.2f);
+    public Color farGround = new Color(0.2f, 1.0f, 0.2f);
 
     /** Ground color for great angles */
-    private Color nearGround = new Color(0.9f, 0.5f, 0.0f);
+    public Color nearGround = new Color(0.9f, 0.5f, 0.0f);
 
     /** Constants for calculation */
     private static int SHIFT = 16, SHIFT_MULT = 1 << SHIFT, WHITE = 0xFFFFFF, BLOCK_RED = 0xAA0000;

@@ -67,13 +67,13 @@ public class LED extends Widget {
 
     @SuppressWarnings("unused")
     @NotInPropertyEditor
-    private transient Color ledColor = getDefaultColor(Theme.DefaultColor.LED); // outdated - kept for backward compatibility
+    public transient Color ledColor = getDefaultColor(Theme.DefaultColor.LED); // outdated - kept for backward compatibility
     @NotInPropertyEditor
     public StringList descriptions = new StringList(); // outdated - kept for backward compatibility
 
-    float fontSize = 18;
+    public float fontSize = 18;
 
-    PropertyList<LEDProperty> leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
+    public PropertyList<LEDProperty> leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
 
     public boolean smallLEDs = false;
 

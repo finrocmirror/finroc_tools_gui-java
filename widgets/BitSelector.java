@@ -65,7 +65,7 @@ public class BitSelector extends Widget {
     /** RadioButtons description & key (format: "description = key" */
     public StringList descriptions = new StringList("Description 1\nDescription 2");
 
-    private boolean hideButtonsAndValueDisplay = false;
+    public boolean hideButtonsAndValueDisplay = false;
 
     @Override
     protected void setDefaultColors() {

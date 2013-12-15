@@ -73,7 +73,7 @@ public class CameraController extends Widget {
     public WidgetInput.Std<CameraFeature.Set> cameraState;
     public WidgetOutput.Std<CameraFeature> changeRequests;
 
-    boolean dumpButtonVisible = false;
+    public boolean dumpButtonVisible = false;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {

@@ -62,14 +62,14 @@ public class Oscilloscope extends Widget {
     /** UID */
     private static final long serialVersionUID = 1892231028811778314L;
 
-    WidgetPorts<WidgetInput.Numeric> signals = new WidgetPorts<WidgetInput.Numeric>("signal", 1, WidgetInput.Numeric.class, this);
-    double timeScaleMaxInMs = 10000;
-    double leftScaleMin = 0;
-    double leftScaleMax = 110;
-    double rightScaleMin = 0;
-    double rightScaleMax = 110;
-    PropertyList<SignalProperty> channels = new PropertyList<SignalProperty>(SignalProperty.class, 25);
-    long timerIntervalInMs = 100;
+    public WidgetPorts<WidgetInput.Numeric> signals = new WidgetPorts<WidgetInput.Numeric>("signal", 1, WidgetInput.Numeric.class, this);
+    public double timeScaleMaxInMs = 10000;
+    public double leftScaleMin = 0;
+    public double leftScaleMax = 110;
+    public double rightScaleMin = 0;
+    public double rightScaleMax = 110;
+    public PropertyList<SignalProperty> channels = new PropertyList<SignalProperty>(SignalProperty.class, 25);
+    public long timerIntervalInMs = 100;
 
     public Oscilloscope() {
         channels.add(new SignalProperty());

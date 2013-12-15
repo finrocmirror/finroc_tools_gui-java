@@ -99,16 +99,16 @@ public class GeometryRenderer extends Widget {
     public double zoom = 1;
     public double translationX = 0;
     public double translationY = 0;
-    private double rotation = 0;
-    private boolean antialiasing = false;
-    private double lineWidth = 1;
-    private boolean showRulers = true;
-    private boolean showCoordinates = false;
+    public double rotation = 0;
+    public boolean antialiasing = false;
+    public double lineWidth = 1;
+    public boolean showRulers = true;
+    public boolean showCoordinates = false;
     @SuppressWarnings("unused")
     @NotInPropertyEditor
-    private transient boolean invertObjectYInput = false;
-    private boolean resetClickPosOnMouseRelease = false;
-    private boolean hideToolbar = false;
+    public transient boolean invertObjectYInput = false;
+    public boolean resetClickPosOnMouseRelease = false;
+    public boolean hideToolbar = false;
     public EmbeddedPaintables mapObjects = new EmbeddedPaintables();
     public int drawGeometriesAfterMapObject = 2;
 

@@ -54,17 +54,17 @@ public class VirtualJoystick extends Picture {
     /** UID */
     private static final long serialVersionUID = 3806880236997654888L;
 
-    private Color joystickBackground = getDefaultColor(Theme.DefaultColor.JOYSTICK_BACKGROUND);
-    private Color foreground = getDefaultColor(Theme.DefaultColor.JOYSTICK_FOREGROUND);
-    private boolean resetOnRelease = true;
-    transient Point curPos = null;
+    public Color joystickBackground = getDefaultColor(Theme.DefaultColor.JOYSTICK_BACKGROUND);
+    public Color foreground = getDefaultColor(Theme.DefaultColor.JOYSTICK_FOREGROUND);
+    public boolean resetOnRelease = true;
+    protected transient Point curPos = null;
     private transient int pointColor = 0xFF00;
-    private boolean logarithmicScale = false;
+    public boolean logarithmicScale = false;
     public double xLeft = -1;
     public double xRight = 1;
     public double yTop = 1;
     public double yBottom = -1;
-    protected int zeroRadius = 0;
+    public int zeroRadius = 0;
 
     private static BufferedImageARGBColorable circle = null;
 

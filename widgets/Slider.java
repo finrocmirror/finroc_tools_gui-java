@@ -57,16 +57,16 @@ public class Slider extends Widget {
     private static final long serialVersionUID = 2468949292381381445L;
 
     /** Slider-Value output port */
-    private WidgetOutput.Numeric value;
+    public WidgetOutput.Numeric value;
 
     /** Slider parameters */
-    private double minimum = 0, maximum = 10, stepSize = 0.1;
+    public double minimum = 0, maximum = 10, stepSize = 0.1;
 
     /** Slider background */
-    private Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
+    public Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
 
     /** Show ticks? Show labels? */
-    private boolean showTicks = true, showLabels = true;
+    public boolean showTicks = true, showLabels = true;
 
     @Override
     protected WidgetUI createWidgetUI() {

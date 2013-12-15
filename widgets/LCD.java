@@ -67,28 +67,28 @@ public class LCD extends Widget {
     public WidgetInput.Numeric input;
 
     /** colors */
-    private Color lcdBackground = getDefaultColor(Theme.DefaultColor.LCD_BACKGROUND);
-    private Color lcdEnabled = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
-    private Color lcdDisabled = getDefaultColor(Theme.DefaultColor.LCD_DISABLED);
+    public Color lcdBackground = getDefaultColor(Theme.DefaultColor.LCD_BACKGROUND);
+    public Color lcdEnabled = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
+    public Color lcdDisabled = getDefaultColor(Theme.DefaultColor.LCD_DISABLED);
 
     /** number format */
-    private enum FormatOptions { Default, FractionDigits, ToString, JavaDecimalFormat, CxxDecimalFormat };
-    private FormatOptions formatting = FormatOptions.Default;
-    private String format = "2";
-    private boolean useScientificFormatOutOfRange = true;
+    public enum FormatOptions { Default, FractionDigits, ToString, JavaDecimalFormat, CxxDecimalFormat };
+    public FormatOptions formatting = FormatOptions.Default;
+    public String format = "2";
+    public boolean useScientificFormatOutOfRange = true;
     private static final Pattern CXX_PATTERN = Pattern.compile("%([0-9]+).([0-9]+)f");
 
     /** value-related */
-    private Unit preferredUnit;
-    private double scalingFactor;
+    public Unit preferredUnit;
+    public double scalingFactor;
 
     /** warnings */
-    private Color lcdWarningBackground = createWarningColor(lcdBackground);;
-    private Color lcdWarningEnabled = createWarningColor(lcdEnabled);
-    private Color lcdWarningDisabled = createWarningColor(lcdDisabled);
-    private enum WarnOptions { Off, LargerThan, SmallerThan };
-    private WarnOptions warnings = WarnOptions.Off;
-    private double warningThreshold = 0;
+    public Color lcdWarningBackground = createWarningColor(lcdBackground);;
+    public Color lcdWarningEnabled = createWarningColor(lcdEnabled);
+    public Color lcdWarningDisabled = createWarningColor(lcdDisabled);
+    public enum WarnOptions { Off, LargerThan, SmallerThan };
+    public WarnOptions warnings = WarnOptions.Off;
+    public double warningThreshold = 0;
 
     //private
 

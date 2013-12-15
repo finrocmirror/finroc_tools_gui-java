@@ -54,7 +54,7 @@ public class CheckBoxGroup extends Widget {
     private static final long serialVersionUID = -7862015642847164790L;
 
     /** CheckBox output port */
-    private WidgetOutput.Numeric value;
+    public WidgetOutput.Numeric value;
 
     /** Input port contains list elements as strings */
     public WidgetInput.Std<ContainsStrings> elements;

@@ -43,7 +43,7 @@ public class VideoJoystick extends VirtualJoystick {
     /** UID */
     private static final long serialVersionUID = 960660239432850435L;
 
-    private WidgetInput.Std<HasBlittable> video;
+    public WidgetInput.Std<HasBlittable> video;
 
     /** Image index in image source - in case we receive lists of blittables */
     public int imageIndexInSource;

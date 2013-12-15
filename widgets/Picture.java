@@ -42,11 +42,11 @@ public class Picture extends Widget {
     /** UID */
     private static final long serialVersionUID = -6272458243456235119L;
 
-    protected EmbeddedPaintable picture;
+    public EmbeddedPaintable picture;
 
-    private boolean scaleToFit;
+    public boolean scaleToFit;
 
-    private boolean preserveAspectRatio;
+    public boolean preserveAspectRatio;
 
     @Override
     protected WidgetUI createWidgetUI() {

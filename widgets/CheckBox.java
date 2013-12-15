@@ -48,13 +48,13 @@ public class CheckBox extends Widget {
     private static final long serialVersionUID = -9245824582325601L;
 
     /** CheckBox output port */
-    private WidgetOutput.Numeric value;
+    public WidgetOutput.Numeric value;
 
     /** Boolean output */
-    private WidgetOutput.CC<CoreBoolean> boolValue;
+    public WidgetOutput.CC<CoreBoolean> boolValue;
 
     /** CheckBox text */
-    private String text = "CheckBox";
+    public String text = "CheckBox";
 
     @Override
     protected WidgetUI createWidgetUI() {

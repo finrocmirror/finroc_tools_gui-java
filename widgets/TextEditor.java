@@ -55,11 +55,11 @@ public class TextEditor extends Widget {
     private static final long serialVersionUID = 783829462389320L;
 
     /** Text input and output */
-    private WidgetInput.Std<ContainsStrings> textInput;
-    private WidgetOutput.Std<StringBlackboardBuffer> textOutput;
-    private WidgetOutput.Std<StdStringList> stringListOutput;
+    public WidgetInput.Std<ContainsStrings> textInput;
+    public WidgetOutput.Std<StringBlackboardBuffer> textOutput;
+    public WidgetOutput.Std<StdStringList> stringListOutput;
 
-    private boolean hideButtons = false;
+    public boolean hideButtons = false;
 
     @Override
     protected WidgetUI createWidgetUI() {

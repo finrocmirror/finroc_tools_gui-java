@@ -25,12 +25,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.xml.XMLNode;
+
 /**
  * @author Max Reichardt
  *
  * List of property entries (with possibly multiple attributes)
  */
-public class PropertyList<T extends Serializable> extends ArrayList<T> implements PropertyListAccessor<T> {
+public class PropertyList<T extends Serializable> extends ArrayList<T> implements PropertyListAccessor<T>, XMLSerializable {
 
     /** UID */
     private static final long serialVersionUID = 3604338104379425977L;
@@ -73,5 +76,17 @@ public class PropertyList<T extends Serializable> extends ArrayList<T> implement
     @Override
     public void removeElement(int index) {
         remove(index);
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        for (T entry : this) {
+            node.addChildNode(entryClass.getSimpleName());
+        }
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+
     }
 }
