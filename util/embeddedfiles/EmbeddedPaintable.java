@@ -29,11 +29,10 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-import org.finroc.tools.gui.FinrocGUI;
 import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.SVG;
-import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
+import org.rrlib.xml.XMLNode;
 
 
 /**
@@ -63,6 +62,9 @@ public class EmbeddedPaintable extends EmbeddedFile {
         super(file);
         name = file.getName();
     }
+
+    @Deprecated // only for deserialization
+    public EmbeddedPaintable() {}
 
     @Override
     boolean init(FileManager efm) {
@@ -165,5 +167,30 @@ public class EmbeddedPaintable extends EmbeddedFile {
 
     public String toString() {
         return name;
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        super.serialize(node);
+        node.addChildNode("name").setContent(name);
+        node.addChildNode("centerX").setContent("" + centerX);
+        node.addChildNode("centerY").setContent("" + centerY);
+        node.addChildNode("scale").setContent("" + scale);
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.deserialize(node);
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("name")) {
+                name = child.getTextContent();
+            } else if (child.getName().equals("centerX")) {
+                centerX = Double.parseDouble(child.getTextContent());
+            } else if (child.getName().equals("centerY")) {
+                centerY = Double.parseDouble(child.getTextContent());
+            } else if (child.getName().equals("scale")) {
+                scale = Double.parseDouble(child.getTextContent());
+            }
+        }
     }
 }

@@ -35,6 +35,9 @@ import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.RuntimeEnvironment;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.xml.XMLNode;
 
 /**
  * @author Max Reichardt
@@ -170,4 +173,36 @@ public class GUI extends DataModelBase<GUI, GUI, GUIWindow> implements ResourceP
         this.defaultConnectionType = defaultConnectionType;
     }
 
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        serializeChildren(node, "Window");
+        node.addChildNode("loopTime").setContent("" + loopTime);
+        node.addChildNode("fontSize").setContent("" + fontSize);
+        node.addChildNode("editMode").setContent("" + editMode);
+        connectionList.serialize(node.addChildNode("connectionList"));
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.children.clear();
+        for (XMLNode child : node.children()) {
+            try {
+                if (child.getName().equals("Window")) {
+                    GUIWindow window = new GUIWindow(this);
+                    window.deserialize(child);
+                    add(window);
+                } else if (child.getName().equals("loopTime")) {
+                    loopTime = Integer.parseInt(child.getTextContent());
+                } else if (child.getName().equals("fontSize")) {
+                    fontSize = Float.parseFloat(child.getTextContent());
+                } else if (child.getName().equals("editMode")) {
+                    editMode = Integer.parseInt(child.getTextContent());
+                } else if (child.getName().equals("connectionList")) {
+                    connectionList.deserialize(child);
+                }
+            } catch (Exception e) {
+                Log.log(LogLevel.ERROR, e);
+            }
+        }
+    }
 }

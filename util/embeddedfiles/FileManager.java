@@ -45,6 +45,7 @@ import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
 import org.rrlib.logging.LogStream;
 import org.rrlib.serialization.Serialization;
+import org.rrlib.xml.XMLNode;
 
 import org.finroc.core.util.Files;
 
@@ -355,5 +356,28 @@ public class FileManager {
         }
         File f = sceneFile.getFile(this);
         return f;
+    }
+
+    /**
+     * Serializes file information to XML node
+     *
+     * @param node Node to serialize file info to
+     * @param file File info
+     */
+    public static void serializeFile(XMLNode node, AbstractFile file) throws Exception {
+        file.serialize(node.addChildNode(file.getClass().getSimpleName()));
+    }
+
+    /**
+     * Deserializes file information from XML node
+     *
+     * @param node Node to serialize file info to
+     * @param file File info
+     * @return
+     */
+    public static AbstractFile deserializeFile(XMLNode node) throws Exception {
+        AbstractFile file = (AbstractFile)FileManager.class.getClassLoader().loadClass("org.finroc.tools.gui.util.embeddedfiles." + node.getName()).newInstance();
+        file.deserialize(node);
+        return file;
     }
 }

@@ -24,6 +24,9 @@ package org.finroc.tools.gui;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 
 import org.finroc.core.FrameworkElement;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.xml.XMLNode;
 
 /**
  * @author Max Reichardt
@@ -48,5 +51,26 @@ public class GUIWindow extends DataModelBase<GUI, GUI, GUIPanel> {
     public void restore(GUI parent) {
         super.restore(parent);
         frameworkElement.init();
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        serializeChildren(node, "Panel");
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.children.clear();
+        for (XMLNode child : node.children()) {
+            try {
+                if (child.getName().equals("Panel")) {
+                    GUIPanel panel = new GUIPanel(this);
+                    panel.deserialize(child);
+                    add(panel);
+                }
+            } catch (Exception e) {
+                Log.log(LogLevel.ERROR, e);
+            }
+        }
     }
 }

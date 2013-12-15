@@ -54,7 +54,11 @@ import org.finroc.tools.gui.util.embeddedfiles.FileManager;
 import org.finroc.tools.gui.util.gui.IconManager;
 import org.finroc.tools.gui.util.propertyeditor.gui.ResourcePathProvider;
 
+import org.finroc.core.RuntimeSettings;
 import org.finroc.core.plugin.ConnectionListener;
+import org.rrlib.xml.XMLDocument;
+import org.rrlib.xml.XMLNode;
+import org.xml.sax.InputSource;
 
 public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends UIBase<P, Container, GUI, C> implements ResourcePathProvider {
 
@@ -155,8 +159,20 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
                 //r.close();  // Don't do this - although Eclipse warns: This will close the zip file
 
                 // read gui
-                ObjectInputStream ois = FinrocGuiXmlSerializer.getInstance().createObjectInputStream(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
-                newGui = (GUI)ois.readObject();
+                if (!RuntimeSettings.isRunningInApplet()) {
+                    ObjectInputStream ois = FinrocGuiXmlSerializer.getInstance().createObjectInputStream(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
+                    newGui = (GUI)ois.readObject();
+                } else {
+                    XMLDocument document = new XMLDocument(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false);
+                    newGui = new GUI(this);
+                    XMLNode root = document.getRootNode();
+                    for (XMLNode child : root.children()) {
+                        if (child.getName().equals("fingui")) {
+                            newGui.deserialize(child);
+                            break;
+                        }
+                    }
+                }
                 newGui.setEmbeddedFileManager(newEfm);
                 newEfm.setModel(newGui);
             } else if (ze.getName().equals(GUI_MAIN_FILE_IN_BINARY_ZIP)) {  // Binary GUI

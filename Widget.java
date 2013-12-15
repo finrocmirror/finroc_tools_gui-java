@@ -39,10 +39,13 @@ import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
+import org.finroc.tools.gui.util.embeddedfiles.ExternalFolder;
+import org.finroc.tools.gui.util.embeddedfiles.FileManager;
 import org.finroc.tools.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
+import org.rrlib.xml.XMLNode;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElement.ChildIterator;
@@ -321,4 +324,96 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         setBackground(getDefaultColor(Theme.DefaultColor.ALTERNATIVE_BACKGROUND));
         setLabelColor(getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL));
     }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        serialize(node, "bounds", bounds);
+        node.addChildNode("label").setContent(label);
+        serialize(node, "labelColor", labelColor);
+        serialize(node, "background", background);
+//        XMLNode fileNode = node.addChildNode("embeddedFiles");
+//        for (AbstractFile file : embeddedFiles) {
+//            FileManager.serializeFile(fileNode, file);
+//        }
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.children.clear();
+        for (XMLNode child : node.children()) {
+            try {
+                if (child.getName().equals("bounds")) {
+                    bounds = deserializeRectangle(child);
+                } else if (child.getName().equals("label")) {
+                    label = child.getTextContent();
+                } else if (child.getName().equals("labelColor")) {
+                    labelColor = deserializeColor(child);
+                } else if (child.getName().equals("background")) {
+                    background = deserializeColor(child);
+//                } else if (child.getName().equals("embeddedFiles")) {
+//                    for (XMLNode fileNode : child.children()) {
+//                        embeddedFiles.add(FileManager.deserializeFile(fileNode));
+//                    }
+                }
+            } catch (Exception e) {
+                Log.log(LogLevel.ERROR, e);
+            }
+        }
+    }
+
+    // Helper methods for convenient serialization of e.g. AWT elements //
+    public static void serialize(XMLNode node, String nodeName, Rectangle rect) throws Exception {
+        XMLNode childNode = node.addChildNode(nodeName);
+        childNode.addChildNode("x").setContent("" + rect.x);
+        childNode.addChildNode("y").setContent("" + rect.y);
+        childNode.addChildNode("width").setContent("" + rect.width);
+        childNode.addChildNode("height").setContent("" + rect.height);
+    }
+
+    public static Rectangle deserializeRectangle(XMLNode node) throws Exception {
+        Rectangle rect = new Rectangle();
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("x")) {
+                rect.x = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("y")) {
+                rect.y = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("width")) {
+                rect.width = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("height")) {
+                rect.height = Integer.parseInt(child.getTextContent());
+            }
+        }
+        return rect;
+    }
+
+    public static void serialize(XMLNode node, String nodeName, Color color) throws Exception {
+        XMLNode childNode = node.addChildNode(nodeName);
+        childNode.addChildNode("red").setContent("" + color.getRed());
+        childNode.addChildNode("green").setContent("" + color.getGreen());
+        childNode.addChildNode("blue").setContent("" + color.getBlue());
+        childNode.addChildNode("alpha").setContent("" + color.getAlpha());
+    }
+
+    public static Color deserializeColor(XMLNode node) throws Exception {
+        int r = 0, g = 0, b = 0, alpha = 255;
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("red")) {
+                r = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("green")) {
+                g = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("blue")) {
+                b = Integer.parseInt(child.getTextContent());
+            }
+            if (child.getName().equals("alpha")) {
+                alpha = Integer.parseInt(child.getTextContent());
+            }
+        }
+        return new Color(r, g, b, alpha);
+    }
+
 }

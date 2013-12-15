@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
+import org.rrlib.xml.XMLNode;
 
 
 /**
@@ -62,6 +63,9 @@ public class EmbeddedFile extends AbstractFile {
         this.uid = uid;
     }
 
+    @Deprecated // only for deserialization
+    public EmbeddedFile() {}
+
     @Override
     boolean init(FileManager efm) {
         return true;
@@ -88,5 +92,21 @@ public class EmbeddedFile extends AbstractFile {
 
     void setUid(long uid2) {
         uid = uid2;
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        super.serialize(node);
+        node.addChildNode("uid").setContent("" + uid);
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.deserialize(node);
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("uid")) {
+                uid = Long.parseLong(child.getTextContent());
+            }
+        }
     }
 }

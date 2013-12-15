@@ -36,6 +36,8 @@ import javax.swing.tree.TreeNode;
 import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.finroc.core.FrameworkElement;
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.xml.XMLNode;
 
 /**
  * @author Max Reichardt
@@ -43,7 +45,7 @@ import org.finroc.core.FrameworkElement;
  * Base class for all classes implementing the fingui data model
  */
 @SuppressWarnings("rawtypes")
-public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > implements Serializable, TreeNode {
+public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P extends DataModelBase < R, ? , ? >, C extends DataModelBase > implements Serializable, TreeNode, XMLSerializable {
 
     /** UID */
     private static final long serialVersionUID = -8960599158692149672L;
@@ -256,5 +258,17 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
             frameworkElement = createFrameworkElement();
         }
         return frameworkElement;
+    }
+
+    /**
+     * Serialize children of this data model element
+     *
+     * @param node Current XML node
+     * @param childNodeName Name to give child nodes
+     */
+    public void serializeChildren(XMLNode node, String childNodeName) throws Exception {
+        for (C child : children) {
+            child.serialize(node.addChildNode(childNodeName));
+        }
     }
 }

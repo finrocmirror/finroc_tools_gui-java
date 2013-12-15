@@ -33,6 +33,9 @@ public class ExternalFolder extends ExternalFile {
     /** UID */
     private static final long serialVersionUID = 7594334339915889227L;
 
+    @Deprecated // only for deserialization
+    public ExternalFolder() {}
+
     protected ExternalFolder(File file) {
         super(file);
     }

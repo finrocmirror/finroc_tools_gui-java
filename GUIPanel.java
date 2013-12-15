@@ -30,6 +30,9 @@ import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
 
 import org.finroc.core.FrameworkElement;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.xml.XMLNode;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
@@ -108,4 +111,34 @@ public class GUIPanel extends DataModelBase<GUI, GUIWindow, Widget> {
         return new FrameworkElement(getParent().getFrameworkElement(), "GUI Panel" + ((name != null) ? (" " + name) : ""));
     }
 
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        node.setAttribute("name", name);
+        for (Widget widget : children) {
+            widget.serialize(node.addChildNode(widget.getClass().getSimpleName()));
+        }
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.children.clear();
+        this.name = node.getStringAttribute("name");
+        for (XMLNode child : node.children()) {
+            try {
+                Widget widget = null;
+                for (Class<?> widgetClass : WidgetAndInterfaceRegister.getInstance()) {
+                    if (widgetClass.getSimpleName().equals(child.getName())) {
+                        widget = (Widget)widgetClass.newInstance();
+                        widget.deserialize(child);
+                        add(widget);
+                    }
+                }
+                if (widget == null) {
+                    Log.log(LogLevel.ERROR, "Cannot instantiate widget of unknown type '" + child.getName() + "'");
+                }
+            } catch (Exception e) {
+                Log.log(LogLevel.ERROR, e);
+            }
+        }
+    }
 }

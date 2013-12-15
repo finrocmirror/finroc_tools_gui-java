@@ -23,6 +23,8 @@ package org.finroc.tools.gui.util.embeddedfiles;
 
 import java.io.File;
 
+import org.rrlib.xml.XMLNode;
+
 /**
  * @author Max Reichardt
  *
@@ -34,13 +36,16 @@ public class ExternalFile extends AbstractFile {
     private static final long serialVersionUID = -949313366936519301L;
 
     /** absolute file name when file was loaded */
-    private final String absFilename;
+    private String absFilename;
 
     /** relative file name (to some resource directory) when file was loaded */
     String relFilename;
 
     /** File in current file system */
     transient private File file;
+
+    @Deprecated // only for deserialization
+    public ExternalFile() {}
 
     protected ExternalFile(File file) {
         super(file);
@@ -76,4 +81,24 @@ public class ExternalFile extends AbstractFile {
         file = fileManager.findExternalFileAgain(absFilename, relFilename);
         return file;
     }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        super.serialize(node);
+        node.addChildNode("absFilename").setContent(absFilename);
+        node.addChildNode("relFilename").setContent(relFilename);
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        super.deserialize(node);
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("absFilename")) {
+                absFilename = child.getTextContent();
+            } else if (child.getName().equals("relFilename")) {
+                relFilename = child.getTextContent();
+            }
+        }
+    }
+
 }

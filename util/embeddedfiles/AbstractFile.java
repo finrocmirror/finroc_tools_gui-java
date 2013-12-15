@@ -25,13 +25,15 @@ import java.io.File;
 import java.io.Serializable;
 
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.xml.XMLNode;
 
 /**
  * @author Max Reichardt
  *
  * This is the abstract base class for files that are used in GUIs
  */
-public abstract class AbstractFile implements Serializable {
+public abstract class AbstractFile implements Serializable, XMLSerializable {
 
     /** UID */
     private static final long serialVersionUID = 9030547614693056384L;
@@ -47,6 +49,9 @@ public abstract class AbstractFile implements Serializable {
     /** The file size - when last seen/loaded */
     @NotInPropertyEditor
     private long size;
+
+    @Deprecated // only for deserialization
+    public AbstractFile() {}
 
     /**
      * Creates EmbeddedFile from some file
@@ -94,5 +99,25 @@ public abstract class AbstractFile implements Serializable {
             return (this.getClass().equals(o.getClass()) && date == ef.date && filename.equals(ef.filename) && size == ef.size);
         }
         return false;
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        node.addChildNode("filename").setContent(filename);
+        node.addChildNode("date").setContent("" + date);
+        node.addChildNode("size").setContent("" + size);
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("filename")) {
+                filename = child.getTextContent();
+            } else if (child.getName().equals("date")) {
+                date = Long.parseLong(child.getTextContent());
+            } else if (child.getName().equals("size")) {
+                size = Long.parseLong(child.getTextContent());
+            }
+        }
     }
 }

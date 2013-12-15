@@ -40,6 +40,7 @@ import org.finroc.core.remote.HasUid;
 import org.finroc.core.remote.PortWrapperTreeNode;
 import org.finroc.core.remote.RemotePort;
 import org.rrlib.serialization.NumericRepresentation;
+import org.rrlib.xml.XMLNode;
 
 public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapperTreeNode, Serializable {
 
@@ -264,5 +265,28 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
      */
     public Set<String> getConnectionLinks() {
         return Collections.unmodifiableSet(connectedTo);
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        XMLNode connectionNode = node.addChildNode("connectedTo");
+        for (String connection : connectedTo) {
+            connectionNode.addChildNode("string").setContent(connection);
+        }
+        node.addChildNode("description").setContent(description);
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        connectedTo.clear();
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals("connectedTo")) {
+                for (XMLNode connectionNode : child.children()) {
+                    connectedTo.add(connectionNode.getTextContent());
+                }
+            } else if (child.getName().equals("description")) {
+                description = child.getTextContent();
+            }
+        }
     }
 }
