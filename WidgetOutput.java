@@ -195,7 +195,7 @@ public class WidgetOutput {
             BinarySerializable buffer = asPort().getUnusedBuffer();
             StringInputStream sis = new StringInputStream(s);
             try {
-                buffer = (BinarySerializable)sis.readObject(buffer.getClass());
+                buffer = (BinarySerializable)sis.readObject(buffer, buffer.getClass());
                 asPort().publish(buffer);
                 buffer = null;
             } catch (Exception ex) {
