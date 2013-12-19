@@ -24,18 +24,21 @@ package org.finroc.tools.gui;
 import java.util.ArrayList;
 
 import org.finroc.tools.gui.commons.EventRouter;
-
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.cc.CCPortBase;
 import org.finroc.core.port.std.PortBase;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.xml.XMLNode;
 
 /**
  * @author Max Reichardt
  *
  */
 @SuppressWarnings("rawtypes")
-public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener {
+public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implements PortListener, XMLSerializable {
 
     /** UID */
     private static final long serialVersionUID = 3502191793248052616L;
@@ -84,9 +87,9 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
                 try {
                     P wp = (P)type.getConstructor().newInstance();
                     wp.description = portNamePrefix + " " + (size() + 1);
+                    add(wp); // add it here, so that list already contains port when widget checks if this port is part list in order to determine port data type
                     wp.restore(parent);
                     addChangeListener(wp);
-                    add(wp);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -122,7 +125,55 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
         return -1;
     }
 
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        for (P port : this) {
+            port.serialize(node.addChildNode(getSerializationPortClassName()));
+        }
+    }
+
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        int count = 0;
+        for (XMLNode child : node.children()) {
+            if (child.getName().equalsIgnoreCase(getSerializationPortClassName())) {
+                count++;
+            }
+        }
+        setSize(count);
+        count = 0;
+        for (XMLNode child : node.children()) {
+            if (child.getName().equalsIgnoreCase(getSerializationPortClassName())) {
+                get(count).deserialize(child);
+                count++;
+            }
+        }
+    }
+
+    public String getSerializationPortClassName() {
+        if (type.equals(WidgetInput.Std.class)) {
+            return "InputPort";
+        } else if (type.equals(WidgetOutput.Std.class)) {
+            return "OutputPort";
+        } else if (type.equals(WidgetInput.Numeric.class)) {
+            return "InputPortNumeric";
+        } else if (type.equals(WidgetOutput.Numeric.class)) {
+            return "OutputPortNumeric";
+        } else if (type.equals(WidgetInput.CC.class)) {
+            return "InputPortCC";
+        } else if (type.equals(WidgetOutput.CC.class)) {
+            return "OutputPortCC";
+        } else if (type.equals(WidgetOutput.Blackboard.class)) {
+            return "BlackboardPort";
+        } else {
+            Log.log(LogLevel.WARNING, "Unknown port type");
+            return "Port";
+        }
+    }
+
 //  public void valueChanged(Port source) {
 //      EventRouter.fireChangeEvent(this, source);
 //  }
+
+
 }

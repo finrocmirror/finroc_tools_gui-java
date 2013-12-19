@@ -23,11 +23,14 @@ package org.finroc.tools.gui.util.embeddedfiles;
 
 import java.util.ArrayList;
 
+import org.rrlib.serialization.XMLSerializable;
+import org.rrlib.xml.XMLNode;
+
 /**
  * @author Max Reichardt
  *
  */
-public class AbstractFiles<T extends AbstractFile> extends ArrayList<T> {
+public class AbstractFiles<T extends AbstractFile> extends ArrayList<T> implements XMLSerializable {
 
     /** UID */
     private static final long serialVersionUID = -8026281927547326134L;
@@ -38,5 +41,22 @@ public class AbstractFiles<T extends AbstractFile> extends ArrayList<T> {
 
     public Class <? extends EmbeddedFile > getFileClass() {
         return EmbeddedFile.class;
+    }
+
+    @Override
+    public void serialize(XMLNode node) throws Exception {
+        // TODO: what do we do here? (reference or duplicate?) => fow now, duplicate
+        for (T t : this) {
+            FileManager.serializeFile(node, t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
+        this.clear();
+        for (XMLNode child : node.children()) {
+            add((T)FileManager.deserializeFile(child));
+        }
     }
 }

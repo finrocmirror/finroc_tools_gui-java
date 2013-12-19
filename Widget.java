@@ -40,19 +40,22 @@ import org.finroc.tools.gui.themes.Theme;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
-import org.finroc.tools.gui.util.embeddedfiles.ExternalFolder;
 import org.finroc.tools.gui.util.embeddedfiles.FileManager;
 import org.finroc.tools.gui.util.embeddedfiles.HasEmbeddedFiles;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.BinaryInputStream;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.MemoryBuffer;
+import org.rrlib.serialization.ObjectFieldSerializer;
 import org.rrlib.serialization.Serialization;
+import org.rrlib.serialization.Serialization.DataEncoding;
 import org.rrlib.xml.XMLNode;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElement.ChildIterator;
 import org.finroc.core.LockOrderLevels;
-import org.finroc.core.RuntimeSettings;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.ThreadLocalCache;
 
@@ -84,6 +87,9 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
     /** temporary list */
     @NotInPropertyEditor
     private List<AbstractFile> embeddedFiles;
+
+    /** Single instance of XML serialization class */
+    private static final XMLSerializer XML_SERIALIZER = new XMLSerializer();
 
     public Widget() {
         super(null);
@@ -332,44 +338,19 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         node.addChildNode("label").setContent(label);
         serialize(node.addChildNode("labelColor"), labelColor);
         serialize(node.addChildNode("background"), background);
-//        XMLNode fileNode = node.addChildNode("embeddedFiles");
-//        for (AbstractFile file : embeddedFiles) {
-//            FileManager.serializeFile(fileNode, file);
-//        }
 
-        // Serialize all public fields of widget
-        ArrayList<Field> fields = getFieldsToSerialize(this.getClass());
-        for (Field field : fields) {
-            Object value = field.get(this);
-            if (value != null) {
-                genericSerialize(node.addChildNode(field.getName()), value);
+        if (embeddedFiles != null) {
+            XMLNode fileNode = node.addChildNode("embeddedFiles"); // TODO: it's ugly that embedded files are serialized twice; change this, when XStream is discarded
+            for (AbstractFile file : embeddedFiles) {
+                FileManager.serializeFile(fileNode, file);
             }
         }
-    }
 
-    /**
-     * Generic serialization of an object to an XML node
-     * (similar to Serialization.serialize - but with additional support for some e.g. AWT types)
-     *
-     * @param node Node to serialize to
-     * @param object Object to serialize
-     */
-    public static void genericSerialize(XMLNode node, Object object) throws Exception {
-        if (object instanceof Color) {
-            serialize(node, (Color)object);
-        } else if (object instanceof Rectangle) {
-            serialize(node, (Rectangle)object);
-        } else {
-            Serialization.serialize(node, object);
-        }
+        XML_SERIALIZER.serialize(node, this);
     }
 
     @Override
     public void deserialize(XMLNode node) throws Exception {
-
-        // Deserialize all public fields of widget
-        ArrayList<Field> fields = getFieldsToSerialize(this.getClass());
-
         super.children.clear();
         for (XMLNode child : node.children()) {
             try {
@@ -381,64 +362,86 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
                     labelColor = deserializeColor(child);
                 } else if (child.getName().equals("background")) {
                     background = deserializeColor(child);
-//                } else if (child.getName().equals("embeddedFiles")) {
-//                    for (XMLNode fileNode : child.children()) {
-//                        embeddedFiles.add(FileManager.deserializeFile(fileNode));
-//                    }
-                } else {
-                    for (Field field : fields) {
-                        if (field.getName().equals(child.getName())) {
-                            System.out.println("Deserializing field " + field.getName());
-                            field.set(this, genericDeserialize(child, field.get(this), field.getType()));
-                            break;
-                        }
+                } else if (child.getName().equals("embeddedFiles")) {
+                    embeddedFiles = new ArrayList<AbstractFile>();
+                    for (XMLNode fileNode : child.children()) {
+                        embeddedFiles.add(FileManager.deserializeFile(fileNode));
                     }
                 }
             } catch (Exception e) {
                 Log.log(LogLevel.ERROR, e);
             }
         }
+
+        try {
+            XML_SERIALIZER.deserialize(node, this, true);
+        } catch (Exception e) {
+            Log.log(LogLevel.ERROR, e);
+        }
+
+        // Resolve embedded file references (necessary for loading XStream-generated files with references - pretty ugly, but for compatibility)
+        List<AbstractFile> oldEmbeddedFiles = embeddedFiles;
+        for (AbstractFile file : getEmbeddedFiles()) {
+            if (file.getDeserializationReference() != null) {
+                int referenceIndex = 0;
+                if (file.getDeserializationReference().endsWith("]")) {
+                    String temp = file.getDeserializationReference().substring(file.getDeserializationReference().lastIndexOf('[') + 1);
+                    referenceIndex = Integer.parseInt(temp.substring(0, temp.length() - 1)) - 1;
+                }
+                //Serialization.deepCopy(oldEmbeddedFiles.get(referenceIndex), file);
+                MemoryBuffer buf = new MemoryBuffer();
+                BinaryOutputStream stream = new BinaryOutputStream(buf);
+                stream.writeObject(oldEmbeddedFiles.get(referenceIndex), oldEmbeddedFiles.get(referenceIndex).getClass(), DataEncoding.XML);
+                stream.close();
+                BinaryInputStream istream = new BinaryInputStream(buf);
+                istream.readObject(file, file.getClass(), DataEncoding.XML);
+            }
+        }
     }
 
     /**
-     * Generic deserialization of an object from an XML node
-     * (similar to Serialization.deserialize - but with additional support for some e.g. AWT types)
-     *
-     * @param node Node to deserialize from
-     * @param deserializeTo Object to call deserialize() on (optional; will contain result of deserialization, in case type is a mutable type)
-     * @param type Type object must have
-     * @return Deserialized object (new object for immutable types, provided object in case of a mutable type)
+     * ObjectFieldSerializer customized for widgets
      */
-    public static Object genericDeserialize(XMLNode node, Object deserializeTo, Class<?> type) throws Exception {
-        if (type.equals(Color.class)) {
-            return deserializeColor(node);
-        } else if (type.equals(Rectangle.class)) {
-            return deserializeRectangle(node);
-        } else {
-            return Serialization.deserialize(node, deserializeTo, type);
+    public static class XMLSerializer extends ObjectFieldSerializer {
+
+        @Override
+        public ArrayList<Field> getFieldsToSerialize(Class<?> c) {
+            ArrayList<Field> result = new ArrayList<Field>();
+            for (Field field : c.getFields()) {
+                if ((!Modifier.isTransient(field.getModifiers())) && (!Modifier.isStatic(field.getModifiers()))) {
+                    result.add(field);
+                }
+            }
+            if (!c.getSuperclass().equals(Widget.class)) {
+                result.addAll(getFieldsToSerialize(c.getSuperclass()));
+            }
+            return result;
+        }
+
+        @Override
+        protected void serializeFieldValue(XMLNode node, Object object) throws Exception {
+            if (object instanceof Color) {
+                serialize(node, (Color)object);
+            } else if (object instanceof Rectangle) {
+                serialize(node, (Rectangle)object);
+            } else {
+                super.serializeFieldValue(node, object);
+            }
+        }
+
+        @Override
+        protected Object deserializeFieldValue(XMLNode node, Object deserializeTo, Class<?> type) throws Exception {
+            if (type.equals(Color.class)) {
+                return deserializeColor(node);
+            } else if (type.equals(Rectangle.class)) {
+                return deserializeRectangle(node);
+            } else {
+                return super.deserializeFieldValue(node, deserializeTo, type);
+            }
         }
     }
 
     // Helper methods for convenient serialization of e.g. AWT elements //
-
-    /**
-     * Gets fields to serialize when serializing or deserializing a widget to a fingui file
-     *
-     * @param widgetClass Widget class to check
-     * @return List of (public) fields
-     */
-    private static ArrayList<Field> getFieldsToSerialize(Class<?> widgetClass) {
-        ArrayList<Field> result = new ArrayList<Field>();
-        for (Field field : widgetClass.getFields()) {
-            if ((!Modifier.isTransient(field.getModifiers())) && (!Modifier.isStatic(field.getModifiers()))) {
-                result.add(field);
-            }
-        }
-        if (!widgetClass.getSuperclass().equals(Widget.class)) {
-            result.addAll(getFieldsToSerialize(widgetClass.getSuperclass()));
-        }
-        return result;
-    }
 
     public static void serialize(XMLNode node, Rectangle rect) throws Exception {
         node.addChildNode("x").setContent("" + rect.x);
@@ -491,5 +494,4 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
         }
         return new Color(r, g, b, alpha);
     }
-
 }
