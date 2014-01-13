@@ -526,14 +526,14 @@ public class GeometryRenderer extends Widget {
                 if (objectCoordinates.get(index).asPort().isConnected()) {
                     return objectCoordinates.get(index).getDouble();
                 } else
-                    return objectPoses.get(index / MAP_OBJECT_EDGE_COUNT).getAutoLocked().x * 1000.; //FIXME: m->mm
+                    return objectPoses.get(index / MAP_OBJECT_EDGE_COUNT).getAutoLocked().x;
             }
 
             double GetObjectYCoordinate(int index) {
                 if (objectCoordinates.get(index).asPort().isConnected()) {
                     return objectCoordinates.get(index).getDouble();
                 } else
-                    return objectPoses.get((index - 1) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().y * 1000.; //FIXME: m->mm
+                    return objectPoses.get((index - 1) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().y;
             }
 
             double GetObjectYawAngle(int index) {
