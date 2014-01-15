@@ -96,7 +96,7 @@ public class GeometryRenderer extends Widget {
     /** Parameters */
     public int numberOfGeometries = 3;
     public boolean invertYAxis;
-    public double zoom = 1;
+    public double zoom = 100;
     public double translationX = 0;
     public double translationY = 0;
     public double rotation = 0;
