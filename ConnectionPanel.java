@@ -545,7 +545,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     @Override
     protected void paintChildren(Graphics g) {
         //((Graphics2D)g).scale(0.75, 0.75);
-        super.paintChildren(g);
+        try {
+            super.paintChildren(g);
+        } catch (Exception e) {}
         //leftTree.set
         //new Thread().set
 
