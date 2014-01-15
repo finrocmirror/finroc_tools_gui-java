@@ -69,7 +69,7 @@ public class VideoRenderer extends Widget {
 
     public WidgetInput.Std<HasBlittable> videoInput;
 
-    public WidgetOutput.Std<org.finroc.plugins.data_types.mca.Image> videoSelection;
+    public WidgetOutput.Std<org.finroc.plugins.data_types.Image> videoSelection;
 
     public WidgetOutput.Numeric imageCounter;
 
@@ -97,7 +97,7 @@ public class VideoRenderer extends Widget {
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == videoSelection) {
-            return suggestion.derive(org.finroc.plugins.data_types.mca.Image.TYPE);
+            return suggestion.derive(org.finroc.plugins.data_types.Image.TYPE);
         }
         if (forPort == videoInput) {
             return suggestion.derive(HasBlittable.TYPE);
@@ -306,7 +306,7 @@ public class VideoRenderer extends Widget {
                     }
 
                     if (current_mode == Mode.SaveToPort) {
-                        org.finroc.plugins.data_types.mca.Image output_image = videoSelection.getUnusedBuffer();
+                        org.finroc.plugins.data_types.Image output_image = videoSelection.getUnusedBuffer();
 
                         System.out.println("retrieved buffer: " + output_image.getWidth() + ", " + output_image.getHeight());
 

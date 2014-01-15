@@ -31,7 +31,7 @@ import org.finroc.tools.gui.WidgetInput;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
-import org.finroc.plugins.data_types.mca.StringBlackboardBuffer;
+import org.finroc.plugins.data_types.ContainsStrings;
 
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -50,13 +50,13 @@ public class BlackboardDropDown extends Widget {
     public WidgetOutput.Numeric selectedIndex;
 
     /** Input Blackboard contains list elements as strings */
-    public WidgetInput.Std<StringBlackboardBuffer> elements;
+    public WidgetInput.Std<ContainsStrings> elements;
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion,
             WidgetPort < ? > forPort) {
         if (forPort == elements) {
-            return suggestion.derive(StringBlackboardBuffer.TYPE);
+            return suggestion.derive(ContainsStrings.TYPE);
         }
         return suggestion;
     }
@@ -67,7 +67,7 @@ public class BlackboardDropDown extends Widget {
     }
 
     class BlackboardDropDownUI extends WidgetUI implements
-        PortListener<StringBlackboardBuffer>, ActionListener {
+        PortListener<ContainsStrings>, ActionListener {
         /** UID */
         private static final long serialVersionUID = -4319918865786225484L;
 
@@ -96,7 +96,7 @@ public class BlackboardDropDown extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, StringBlackboardBuffer value) {
+        public void portChanged(AbstractPort origin, ContainsStrings value) {
             comboBox.removeAllItems();
             if (value != null && value.stringCount() > 0) {
                 for (int i = 0; i < value.stringCount(); i++) {

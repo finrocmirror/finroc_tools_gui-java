@@ -39,7 +39,6 @@ import org.finroc.tools.gui.WidgetUI;
 
 import org.finroc.plugins.data_types.ContainsStrings;
 import org.finroc.plugins.data_types.StdStringList;
-import org.finroc.plugins.data_types.mca.StringBlackboardBuffer;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -56,7 +55,6 @@ public class TextEditor extends Widget {
 
     /** Text input and output */
     public WidgetInput.Std<ContainsStrings> textInput;
-    public WidgetOutput.Std<StringBlackboardBuffer> textOutput;
     public WidgetOutput.Std<StdStringList> stringListOutput;
 
     public boolean hideButtons = false;
@@ -73,7 +71,7 @@ public class TextEditor extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : (forPort == textOutput ? StringBlackboardBuffer.TYPE : StdStringList.TYPE));
+        return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : StdStringList.TYPE);
     }
 
     class TextEditorUI extends WidgetUI implements ActionListener, PortListener<ContainsStrings> {
@@ -124,20 +122,16 @@ public class TextEditor extends Widget {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == commitButton) {
 
-                StringBlackboardBuffer buffer = textOutput.getUnusedBuffer();
                 StdStringList listBuffer = stringListOutput.getUnusedBuffer();
                 String[] lines = textArea.getText().split("\n");
                 int maxLength = 0;
                 for (String l : lines) {
                     maxLength = Math.max(maxLength, l.length());
                 }
-                buffer.resize(lines.length, lines.length, maxLength + 1, false);
                 listBuffer.setSize(lines.length);
                 for (int i = 0; i < lines.length; i++) {
-                    buffer.setString(i, lines[i]);
                     listBuffer.setString(i, lines[i]);
                 }
-                textOutput.publish(buffer);
                 stringListOutput.publish(listBuffer);
             } else {
                 portChanged(null, null);
