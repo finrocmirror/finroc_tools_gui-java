@@ -242,6 +242,18 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         connectedTo.add(((HasUid)other).getUid());
     }
 
+    public void connectTo(String other) {
+        if (other == null || other.length() == 0 || connectedTo.contains(other)) {
+            return;
+        }
+        if (getPort().isInputPort()) {
+            getPort().connectTo(other, AbstractPort.ConnectDirection.TO_SOURCE, false);
+        } else {
+            getPort().connectTo(other, AbstractPort.ConnectDirection.TO_TARGET, false);
+        }
+        connectedTo.add(other);
+    }
+
     /**
      * update port strategy
      *

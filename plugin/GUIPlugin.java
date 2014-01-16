@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.plugin;
 
-import org.finroc.tools.gui.GUICodec;
 import org.finroc.tools.gui.Widget;
 
 import org.finroc.core.plugin.Plugin;
@@ -45,10 +44,10 @@ public interface GUIPlugin extends Plugin {
      */
     public Class <? extends Widget > [] getWidgets();
 
-    /**
-     * @return GUI Import/Export filters that this plugin provides
-     */
-    public GUICodec[] getGUICodecs();
+//    /**
+//     * @return GUI Import/Export filters that this plugin provides
+//     */
+//    public GUICodec[] getGUICodecs();
 
 //  /** UID */
 //  private static final long serialVersionUID = 8496048778979648243L;
