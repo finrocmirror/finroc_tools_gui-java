@@ -83,7 +83,7 @@ public class GeometryRenderer extends Widget {
     private static final long serialVersionUID = -27724571246923200L;
 
     /** number of edges for each map object */
-    private static final int MAP_OBJECT_EDGE_COUNT = 4;
+    public static final int MAP_OBJECT_EDGE_COUNT = 4;
 
     /** Geometry to render */
     public WidgetPorts<WidgetInput.Std<PaintablePortData>> geometry;
