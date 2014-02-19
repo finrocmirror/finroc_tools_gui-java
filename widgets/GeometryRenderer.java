@@ -92,6 +92,7 @@ public class GeometryRenderer extends Widget {
     public WidgetOutput.Numeric clickX;
     public WidgetOutput.Numeric clickY;
     public WidgetOutput.Numeric clickCounter;
+    public WidgetOutput.CC<Pose2D> clickPose;
 
     /** Parameters */
     public int numberOfGeometries = 3;
@@ -135,7 +136,7 @@ public class GeometryRenderer extends Widget {
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
-        } else if (objectPoses != null && objectPoses.contains(forPort)) {
+        } else if (objectPoses != null && objectPoses.contains(forPort) || forPort == clickPose) {
             return suggestion.derive(Pose2D.TYPE);
         }
         return suggestion;
@@ -152,6 +153,8 @@ public class GeometryRenderer extends Widget {
         JLabel cordBar;
         NumberFormat nf = NumberFormat.getInstance();
         EmbeddedPaintable trackObject = null;  // object to track
+        Point lastMousePressPoint;
+        Point lastMouseDragPoint;
 
         public GeometryRendererUI() {
             super(RenderMode.Swing);
@@ -271,15 +274,41 @@ public class GeometryRenderer extends Widget {
         public void mouseEvent(Action id, AdvancedMouseListener <? , Action > source, MouseEvent me) {
             switch (id) {
             case Point:
-                    Point2D temp = getPoint(me.getPoint());
-                clickX.publish(temp.getX());
-                clickY.publish(temp.getY());
-                clickCounter.publish(clickCounter.getDouble() + 1);
+                    lastMouseDragPoint = me.getPoint();
+                if (resetClickPosOnMouseRelease) { // old behaviour
+                    Point2D transformed = getPoint(lastMouseDragPoint);
+                    clickX.publish(transformed.getX());
+                    clickY.publish(transformed.getY());
+                    clickCounter.publish(clickCounter.getDouble() + 1);
+                    Log.log(LogLevel.DEBUG, "Target pose " + transformed.toString());
+                } else {
+                    if (me.getID() == MouseEvent.MOUSE_PRESSED) {
+                        lastMousePressPoint = lastMouseDragPoint;
+                    }
+                    repaint();
+                }
                 break;
             case ResetPoint:
                 if (resetClickPosOnMouseRelease) {
                     clickX.publish(0);
                     clickY.publish(0);
+                } else {
+                    Point2D transformedPress = getPoint(lastMousePressPoint);
+                    Point2D transformedRelease = getPoint(lastMouseDragPoint);
+
+                    clickX.publish(transformedPress.getX());
+                    clickY.publish(transformedPress.getY());
+                    clickCounter.publish(clickCounter.getDouble() + 1);
+
+                    double yaw = Math.atan2(transformedRelease.getY() - transformedPress.getY(), transformedRelease.getX() - transformedPress.getX());
+                    Pose2D publish = new Pose2D();
+                    publish.x = transformedPress.getX();
+                    publish.y = transformedPress.getY();
+                    publish.yaw = yaw;
+                    clickPose.publish(publish);
+                    Log.log(LogLevel.DEBUG, "Target pose " + publish.toString());
+
+                    lastMousePressPoint = null;
                 }
                 break;
             case WheelZoom:
@@ -323,7 +352,7 @@ public class GeometryRenderer extends Widget {
                 } catch (NoninvertibleTransformException e) {
                     Log.log(LogLevel.ERROR, e);
                 }
-                temp = new Point2D.Double(source.getDiffToLastPosX(), source.getDiffToLastPosY());
+                Point2D temp = new Point2D.Double(source.getDiffToLastPosX(), source.getDiffToLastPosY());
                 temp = transform.transform(temp, null);
                 translationX += temp.getX();
                 translationY += temp.getY();
@@ -611,6 +640,12 @@ public class GeometryRenderer extends Widget {
                 }
 
                 g2d.dispose();
+
+                // draw mouse drag line
+                if (lastMousePressPoint != null && lastMouseDragPoint != null && (!lastMousePressPoint.equals(lastMouseDragPoint))) {
+                    g.setColor(Color.black);
+                    g.drawLine(lastMousePressPoint.x, lastMousePressPoint.y, lastMouseDragPoint.x, lastMouseDragPoint.y);
+                }
             }
 
             @Override
