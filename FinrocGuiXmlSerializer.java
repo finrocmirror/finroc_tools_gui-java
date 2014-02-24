@@ -66,6 +66,7 @@ public class FinrocGuiXmlSerializer {
         // initialize
         xstream = new XStream(/*new DomDriver()*/);
         xstream.addImmutableType(java.awt.Color.class);
+        xstream.setMode(XStream.NO_REFERENCES);
         xstream.alias("fingui", GUI.class);
         xstream.alias("Window", GUIWindow.class);
         xstream.alias("Panel", GUIPanel.class);

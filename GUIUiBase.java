@@ -60,6 +60,8 @@ import org.rrlib.xml.XMLDocument;
 import org.rrlib.xml.XMLNode;
 import org.xml.sax.InputSource;
 
+import com.thoughtworks.xstream.XStream;
+
 public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends UIBase <? , ? , ? , ? >> extends UIBase<P, Container, GUI, C> implements ResourcePathProvider {
 
     /** Constants for GUI files */
@@ -160,8 +162,10 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
 
                 // read gui
                 if (!RuntimeSettings.isRunningInApplet()) {
+                    FinrocGuiXmlSerializer.getInstance().setMode(XStream.XPATH_RELATIVE_REFERENCES);
                     ObjectInputStream ois = FinrocGuiXmlSerializer.getInstance().createObjectInputStream(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
                     newGui = (GUI)ois.readObject();
+                    FinrocGuiXmlSerializer.getInstance().setMode(XStream.NO_REFERENCES);
                 } else {
                     XMLDocument document = new XMLDocument(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false);
                     newGui = new GUI(this);
