@@ -68,6 +68,7 @@ import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
+import org.finroc.plugins.data_types.Matrix3x3d;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
 import org.finroc.plugins.data_types.Pose2D;
@@ -87,6 +88,7 @@ public class GeometryRenderer extends Widget {
 
     /** Geometry to render */
     public WidgetPorts<WidgetInput.Std<PaintablePortData>> geometry;
+    public WidgetPorts<WidgetInput.CC<Matrix3x3d>> geometryTransformations;
     public WidgetPorts<WidgetInput.Numeric> objectCoordinates;
     public WidgetPorts<WidgetInput.CC<Pose2D>> objectPoses;
     public WidgetOutput.Numeric clickX;
@@ -112,9 +114,11 @@ public class GeometryRenderer extends Widget {
     public boolean hideToolbar = false;
     public EmbeddedPaintables mapObjects = new EmbeddedPaintables();
     public int drawGeometriesAfterMapObject = 2;
+    public boolean provideGeometryPoseInputs = false;
 
     public GeometryRenderer() {
         geometry = new WidgetPorts<WidgetInput.Std<PaintablePortData>>("geometry", 3, WidgetInput.Std.class, this);
+        geometryTransformations = new WidgetPorts<WidgetInput.CC<Matrix3x3d>>("", 0, WidgetInput.CC.class, this);
         objectCoordinates = new WidgetPorts<WidgetInput.Numeric>("", 0, WidgetInput.Numeric.class, this);
         objectPoses = new WidgetPorts<WidgetInput.CC<Pose2D>>("", 0, WidgetInput.CC.class, this);
     }
@@ -136,8 +140,10 @@ public class GeometryRenderer extends Widget {
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
-        } else if (objectPoses != null && objectPoses.contains(forPort) || forPort == clickPose) {
+        } else if ((objectPoses != null && objectPoses.contains(forPort)) || forPort == clickPose) {
             return suggestion.derive(Pose2D.TYPE);
+        } else if (geometryTransformations != null && geometryTransformations.contains(forPort)) {
+            return suggestion.derive(Matrix3x3d.TYPE);
         }
         return suggestion;
     }
@@ -465,6 +471,14 @@ public class GeometryRenderer extends Widget {
             while (geometry.size() > numberOfGeometries) {  // remove last entries
                 geometry.remove(geometry.size() - 1);
             }
+            while (provideGeometryPoseInputs && geometryTransformations.size() < numberOfGeometries) {
+                WidgetInput.CC<Matrix3x3d> p = new WidgetInput.CC<Matrix3x3d>();
+                geometryTransformations.add(p);
+                p.setDescription("geometry " + geometryTransformations.size() + " transformation");
+            }
+            while (geometryTransformations.size() > numberOfGeometries || ((!provideGeometryPoseInputs) && geometryTransformations.size() > 0)) {  // remove last entries
+                geometryTransformations.remove(geometryTransformations.size() - 1);
+            }
             while (objectCoordinates.size() / MAP_OBJECT_EDGE_COUNT < mapObjects.size()) {
                 objectCoordinates.add(new WidgetInput.Numeric());
             }
@@ -520,12 +534,24 @@ public class GeometryRenderer extends Widget {
         public void drawGeometries(Graphics2D g2d) {
 
             // Draw geometries
-            for (WidgetInput.Std<PaintablePortData> wip : geometry) {
-                Paintable p = wip.getAutoLocked();
+            for (int i = 0; i < geometry.size(); i++) {
+                Paintable p = geometry.get(i).getAutoLocked();
                 if (p == null) {
                     continue;
                 }
+                Matrix3x3d transformation = null;
+                if (i < geometryTransformations.size() && geometryTransformations.get(i).asPort().isConnected()) {
+                    transformation = geometryTransformations.get(i).getAutoLocked();
+                    g2d = ((Graphics2D)g2d.create());
+                    g2d.transform(new AffineTransform(transformation.values[0], transformation.values[3], transformation.values[1],
+                                                      transformation.values[4], transformation.values[2], transformation.values[5]));
+                }
+
                 p.paint(g2d);
+
+                if (transformation != null) {
+                    g2d.dispose();
+                }
             }
             ThreadLocalCache.get().releaseAllLocks();
         }
