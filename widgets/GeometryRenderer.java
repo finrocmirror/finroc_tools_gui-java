@@ -542,15 +542,13 @@ public class GeometryRenderer extends Widget {
                 Matrix3x3d transformation = null;
                 if (i < geometryTransformations.size() && geometryTransformations.get(i).asPort().isConnected()) {
                     transformation = geometryTransformations.get(i).getAutoLocked();
-                    g2d = ((Graphics2D)g2d.create());
-                    g2d.transform(new AffineTransform(transformation.values[0], transformation.values[3], transformation.values[1],
-                                                      transformation.values[4], transformation.values[2], transformation.values[5]));
-                }
-
-                p.paint(g2d);
-
-                if (transformation != null) {
-                    g2d.dispose();
+                    Graphics2D g = ((Graphics2D)g2d.create());
+                    g.transform(new AffineTransform(transformation.values[0], transformation.values[3], transformation.values[1],
+                                                    transformation.values[4], transformation.values[2], transformation.values[5]));
+                    p.paint(g);
+                    g.dispose();
+                } else {
+                    p.paint(g2d);
                 }
             }
             ThreadLocalCache.get().releaseAllLocks();
