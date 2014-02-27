@@ -96,12 +96,12 @@ public class Oscilloscope extends Widget {
         /** UID */
         private static final long serialVersionUID = 1190544484724927518L;
 
-        private static enum DrawMode { dots, lines }
-        private static enum Scale { left, right }
+        public static enum DrawMode { dots, lines }
+        public static enum Scale { left, right }
 
-        DrawMode drawMode = DrawMode.lines;
-        Scale useScale = Scale.left;
-        Color color = getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_FOREGROUND);
+        public DrawMode drawMode = DrawMode.lines;
+        public Scale useScale = Scale.left;
+        public Color color = getDefaultColor(Theme.DefaultColor.OSCILLOSCOPE_FOREGROUND);
     }
 
     class OscilloscopeUI extends WidgetUI implements WidgetPortsListener {

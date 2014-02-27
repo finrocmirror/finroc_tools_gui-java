@@ -92,9 +92,9 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
         /** UID */
         private static final long serialVersionUID = 6930215551116910119L;
 
-        private String name = "choice name";
-        private double output1 = 0, output2 = 0, output3 = 0;
-        private String customOutput = "0";
+        public String name = "choice name";
+        public double output1 = 0, output2 = 0, output3 = 0;
+        public String customOutput = "0";
 
         public ComboBoxElement() {}
 

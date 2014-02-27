@@ -49,7 +49,6 @@ import org.rrlib.serialization.BinaryInputStream;
 import org.rrlib.serialization.BinaryOutputStream;
 import org.rrlib.serialization.MemoryBuffer;
 import org.rrlib.serialization.ObjectFieldSerializer;
-import org.rrlib.serialization.Serialization;
 import org.rrlib.serialization.Serialization.DataEncoding;
 import org.rrlib.xml.XMLNode;
 
@@ -412,7 +411,7 @@ public abstract class Widget extends DataModelBase < GUI, GUIPanel, WidgetPort<?
                     result.add(field);
                 }
             }
-            if (!c.getSuperclass().equals(Widget.class)) {
+            if (c.getSuperclass() != null && (!c.getSuperclass().equals(Widget.class)) && (!c.getSuperclass().equals(Object.class))) {
                 result.addAll(getFieldsToSerialize(c.getSuperclass()));
             }
             return result;

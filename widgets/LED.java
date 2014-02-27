@@ -117,11 +117,11 @@ public class LED extends Widget {
         /** UID */
         private static final long serialVersionUID = 6464808920773228472L;
 
-        private Color off = new Color(0, 0, 0), on = getDefaultColor(Theme.DefaultColor.LED);
-        private double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
-        String label = "LED";
-        boolean bitMode = false;
-        int bit = 0;
+        public Color off = new Color(0, 0, 0), on = getDefaultColor(Theme.DefaultColor.LED);
+        public double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
+        public String label = "LED";
+        public boolean bitMode = false;
+        public int bit = 0;
 
         public LEDProperty() {}
 

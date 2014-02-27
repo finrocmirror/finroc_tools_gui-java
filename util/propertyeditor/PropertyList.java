@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.finroc.tools.gui.Widget;
 import org.rrlib.serialization.XMLSerializable;
 import org.rrlib.xml.XMLNode;
 
@@ -43,6 +44,9 @@ public class PropertyList<T extends Serializable> extends ArrayList<T> implement
 
     /** Maximum entries in this list */
     private int maxEntries;
+
+    /** Single instance of XML serialization class */
+    private static final Widget.XMLSerializer XML_SERIALIZER = new Widget.XMLSerializer();
 
     public PropertyList(Class<T> entryClass, int maxEntries) {
         this.entryClass = entryClass;
@@ -81,12 +85,25 @@ public class PropertyList<T extends Serializable> extends ArrayList<T> implement
     @Override
     public void serialize(XMLNode node) throws Exception {
         for (T entry : this) {
-            node.addChildNode(entryClass.getSimpleName());
+            XMLNode childNode = node.addChildNode(entryClass.getSimpleName());
+            XML_SERIALIZER.serialize(childNode, entry);
         }
     }
 
     @Override
     public void deserialize(XMLNode node) throws Exception {
-
+        int deserialized = 0;
+        for (XMLNode child : node.children()) {
+            if (child.getName().equals(entryClass.getSimpleName())) {
+                if (deserialized >= size()) {
+                    addElement();
+                }
+                XML_SERIALIZER.deserialize(child, get(deserialized), true);
+                deserialized++;
+            }
+        }
+        while (deserialized < size()) {
+            remove(size() - 1);
+        }
     }
 }

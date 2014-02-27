@@ -85,10 +85,10 @@ public class MultipleBars extends Widget {
         /** UID */
         private static final long serialVersionUID = 6464808920773228472L;
 
-        String label = "name";
-        double min = 0;
-        double max = 1;
-        Color color = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
+        public String label = "name";
+        public double min = 0;
+        public double max = 1;
+        public Color color = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
     }
 
     class MultipleBarsUI extends WidgetUI implements WidgetPortsListener, ComponentListener {
