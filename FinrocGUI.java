@@ -516,7 +516,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
                     // Show dialog for choosing connection?
                     if (connectTasks.size() == 0 && loadTasks.size() > 0 && fingui.getModel().getConnectionList().size() > 0 && (fingui.children.get(0).asComponent() instanceof JFrame)) {
-                        String connect = new ConnectDialog((JFrame)fingui.children.get(0).asComponent(), true).show(fingui.getModel().getConnectionList());
+                        String connect = new ConnectDialog((JFrame)fingui.children.get(0).asComponent(), true, false, "Would you like to connect now?").show(fingui.getModel().getConnectionList(), null);
                         if (connect != null) {
                             fingui.connect(connect);
                             connected = true;
