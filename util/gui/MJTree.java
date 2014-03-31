@@ -25,7 +25,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,6 +81,7 @@ public class MJTree<T> extends JTree implements MouseListener {
         this.selectableObjectType = (Class <? extends T >)selectableObjectType;
         this.newModelExpandLevel = newModelExpandLevel;
         super.addMouseListener(this);
+        super.setLargeModel(true);
     }
 
 
@@ -162,11 +162,14 @@ public class MJTree<T> extends JTree implements MouseListener {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public List<T> getVisibleObjects() {
-        List<T> result = getObjects();
-        for (Iterator<T> i = result.iterator(); i.hasNext();) {
-            if (!isVisible(getTreePathFor(i.next()))) {
-                i.remove();
+        ArrayList<T> result = new ArrayList<T>();
+        final int rowCount = this.getRowCount();
+        for (int i = 0; i < rowCount; i++) {
+            Object component = this.getPathForRow(i).getLastPathComponent();
+            if (hasCorrectType(component)) {
+                result.add((T)component);
             }
         }
         return result;
