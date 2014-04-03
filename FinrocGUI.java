@@ -35,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -331,20 +332,22 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     }
 
     /**
-     * Load GUI from HDD
+     * Load GUI from HDD or from an URL
      */
-
-    public void loadGUI(GUIWindowUI caller, File f) throws Exception {
+    public void loadGUI(GUIWindowUI caller, File f, URL url) throws Exception {
         if (!askForSave()) {
             return;
         }
-        if (f == null) {
+        if (f == null && url == null) {
             f = FileDialog.showOpenDialog("Open GUI...", getSupportedExtensions());
         }
-        if (f != null) {
+        if (f != null || url != null) {
 
             GUI newGui = null;
-            if (f.getAbsolutePath().toLowerCase().endsWith(GUI_FILE_EXTENSION.toLowerCase())) {
+            if (url != null) {
+                newGui = super.loadGUI(url.openStream());
+                guifile = null;
+            } else if (f.getAbsolutePath().toLowerCase().endsWith(GUI_FILE_EXTENSION.toLowerCase())) {
                 newGui = super.loadGUI(new FileInputStream(f));
                 guifile = f;
             } else {
@@ -473,7 +476,14 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
                     // load GUI file at startup?
                     if (!loadTasks.isEmpty()) {
-                        fingui.loadGUI(fingui.children.get(0), new File(loadTasks.get(0)));
+                        File file = new File(loadTasks.get(0));
+                        if (file.exists()) {
+                            fingui.loadGUI(fingui.children.get(0), file, null);
+                        } else if (loadTasks.get(0).contains("://")) {
+                            fingui.loadGUI(fingui.children.get(0), file, new URL(loadTasks.get(0)));
+                        } else {
+                            Log.log(LogLevel.ERROR, "Cannot open '" + loadTasks.get(0) + "'");
+                        }
                     }
 
                     // connect at startup?
@@ -527,7 +537,11 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
                         fingui.updateInterface();
                     }
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e.getMessage());
+                    if (e.getMessage() != null && e.getMessage().length() > 0) {
+                        JOptionPane.showMessageDialog(null, e.getMessage());
+                    } else {
+                        JOptionPane.showMessageDialog(null, e.getClass().getSimpleName() + " at " + e.getStackTrace()[0].toString());
+                    }
                     Log.log(LogLevel.ERROR, this, e);
                     System.exit(-1);
                 }
@@ -603,6 +617,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
         }
 
         public void addToRecentFiles(File file) {
+            file = file.getAbsoluteFile();
             if (recentFiles.contains(file)) {
                 recentFiles.remove(file);
             }

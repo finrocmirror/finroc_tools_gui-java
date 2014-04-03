@@ -190,6 +190,10 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
         }
         zis.close();
 
+        if (newGui == null) {
+            throw new Exception("No valid GUI file at provided location");
+        }
+
         newGui.setJmcagui(this);
         newGui.restore(null);
 

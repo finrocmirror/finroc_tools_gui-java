@@ -1,7 +1,7 @@
 
 Finroc GUI
 
-Usage: fingui [options] [guifile]
+Usage: fingui [options] [gui file or url]
 Start fingui using specified options and optionally loading specified file. 
 
 available options:

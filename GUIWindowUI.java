@@ -463,7 +463,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 //          } else if (src == miReconnect) {
 //              guiCore.reconnect();
             } else if (src == miLoad || src == tbLoad) {
-                guiCore.loadGUI(this, null);
+                guiCore.loadGUI(this, null, null);
                 resetUndoBuffer();
             } else if (src == miSave || src == tbSave) {
                 guiCore.saveGUI();
@@ -867,7 +867,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
 
         public void actionPerformed(ActionEvent e) {
             try {
-                getParent().loadGUI(GUIWindowUI.this, f);
+                getParent().loadGUI(GUIWindowUI.this, f, null);
                 resetUndoBuffer();
             } catch (Exception ex) {
                 getParent().showErrorMessage(ex);
