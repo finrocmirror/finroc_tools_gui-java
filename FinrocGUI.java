@@ -441,6 +441,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
                 }
                 System.out.println();
                 return;
+            } else if (arg.equals("-open")) {
+                // ignore (this is added by Windows when double-clicking on .fingui files; simply ignoring it should work)
             } else if (arg.startsWith("-")) {
                 System.out.println("Unsupported option: " + arg);
                 printHelp();
