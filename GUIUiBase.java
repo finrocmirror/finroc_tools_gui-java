@@ -48,6 +48,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.transform.stream.StreamResult;
+
 import org.finroc.tools.gui.abstractbase.UIBase;
 import org.finroc.tools.gui.commons.EventRouter;
 import org.finroc.tools.gui.util.embeddedfiles.FileManager;
@@ -91,20 +93,32 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
      */
     public void saveGUI(GUI g, OutputStream os, boolean binary) throws Exception {
 
-        ObjectOutputStream oos;
+        ObjectOutputStream oos = null;
 
         // save GUI
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
         g.getEmbeddedFileManager().saveFiles(zos);
         if (!binary) {
             zos.putNextEntry(new ZipEntry(GUI_MAIN_FILE_IN_ZIP));
-            oos = FinrocGuiXmlSerializer.getInstance().createObjectOutputStream(new OutputStreamWriter(zos));
+            if (!RuntimeSettings.isRunningInApplet()) {
+                oos = FinrocGuiXmlSerializer.getInstance().createObjectOutputStream(new OutputStreamWriter(zos));
+            }
         } else {
             zos.putNextEntry(new ZipEntry(GUI_MAIN_FILE_IN_BINARY_ZIP));
             oos = new ObjectOutputStream(zos);
         }
-        oos.writeObject(g);
-        oos.close();
+
+        if (oos != null) {
+            oos.writeObject(g);
+            oos.close();
+        } else {
+            XMLDocument doc = new XMLDocument();
+            XMLNode root = doc.addRootNode("object-stream");
+            XMLNode guiNode = root.addChildNode("fingui");
+            g.serialize(guiNode);
+            doc.writeToStream(new StreamResult(zos), true);
+            zos.close();
+        }
     }
 
     public GUI importGUI(File f) throws Exception {
