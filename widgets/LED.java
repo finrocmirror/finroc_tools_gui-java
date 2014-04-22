@@ -211,7 +211,7 @@ public class LED extends Widget {
             private static final long serialVersionUID = -5589317268272363967L;
 
             private JLabel jl;
-            private boolean on;
+            private volatile boolean on;
             BufferedImageRGB renderBuffer;  // buffer for rendering
             BufferedImageRGB renderBufferOff;  // buffer for rendering
             BufferedImageRGB renderBufferSmall;  // buffer for rendering

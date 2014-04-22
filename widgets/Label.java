@@ -26,6 +26,7 @@ import java.awt.Color;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -66,7 +67,7 @@ public class Label extends Widget {
     }
 
     @SuppressWarnings("rawtypes")
-    class LabelWidgetUI extends WidgetUI implements PortListener {
+    class LabelWidgetUI extends WidgetUI implements PortListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = 1643584696919287207L;
@@ -92,7 +93,14 @@ public class Label extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, Object value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
+            Object value = text.getAutoLocked();
             label.setText(value == null ? "null" : value.toString());
+            releaseAllLocks();
         }
     }
 }

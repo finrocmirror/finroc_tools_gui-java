@@ -36,6 +36,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -98,7 +99,7 @@ public class CameraController extends Widget {
         return new CameraControllerUI();
     }
 
-    class CameraControllerUI extends WidgetUI implements PortListener<CameraFeature.Set>, ActionListener {
+    class CameraControllerUI extends WidgetUI implements PortListener<CameraFeature.Set>, ActionListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -27396902858121219L;
@@ -132,7 +133,12 @@ public class CameraController extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, CameraFeature.Set value) {
+            SwingUtilities.invokeLater(this);
+        }
 
+        // Called on port value change
+        @Override
+        public void run() {
             CameraFeature.Set cfs = cameraState.getAutoLocked();
 
             // no data ?

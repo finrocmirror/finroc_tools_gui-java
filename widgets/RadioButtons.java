@@ -32,8 +32,8 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
 
-import org.finroc.tools.gui.ConnectionPanel;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
@@ -77,7 +77,7 @@ public class RadioButtons extends Widget {
         return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
-    class RadioButtonsUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber> {
+    class RadioButtonsUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber>, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -720131048479825628L;
@@ -148,6 +148,11 @@ public class RadioButtons extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, CoreNumber value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             double curValue = selected.getDouble();
             double bestDiff = Double.MAX_VALUE;
             JRadioButton bestSelection = null;
