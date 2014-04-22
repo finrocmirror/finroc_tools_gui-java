@@ -35,6 +35,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -91,7 +92,7 @@ public class MultipleBars extends Widget {
         public Color color = getDefaultColor(Theme.DefaultColor.LCD_ENABLED);
     }
 
-    class MultipleBarsUI extends WidgetUI implements WidgetPortsListener, ComponentListener {
+    class MultipleBarsUI extends WidgetUI implements WidgetPortsListener, ComponentListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -6743184196516792815L;
@@ -120,6 +121,11 @@ public class MultipleBars extends Widget {
 
         @Override
         public void portChanged(WidgetPorts<?> origin, AbstractPort port, Object value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             for (int i = 0; i < inputs.size(); i++) {
                 BarProperty bp = bars.get(i);
                 JPanel bar = barPanels.get(i);

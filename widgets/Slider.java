@@ -30,6 +30,7 @@ import java.util.Hashtable;
 
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -78,7 +79,7 @@ public class Slider extends Widget {
         return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
-    class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, PortListener<CoreNumber> {
+    class SliderUI extends WidgetUI implements ChangeListener, ComponentListener, PortListener<CoreNumber>, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -226842649519588097L;
@@ -125,6 +126,11 @@ public class Slider extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, CoreNumber value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             slider.setValue(Slider.this.value.getDouble());
         }
     }

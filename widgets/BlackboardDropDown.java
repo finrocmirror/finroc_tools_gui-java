@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -67,7 +68,7 @@ public class BlackboardDropDown extends Widget {
     }
 
     class BlackboardDropDownUI extends WidgetUI implements
-        PortListener<ContainsStrings>, ActionListener {
+        PortListener<ContainsStrings>, ActionListener, Runnable {
         /** UID */
         private static final long serialVersionUID = -4319918865786225484L;
 
@@ -97,13 +98,19 @@ public class BlackboardDropDown extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, ContainsStrings value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
+            ContainsStrings value = elements.getAutoLocked();
             comboBox.removeAllItems();
             if (value != null && value.stringCount() > 0) {
                 for (int i = 0; i < value.stringCount(); i++) {
                     comboBox.addItem(value.getString(i).toString());
                 }
-
             }
+            releaseAllLocks();
         }
     }
 }

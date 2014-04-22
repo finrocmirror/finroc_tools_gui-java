@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -81,7 +82,7 @@ public class CheckBoxGroup extends Widget {
     }
 
     @SuppressWarnings("rawtypes")
-    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener {
+    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -5106178045019582395L;
@@ -123,8 +124,13 @@ public class CheckBoxGroup extends Widget {
         /** Create and display list of check boxes based on input string list*/
         @Override
         public void portChanged(AbstractPort origin, Object val) {
-            if (val != null) {
-                ContainsStrings strings = (ContainsStrings)val;
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
+            ContainsStrings strings = elements.getAutoLocked();
+            if (strings != null) {
                 removeAll();
                 checkBoxes.clear();
                 for (int i = 0; i < strings.stringCount(); ++i) {
@@ -139,6 +145,7 @@ public class CheckBoxGroup extends Widget {
                 }
                 validate();
             }
+            releaseAllLocks();
         }
 
     }

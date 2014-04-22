@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
@@ -112,7 +113,7 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
     }
 
     @SuppressWarnings("rawtypes")
-    class ComboBoxUI extends WidgetUI implements PortListener, ActionListener {
+    class ComboBoxUI extends WidgetUI implements PortListener, ActionListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -8663762048760660960L;
@@ -157,6 +158,11 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
 
         @Override
         public void portChanged(AbstractPort origin, Object value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             for (ComboBoxElement cbe : choices) {
                 if ((output1.getDouble() == cbe.output1 || !output1.getPort().isConnected()) &&
                         (output2.getDouble() == cbe.output2 || !output2.getPort().isConnected()) &&

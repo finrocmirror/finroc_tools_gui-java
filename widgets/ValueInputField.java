@@ -24,6 +24,7 @@ package org.finroc.tools.gui.widgets;
 import java.awt.BorderLayout;
 
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
@@ -62,7 +63,7 @@ public class ValueInputField extends Widget {
     }
 
 
-    class ValueInputFieldUI extends WidgetUI implements CaretListener, PortListener<CoreNumber> {
+    class ValueInputFieldUI extends WidgetUI implements CaretListener, PortListener<CoreNumber>, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -3628234631895609L;
@@ -102,6 +103,11 @@ public class ValueInputField extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, CoreNumber value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             ignoreUpdate = true;
             textfield.setText(value == null ? "" : ("" + value.toString()));
             ignoreUpdate = false;

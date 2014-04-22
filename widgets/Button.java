@@ -33,6 +33,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
@@ -165,15 +166,19 @@ public class Button extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, Object value) {
+        public void portChanged(final AbstractPort origin, final Object value) {
             if (toggleButton) {
-                if (origin == emitValue.getPort()) {
-                    double val = emitValue.getDouble();
-                    button.setSelected(Math.abs(val - emitValuePush) < Math.abs(val - emitValueRelease));
-                } else if (origin == buttonPressed.getPort()) {
-                    CoreBoolean b = (CoreBoolean)value;
-                    button.setSelected(b.get());
-                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (origin == emitValue.getPort()) {
+                            double val = emitValue.getDouble();
+                            button.setSelected(Math.abs(val - emitValuePush) < Math.abs(val - emitValueRelease));
+                        } else if (origin == buttonPressed.getPort()) {
+                            CoreBoolean b = (CoreBoolean)value;
+                            button.setSelected(b.get());
+                        }
+                    }
+                });
             }
         }
     }

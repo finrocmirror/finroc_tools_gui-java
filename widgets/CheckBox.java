@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
@@ -70,7 +71,7 @@ public class CheckBox extends Widget {
     }
 
     @SuppressWarnings("rawtypes")
-    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener {
+    private class CheckBoxUI extends WidgetUI implements ActionListener, PortListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -5106178045019582395L;
@@ -105,6 +106,11 @@ public class CheckBox extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, Object val) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             if (value.getPort().isConnected()) {
                 checkBox.setSelected(value.getDouble() != 0);
             } else if (boolValue.getPort().isConnected()) {

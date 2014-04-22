@@ -30,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetInput;
@@ -74,7 +75,7 @@ public class TextEditor extends Widget {
         return suggestion.derive(forPort == textInput ? ContainsStrings.TYPE : StdStringList.TYPE);
     }
 
-    class TextEditorUI extends WidgetUI implements ActionListener, PortListener<ContainsStrings> {
+    class TextEditorUI extends WidgetUI implements ActionListener, PortListener<ContainsStrings>, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -3456236219915623650L;
@@ -140,6 +141,11 @@ public class TextEditor extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, ContainsStrings value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             ContainsStrings cs = textInput.getAutoLocked();
             if (cs != null) {
                 textArea.setText(ContainsStrings.Util.toSingleString(cs).toString());

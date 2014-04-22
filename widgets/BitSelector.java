@@ -37,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
@@ -82,7 +83,7 @@ public class BitSelector extends Widget {
         return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
-    class BitSelectorUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber> {
+    class BitSelectorUI extends WidgetUI implements ActionListener, ComponentListener, PortListener<CoreNumber>, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -720131048479825628L;
@@ -184,6 +185,11 @@ public class BitSelector extends Widget {
 
         @Override
         public void portChanged(AbstractPort origin, CoreNumber value) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             int mask = 1;
             int curValue = BitSelector.this.value.getInt();
             for (JCheckBox jcb : checkboxes) {
