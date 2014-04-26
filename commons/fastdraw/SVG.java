@@ -204,4 +204,9 @@ public class SVG implements Paintable {
         }
         return bounds;
     }
+
+    @Override
+    public boolean isYAxisPointingDownwards() {
+        return true;
+    }
 }

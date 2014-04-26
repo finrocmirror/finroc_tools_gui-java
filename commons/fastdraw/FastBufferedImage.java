@@ -145,6 +145,11 @@ public abstract class FastBufferedImage extends Blittable implements Paintable {
         ImageIO.write(wrapped, formatName, baos);
     }
 
+    @Override
+    public boolean isYAxisPointingDownwards() {
+        return true;
+    }
+
     /*
     @JavaOnly private PortDataDelegate delegate = new PortDataDelegate(this);
     @Override @JavaOnly public PortDataReference getCurReference() {
