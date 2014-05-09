@@ -140,9 +140,9 @@ public class Compass extends Widget {
 
                 g.scale(factor, factor);
                 g.translate(-xOffset, -yOffset);
-                svgBack.paint(g);
+                svgBack.paint(g, null);
                 if (turnNeedle) {
-                    svgDynamic.paint(g);
+                    svgDynamic.paint(g, null);
                 }
                 g.setTransform(stdTransform);
             }
@@ -160,7 +160,7 @@ public class Compass extends Widget {
                 g.translate(halfSVGSize, halfSVGSize);
                 g.rotate(((yaw.getDouble() * inputScaleFactor) / 180.0) * Math.PI);
                 g.translate(-(xOffset + halfSVGSize), -(yOffset + halfSVGSize));
-                svgDynamic.paint(g);
+                svgDynamic.paint(g, null);
                 g.setTransform(stdTransform);
             }
 
@@ -171,7 +171,7 @@ public class Compass extends Widget {
             g.translate(halfSVGSize, halfSVGSize);
             g.rotate(((turn - 28.0) / 180.0) * Math.PI);
             g.translate(-(xOffset + halfSVGSize), -(yOffset + halfSVGSize));
-            svgNeedle.paint(g);
+            svgNeedle.paint(g, null);
             g.setTransform(stdTransform);
         }
 

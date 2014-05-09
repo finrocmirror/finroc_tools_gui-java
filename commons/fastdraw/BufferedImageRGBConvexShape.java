@@ -23,6 +23,8 @@ package org.finroc.tools.gui.commons.fastdraw;
 
 import java.awt.image.BufferedImage;
 
+import org.finroc.plugins.data_types.util.FastBufferedImage;
+
 /**
  * @author Max Reichardt
  *

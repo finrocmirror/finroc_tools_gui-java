@@ -111,7 +111,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
         // Wo wird der Mittelpunkt hinbewegt?
         g.translate(-centerX, -centerY);
 
-        paintInstance.paint(g);
+        paintInstance.paint(g, null);
     }
 
     public void paintToTopLeft(Graphics2D g, Rectangle fitTo, boolean preserveAspectRatio, FileManager efm) {
@@ -134,7 +134,7 @@ public class EmbeddedPaintable extends EmbeddedFile {
             }
         }
         g.translate(-originalBounds.x, -originalBounds.y);
-        paintInstance.paint(g);
+        paintInstance.paint(g, null);
         g.setTransform(at);
     }
 

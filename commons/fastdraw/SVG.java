@@ -39,6 +39,7 @@ import org.finroc.tools.gui.commons.Util;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.Paintable;
+import org.finroc.plugins.data_types.util.FastBufferedImage;
 
 import com.kitfox.svg.SVGCache;
 import com.kitfox.svg.SVGDiagram;
@@ -54,9 +55,6 @@ import com.kitfox.svg.app.beans.SVGPanel;
  * Wraps SVG diagram
  */
 public class SVG implements Paintable {
-
-    /** UID */
-    private static final long serialVersionUID = 8883013998203770170L;
 
     /** unique ID for element */
     private String id;
@@ -155,7 +153,8 @@ public class SVG implements Paintable {
         return diagram;
     }
 
-    public void paint(Graphics2D g) {
+    @Override
+    public void paint(Graphics2D g, FastBufferedImage imageBuffer) {
         if (painter == null) {
             painter = new SVGPanel();
             painter.setSvgURI(uri);

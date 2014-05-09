@@ -33,6 +33,11 @@ import java.util.Arrays;
 import javax.swing.Icon;
 
 import org.finroc.plugins.data_types.Blittable;
+import org.finroc.plugins.data_types.util.FastBufferedImage;
+import org.rrlib.serialization.BinaryInputStream;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.BinarySerializable;
+import org.rrlib.serialization.rtti.DataType;
 
 /**
  * @author Max Reichardt
@@ -40,14 +45,16 @@ import org.finroc.plugins.data_types.Blittable;
  * Image class that extends BufferedImage.
  * Image manipulation should be reasonably fast using this class.
  */
-public class BufferedImageRGB extends FastBufferedImage implements Icon, Blittable.Destination {
+public class BufferedImageRGB extends FastBufferedImage implements Icon, Blittable.Destination, BinarySerializable {
 
-    /** UID */
-    private static final long serialVersionUID = -447839239477407754L;
+    public final static DataType<BufferedImageRGB> TYPE = new DataType<BufferedImageRGB>(BufferedImageRGB.class);
+
+    public BufferedImageRGB() {
+        this(8, 8);
+    }
 
     public BufferedImageRGB(int width, int height) {
         super(width, height);
-        //System.out.println("Creating image");
     }
 
     public BufferedImageRGB(Dimension dim) {
@@ -165,5 +172,38 @@ public class BufferedImageRGB extends FastBufferedImage implements Icon, Blittab
      */
     public static int mergeColors(int color1, int color2, float alpha) {
         return mergeColors(color1, color2, (int)(alpha * 256));
+    }
+
+    @Override
+    public void serialize(BinaryOutputStream stream) {
+        stream.writeInt(getWidth());
+        stream.writeInt(getHeight());
+        int[] raster = getBuffer();
+        for (int i = 0, n = getWidth() * getHeight(); i < n; i++) {
+            stream.writeInt(raster[i]);
+        }
+    }
+
+    @Override
+    public void deserialize(BinaryInputStream stream) throws Exception {
+        int width = stream.readInt();
+        int height = stream.readInt();
+        if (width != getWidth() || height != getHeight()) {
+            wrapped = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        }
+        int[] raster = getBuffer();
+        for (int i = 0, n = getWidth() * getHeight(); i < n; i++) {
+            raster[i] = stream.readInt();
+        }
+    }
+
+    /**
+     * @param width New Width
+     * @param height New Height
+     */
+    public void resize(int width, int height) {
+        if (width != wrapped.getWidth() || height != wrapped.getHeight()) {
+            wrapped = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        }
     }
 }

@@ -28,6 +28,8 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.finroc.plugins.data_types.util.FastBufferedImage;
+
 /**
  * @author Max Reichardt
  *

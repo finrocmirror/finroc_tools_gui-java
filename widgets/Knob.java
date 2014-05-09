@@ -236,7 +236,7 @@ public class Knob extends Widget {
                     g2.setClip(0, 0, renderSize.width, renderSize.height);
 
                     g2.scale(factor, factor);
-                    svgBack.paint(g2);
+                    svgBack.paint(g2, null);
 
                     // draw scale
                     if (showTicks) {
@@ -309,7 +309,7 @@ public class Knob extends Widget {
                 g2d.rotate(clockwise ? a.getUnsignedRad() : -a.getUnsignedRad());
                 g2d.translate(-(halfSVGSize + 1), -(halfSVGSize + 1));
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                svgIndicator.paint(g2d);
+                svgIndicator.paint(g2d, null);
                 g2d.setTransform(tf);
             }
 

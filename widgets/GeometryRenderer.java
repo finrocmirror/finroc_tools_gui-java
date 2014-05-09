@@ -107,7 +107,6 @@ public class GeometryRenderer extends Widget {
     public double lineWidth = 1;
     public boolean showRulers = true;
     public boolean showCoordinates = false;
-    @SuppressWarnings("unused")
     @NotInPropertyEditor
     public transient boolean invertObjectYInput = false;
     public boolean resetClickPosOnMouseRelease = false;
@@ -545,10 +544,10 @@ public class GeometryRenderer extends Widget {
                     Graphics2D g = ((Graphics2D)g2d.create());
                     g.transform(new AffineTransform(transformation.values[0], transformation.values[3], transformation.values[1],
                                                     transformation.values[4], transformation.values[2], transformation.values[5]));
-                    p.paint(g);
+                    p.paint(g, null);
                     g.dispose();
                 } else {
-                    p.paint(g2d);
+                    p.paint(g2d, null);
                 }
             }
             ThreadLocalCache.get().releaseAllLocks();
