@@ -55,8 +55,6 @@ import org.rrlib.serialization.rtti.DataTypeBase;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 public class Oscilloscope extends Widget {
 
     /** UID */
@@ -68,11 +66,11 @@ public class Oscilloscope extends Widget {
     public double leftScaleMax = 110;
     public double rightScaleMin = 0;
     public double rightScaleMax = 110;
-    public PropertyList<SignalProperty> channels = new PropertyList<SignalProperty>(SignalProperty.class, 25);
+    public PropertyList<OscilloscopeSignal> channels = new PropertyList<OscilloscopeSignal>(OscilloscopeSignal.class, 25);
     public long timerIntervalInMs = 100;
 
     public Oscilloscope() {
-        channels.add(new SignalProperty());
+        channels.add(new OscilloscopeSignal());
     }
 
     @Override
@@ -90,8 +88,7 @@ public class Oscilloscope extends Widget {
         return suggestion;
     }
 
-    @XStreamAlias("OscilloscopeSignal")
-    public static class SignalProperty implements Serializable {
+    public static class OscilloscopeSignal implements Serializable {
 
         /** UID */
         private static final long serialVersionUID = 1190544484724927518L;
@@ -298,11 +295,11 @@ public class Oscilloscope extends Widget {
                         g2d.setColor(channels.get(i).color);
 
                         PartWiseLinearFunction.Node last = null;
-                        boolean left = channels.get(i).useScale.equals(SignalProperty.Scale.left);
+                        boolean left = channels.get(i).useScale.equals(OscilloscopeSignal.Scale.left);
                         for (PartWiseLinearFunction.Node node : nodes) {
                             int xnow = (int)Math.round(getXCord(node.x));
                             int ynow = (int)Math.round(getYCord(node.y, left));
-                            if (channels.get(i).drawMode.equals(SignalProperty.DrawMode.lines)) {
+                            if (channels.get(i).drawMode.equals(OscilloscopeSignal.DrawMode.lines)) {
                                 if (last != null) {
                                     int xlast = (int)Math.round(getXCord(last.x));
                                     int ylast = (int)Math.round(getYCord(last.y, left));
