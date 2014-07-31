@@ -44,6 +44,7 @@ import org.finroc.tools.gui.util.embeddedfiles.ValidExtensions;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreBoolean;
+import org.finroc.core.datatype.Event;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -63,6 +64,7 @@ public class Button extends Widget {
     public WidgetOutput.Numeric pressCounter;
     public WidgetOutput.Numeric emitValue;
     public WidgetOutput.CC<CoreBoolean> buttonPressed;
+    public WidgetOutput.CC<Event> pressEvent;
 
     /** Button parameters */
     public String text = "Button";
@@ -84,6 +86,9 @@ public class Button extends Widget {
         }
         if (forPort == buttonPressed) {
             return suggestion.derive(CoreBoolean.TYPE).derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
+        }
+        if (forPort == pressEvent) {
+            return suggestion.derive(Event.TYPE);
         }
         return null;
     }
@@ -143,6 +148,7 @@ public class Button extends Widget {
 
         public void actionPerformed(ActionEvent e) {
             pressCounter.publish(pressCounter.getInt() + 1);
+            pressEvent.publish(Event.getInstance());
             if (button instanceof JToggleButton) {
                 emitValue.publish(((JToggleButton)button).isSelected() ? emitValuePush : emitValueRelease);
                 buttonPressed.publish(CoreBoolean.getInstance(((JToggleButton)button).isSelected()));
