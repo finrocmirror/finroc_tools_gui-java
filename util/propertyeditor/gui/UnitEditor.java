@@ -41,13 +41,8 @@ public class UnitEditor extends ComboBoxEditor<Unit> {
 
     static Unit[] getValues() {
         ArrayList<Unit> r = new ArrayList<Unit>();
-        try {
-            byte i = 0;
-            while (true) {
-                r.add(Unit.getUnit(i));
-                i++;
-            }
-        } catch (Exception e) {}
+        r.add(null);
+        Unit.getAllUnits(r);
         Unit[] array = r.toArray(new Unit[0]);
         Arrays.sort(array, new Comparator<Unit>() {
             @Override

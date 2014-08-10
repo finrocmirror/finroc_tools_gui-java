@@ -29,6 +29,7 @@ import org.finroc.tools.gui.util.embeddedfiles.AbstractFiles;
 import org.finroc.tools.gui.util.embeddedfiles.EmbeddedPaintable;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.tools.gui.util.embeddedfiles.ExternalFolder;
+import org.finroc.core.datatype.SIUnit;
 import org.finroc.core.datatype.Unit;
 import org.finroc.plugins.data_types.StringList;
 
@@ -265,7 +266,7 @@ public class FinrocGuiXmlSerializer {
         @SuppressWarnings("rawtypes")
         @Override
         public boolean canConvert(Class c) {
-            return Unit.class.equals(c);
+            return Unit.class.equals(c) || SIUnit.class.equals(c);
         }
 
         @Override
