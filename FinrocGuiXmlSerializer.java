@@ -80,6 +80,7 @@ public class FinrocGuiXmlSerializer {
         xstream.alias("BlackboardPort", WidgetOutput.Blackboard.class);
         xstream.alias("EmbeddedPaintable", EmbeddedPaintable.class);
         xstream.alias("ExternalFolder", ExternalFolder.class);
+        xstream.alias("SIUnit", SIUnit.class);
         xstream.addImplicitCollection(DataModelBase.class, "children");
         xstream.registerConverter(new WidgetConverter(xstream.getMapper(), xstream.getReflectionProvider()));
         xstream.registerConverter(new PanelConverter(xstream.getMapper(), xstream.getReflectionProvider()));

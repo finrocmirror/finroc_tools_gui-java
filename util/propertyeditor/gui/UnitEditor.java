@@ -47,7 +47,12 @@ public class UnitEditor extends ComboBoxEditor<Unit> {
         Arrays.sort(array, new Comparator<Unit>() {
             @Override
             public int compare(Unit o1, Unit o2) {
-                return o1.toString().compareTo(o2.toString());
+                if (o1 == null) {
+                    return o2 == null ? 0 : -1;
+                } else if (o2 == null) {
+                    return 1;
+                }
+                return o1.toString().compareToIgnoreCase(o2.toString());
             }
         });
         return array;
