@@ -293,7 +293,7 @@ public class LCD extends Widget {
             int commaPos = -1000;
             if (cn instanceof CoreNumber) {
                 CoreNumber tmp = new CoreNumber((CoreNumber)cn);
-                if (tmp.getUnit().convertibleTo(preferredUnit)) {
+                if (tmp.getUnit() != null && tmp.getUnit().convertibleTo(preferredUnit)) {
                     tmp.setValue(tmp.getUnit().convertTo(tmp.doubleValue(), preferredUnit), preferredUnit);
                 }
                 if (scalingFactor != 1.0 && scalingFactor != 0.0) {
