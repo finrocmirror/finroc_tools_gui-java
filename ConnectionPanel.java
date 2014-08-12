@@ -56,6 +56,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.Timer;
+import javax.swing.UIDefaults;
 import javax.swing.event.MouseInputListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -94,7 +95,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private JScrollPane rightScrollPane;
 
     /** Color used in connection tree */
-    public static final ConnectorIcon.BackgroundColor leftBackgroundColor = new ConnectorIcon.BackgroundColor(new JTree().getBackground());
+    public static final ConnectorIcon.BackgroundColor leftBackgroundColor = new ConnectorIcon.BackgroundColor(new Color(255, 255, 255));
     public static final ConnectorIcon.BackgroundColor rightBackgroundColor = new ConnectorIcon.BackgroundColor(new Color(242, 242, 255));
     public static final ConnectorIcon.IconColor defaultColor = new ConnectorIcon.IconColor(new Color(100, 100, 200));
     public static final ConnectorIcon.IconColor selectedColor = new ConnectorIcon.IconColor(new Color(255, 30, 30));
@@ -136,13 +137,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         rightTree = new MJTree<PortWrapperTreeNode>(PortWrapperTreeNode.class, 3);
         //setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 2, 0));
         setMinimumSize(new Dimension(300, 0));
+
         rightTree.setBackground(rightBackgroundColor.color);
         rightTree.setFocusTraversalKeysEnabled(false);
         rightTree.addKeyListener(win);
+        rightTree.setRepaintDelegate(this);
+
+        leftTree.setBackground(leftBackgroundColor.color);
         leftTree.setFocusTraversalKeysEnabled(false);
         leftTree.addKeyListener(win);
         leftTree.setRepaintDelegate(this);
-        rightTree.setRepaintDelegate(this);
+
         leftScrollPane = new JScrollPane(leftTree);
         rightScrollPane = new JScrollPane(rightTree);
         leftScrollPane.setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 4, 0));
@@ -156,6 +161,16 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         // setup renderer
         leftTree.setCellRenderer(new GuiTreeCellRenderer(leftTree, false, this));
         rightTree.setCellRenderer(new GuiTreeCellRenderer(rightTree, true, this));
+
+        // prevent row background from being highlighted
+        if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
+            UIDefaults uiDefaults = new UIDefaults();
+            uiDefaults.put("Tree.selectionBackground", null);
+            leftTree.putClientProperty("Nimbus.Overrides", uiDefaults);
+            leftTree.putClientProperty("Nimbus.Overrides.InheritDefaults", false);
+            rightTree.putClientProperty("Nimbus.Overrides", uiDefaults);
+            rightTree.putClientProperty("Nimbus.Overrides.InheritDefaults", false);
+        }
 
         // init Listeners
         leftTree.addMouseListener(this);
@@ -1043,12 +1058,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         public void paint(Graphics g) {
 
             if (ConnectionPanel.NIMBUS_LOOK_AND_FEEL) {
-                if (super.selected) {
-                    g.setColor(backgroundColor.color);
-                    g.setClip(-getX(), 0, parent.getWidth(), getHeight());
-                    g.fillRect(-getX(), 0, parent.getWidth(), getHeight());
-                }
-
+                // TODO: do we still need that?
                 // copied from super class to ensure that background is filled
                 g.setColor(super.selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
                 if (getComponentOrientation().isLeftToRight()) {
