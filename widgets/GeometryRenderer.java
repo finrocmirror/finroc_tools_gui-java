@@ -68,6 +68,8 @@ import org.finroc.tools.gui.util.gui.RulerOfTheForest;
 import org.finroc.tools.gui.util.propertyeditor.NotInPropertyEditor;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.NumericRepresentation;
+import org.finroc.plugins.data_types.Angle;
 import org.finroc.plugins.data_types.Matrix3x3d;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
@@ -574,23 +576,28 @@ public class GeometryRenderer extends Widget {
 
             }
 
-            double GetObjectXCoordinate(int index) {
+            double getObjectXCoordinate(int index) {
                 if (objectCoordinates.get(index).asPort().isConnected()) {
                     return objectCoordinates.get(index).getDouble();
                 } else
                     return objectPoses.get(index / MAP_OBJECT_EDGE_COUNT).getAutoLocked().x;
             }
 
-            double GetObjectYCoordinate(int index) {
+            double getObjectYCoordinate(int index) {
                 if (objectCoordinates.get(index).asPort().isConnected()) {
                     return objectCoordinates.get(index).getDouble();
                 } else
                     return objectPoses.get((index - 1) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().y;
             }
 
-            double GetObjectYawAngle(int index) {
+            double getObjectYawAngle(int index) {
                 if (objectCoordinates.get(index).asPort().isConnected()) {
-                    return objectCoordinates.get(index).getDouble();
+                    NumericRepresentation angleObject = objectCoordinates.get(index).getAutoLocked();
+                    if (angleObject instanceof Angle) {
+                        return ((Angle)angleObject).getSignedRad();
+                    } else {
+                        return angleObject.getNumericRepresentation().doubleValue();
+                    }
                 } else
                     return objectPoses.get((index - 2) / MAP_OBJECT_EDGE_COUNT).getAutoLocked().yaw;
             }
@@ -605,8 +612,8 @@ public class GeometryRenderer extends Widget {
                 if (toolbar.isSelected(Action.Watch) && trackObject != null) {
                     int index = mapObjects.indexOf(trackObject) * MAP_OBJECT_EDGE_COUNT;
                     if (index >= 0) {
-                        translationX = -GetObjectXCoordinate(index);
-                        translationY = invertObjectYInput ? GetObjectYCoordinate(index + 1) : -GetObjectYCoordinate(index + 1);
+                        translationX = -getObjectXCoordinate(index);
+                        translationY = invertObjectYInput ? getObjectYCoordinate(index + 1) : -getObjectYCoordinate(index + 1);
                     } else {
                         stopTracking();
                     }
@@ -648,8 +655,8 @@ public class GeometryRenderer extends Widget {
                         continue;
                     }
                     Graphics2D temp = ((Graphics2D)g2d.create());
-                    temp.translate(GetObjectXCoordinate(i * MAP_OBJECT_EDGE_COUNT), GetObjectYCoordinate(i * MAP_OBJECT_EDGE_COUNT + 1));
-                    temp.rotate(GetObjectYawAngle(i * MAP_OBJECT_EDGE_COUNT + 2));
+                    temp.translate(getObjectXCoordinate(i * MAP_OBJECT_EDGE_COUNT), getObjectYCoordinate(i * MAP_OBJECT_EDGE_COUNT + 1));
+                    temp.rotate(getObjectYawAngle(i * MAP_OBJECT_EDGE_COUNT + 2));
                     if (!invertYAxis) {
                         temp.scale(1, -1);
                     }
@@ -669,6 +676,8 @@ public class GeometryRenderer extends Widget {
                     g.setColor(Color.black);
                     g.drawLine(lastMousePressPoint.x, lastMousePressPoint.y, lastMouseDragPoint.x, lastMouseDragPoint.y);
                 }
+
+                ThreadLocalCache.get().releaseAllLocks();
             }
 
             @Override
