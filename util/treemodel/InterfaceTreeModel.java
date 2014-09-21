@@ -66,6 +66,9 @@ public class InterfaceTreeModel implements TreeModel {
     /** Tag that indicates that an element should be shown initially */
     private static final String INITIAL_SHOW_TAG = "initially show in tools:";
 
+    /** Tag that indicates that this is a remote runtime */
+    private static final String REMOTE_RUNTIME_TAG = "remote_runtime:";
+
     /** Current list with elements to show initially */
     private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
 
@@ -402,6 +405,7 @@ public class InterfaceTreeModel implements TreeModel {
 
         /**
          * Check element and all of its subelements for elements to initially show
+         * and also for remote runtimes to show
          */
         private void checkForElementsToShow(ModelNode node) {
             if (node instanceof RemoteFrameworkElement) {
@@ -415,6 +419,9 @@ public class InterfaceTreeModel implements TreeModel {
                             toShow.priority = Integer.parseInt(tag.substring(INITIAL_SHOW_TAG.length()));
                             elementsToShowInitially.add(toShow);
                             break;
+                        }
+                        if (tag.startsWith(REMOTE_RUNTIME_TAG)) {
+                            new RemoteRemoteRuntime(node.getName(), node.getName(), tag.substring(REMOTE_RUNTIME_TAG.length()).trim(), node, InterfaceTreeModel.this, this);
                         }
                     }
                 }
