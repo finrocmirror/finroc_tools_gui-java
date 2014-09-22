@@ -75,6 +75,7 @@ import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
 import org.finroc.plugins.data_types.Pose2D;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -141,7 +142,11 @@ public class GeometryRenderer extends Widget {
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
-        } else if ((objectPoses != null && objectPoses.contains(forPort)) || forPort == clickPose) {
+        } else if (forPort == clickPose) {
+            PortCreationInfo info = suggestion.derive(Pose2D.TYPE);
+            info.setFlag(FrameworkElementFlags.NO_INITIAL_PUSHING, true);
+            return info;
+        } else if (objectPoses != null && objectPoses.contains(forPort)) {
             return suggestion.derive(Pose2D.TYPE);
         } else if (geometryTransformations != null && geometryTransformations.contains(forPort)) {
             return suggestion.derive(Matrix3x3d.TYPE);
