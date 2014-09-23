@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class MJTree<T> extends JTree implements MouseListener {
     private int newModelExpandLevel;
 
     /** Expanded elements stored by storeExpandedElement() */
-    private List<T> storedExpandedElements = null;
+    private List<TreePath> storedExpandedPaths = null;
 
     /** Expand all elements added to tree model? */
     private boolean expandNewElements;
@@ -171,6 +172,15 @@ public class MJTree<T> extends JTree implements MouseListener {
             if (hasCorrectType(component)) {
                 result.add((T)component);
             }
+        }
+        return result;
+    }
+
+    public List<TreePath> getExpandedPaths() {
+        ArrayList<TreePath> result = new ArrayList<TreePath>();
+        Enumeration<TreePath> en = this.getExpandedDescendants(new TreePath(this.getModel().getRoot()));
+        while (en.hasMoreElements()) {
+            result.add(en.nextElement());
         }
         return result;
     }
@@ -390,8 +400,7 @@ public class MJTree<T> extends JTree implements MouseListener {
      * (expansion state can be restored by calling restoreExpandedElements() )
      */
     public void storeExpandedElements() {
-        // TODO: do this clean (also non-ports) and efficient
-        storedExpandedElements = getVisibleObjects();
+        storedExpandedPaths = getExpandedPaths();
     }
 
     /**
@@ -400,12 +409,12 @@ public class MJTree<T> extends JTree implements MouseListener {
      * (Clears stored element list)
      */
     public void restoreExpandedElements() {
-        for (T t : storedExpandedElements) {
+        for (TreePath t : storedExpandedPaths) {
             try {
-                expandToElement(t);
+                expandPath(t);
             } catch (Exception e) {}
         }
-        storedExpandedElements.clear();
+        storedExpandedPaths.clear();
     }
 
 }
