@@ -354,13 +354,16 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
             model.add(new GUIPanel(model));
             return;
         case 1:
-            guipanels = new JScrollPane(children.get(0).asComponent());
+            JScrollPane tempPane = new JScrollPane(children.get(0).asComponent());
+            tempPane.getVerticalScrollBar().setUnitIncrement(16);
+            guipanels = tempPane;
             break;
         default:
             tabbedPane = new JTabbedPane();
             tabbedPane.addChangeListener(this);
             for (GUIPanelUI panel : children) {
                 JScrollPane temp = new JScrollPane(panel.asComponent());
+                temp.getVerticalScrollBar().setUnitIncrement(16);
                 tabbedPane.addTab(panel.toString(), temp);
                 if (selectedPanel == panel) {
                     tabbedPane.setSelectedComponent(temp);
