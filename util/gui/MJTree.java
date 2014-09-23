@@ -179,7 +179,7 @@ public class MJTree<T> extends JTree implements MouseListener {
     public List<TreePath> getExpandedPaths() {
         ArrayList<TreePath> result = new ArrayList<TreePath>();
         Enumeration<TreePath> en = this.getExpandedDescendants(new TreePath(this.getModel().getRoot()));
-        while (en.hasMoreElements()) {
+        while (en != null && en.hasMoreElements()) {
             result.add(en.nextElement());
         }
         return result;
