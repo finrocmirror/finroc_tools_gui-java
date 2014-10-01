@@ -26,8 +26,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JTree;
@@ -66,8 +68,11 @@ public class MJTree<T> extends JTree implements MouseListener {
     /** Up to which level should new model be expanded by default? */
     private int newModelExpandLevel;
 
-    /** Expanded elements stored by storeExpandedElement() */
+    /** Expanded elements stored by storeExpandedElements() */
     private List<TreePath> storedExpandedPaths = null;
+
+    /** Set of formerly expanded elements that no longer exist */
+    private Set<List<String>> lostStoredExpandedPaths = new HashSet<List<String>>();
 
     /** Expand all elements added to tree model? */
     private boolean expandNewElements;
@@ -410,11 +415,79 @@ public class MJTree<T> extends JTree implements MouseListener {
      */
     public void restoreExpandedElements() {
         for (TreePath t : storedExpandedPaths) {
-            try {
-                expandPath(t);
-            } catch (Exception e) {}
+            if (isInModel(t.getLastPathComponent())) {
+                try {
+                    expandPath(t);
+                } catch (Exception e) {
+                }
+            } else if (t.getLastPathComponent() instanceof ModelNode) {
+                // Element no longer exists - store
+                List<String> lostPath = new ArrayList<String>();
+                for (Object element : t.getPath()) {
+                    lostPath.add(element.toString());
+                }
+                lostStoredExpandedPaths.add(lostPath);
+            }
         }
+
+        ArrayList<List<String>> lostPathsToDelete = new ArrayList<List<String>>();
+        for (List<String> lostPath : lostStoredExpandedPaths) {
+            TreePath foundPath = findPath(lostPath);
+            if (foundPath != null) {
+                try {
+                    expandPath(foundPath);
+                    lostPathsToDelete.add(lostPath);
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+        }
+        lostStoredExpandedPaths.removeAll(lostPathsToDelete);
+
         storedExpandedPaths.clear();
+    }
+
+    /**
+     * Is this element part of the current tree model?
+     *
+     * @param element
+     * @return Answer
+     */
+    private boolean isInModel(Object element) {
+        if (element == getModel().getRoot()) {
+            return true;
+        }
+        if (element instanceof ModelNode) {
+            return ((ModelNode)element).isNodeAncestor((ModelNode)getModel().getRoot());
+        }
+        return false;
+    }
+
+    /**
+     * Try to find path in current model that matches the provided lost path
+     *
+     * @param lostPath Lost path
+     * @return TreePath in current model if one was found; null otherwise
+     */
+    private TreePath findPath(List<String> lostPath) {
+        List<Object> treePath = new ArrayList<Object>();
+        ModelNode currentNode = (ModelNode)this.getModel().getRoot();
+        treePath.add(currentNode);
+        for (int i = 1; i < lostPath.size(); i++) {
+            boolean found = false;
+            for (int j = 0; j < currentNode.getChildCount(); j++) {
+                if (lostPath.get(i).equals(currentNode.getChildAt(j).getName())) {
+                    currentNode = currentNode.getChildAt(j);
+                    treePath.add(currentNode);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return null;
+            }
+        }
+        return new TreePath(treePath.toArray());
     }
 
 }
