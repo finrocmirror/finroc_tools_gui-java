@@ -83,6 +83,9 @@ public class ValueInputField extends Widget {
         /** Last time when user pressed a key */
         private long lastInputTime = 0;
 
+        /** Flag to indicate not to react on caret event */
+        private boolean ignoreUpdate;
+
         ValueInputFieldUI() {
             super(RenderMode.Swing);
             textfield = new JTextField();
@@ -107,6 +110,9 @@ public class ValueInputField extends Widget {
 
         @Override
         public void caretUpdate(CaretEvent e) {
+            if (ignoreUpdate) {
+                return;
+            }
             lastInputTime = System.currentTimeMillis();
             textfield.setBackground(textfield.getText().equals(value.getAutoLocked().toString()) ? DEFAULT_BACKGROUND_COLOR : EDITING_BACKGROUND_COLOR);
             this.releaseAllLocks();
@@ -130,9 +136,11 @@ public class ValueInputField extends Widget {
         @Override
         public void run() {
             if (System.currentTimeMillis() - GRACE_PERIOD > lastInputTime) {
+                ignoreUpdate = true;
                 textfield.setText(value == null ? "" : ("" + value.getAutoLocked().toString()));
                 this.releaseAllLocks();
                 textfield.setBackground(DEFAULT_BACKGROUND_COLOR);
+                ignoreUpdate = false;
             }
         }
     }
