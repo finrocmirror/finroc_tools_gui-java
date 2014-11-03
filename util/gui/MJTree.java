@@ -420,7 +420,7 @@ public class MJTree<T> extends JTree implements MouseListener {
                     expandPath(t);
                 } catch (Exception e) {
                 }
-            } else if (t.getLastPathComponent() instanceof ModelNode) {
+            } else if (t.getLastPathComponent() instanceof ModelNode || t.getLastPathComponent() instanceof TreeNode) {
                 // Element no longer exists - store
                 List<String> lostPath = new ArrayList<String>();
                 for (Object element : t.getPath()) {
@@ -432,7 +432,7 @@ public class MJTree<T> extends JTree implements MouseListener {
 
         ArrayList<List<String>> lostPathsToDelete = new ArrayList<List<String>>();
         for (List<String> lostPath : lostStoredExpandedPaths) {
-            TreePath foundPath = findPath(lostPath);
+            TreePath foundPath = findPath(lostPath.toArray());
             if (foundPath != null) {
                 try {
                     expandPath(foundPath);
@@ -460,24 +460,36 @@ public class MJTree<T> extends JTree implements MouseListener {
         if (element instanceof ModelNode) {
             return ((ModelNode)element).isNodeAncestor((ModelNode)getModel().getRoot());
         }
+        if (element instanceof TreeNode) {
+            while (true) {
+                element = ((TreeNode)element).getParent();
+                if (element == getModel().getRoot()) {
+                    return true;
+                }
+                if (element == null || (!(element instanceof TreeNode))) {
+                    return false;
+                }
+            }
+        }
         return false;
     }
 
     /**
-     * Try to find path in current model that matches the provided lost path
+     * Try to find path in current model that matches (toString() comparison) the provided lost path
      *
-     * @param lostPath Lost path
+     * @param lostPathElements Lost path elements
      * @return TreePath in current model if one was found; null otherwise
      */
-    private TreePath findPath(List<String> lostPath) {
+    public TreePath findPath(Object[] lostPathElements) {
         List<Object> treePath = new ArrayList<Object>();
-        ModelNode currentNode = (ModelNode)this.getModel().getRoot();
+        Object currentNode = this.getModel().getRoot();
         treePath.add(currentNode);
-        for (int i = 1; i < lostPath.size(); i++) {
+        for (int i = 1; i < lostPathElements.length; i++) {
             boolean found = false;
-            for (int j = 0; j < currentNode.getChildCount(); j++) {
-                if (lostPath.get(i).equals(currentNode.getChildAt(j).getName())) {
-                    currentNode = currentNode.getChildAt(j);
+            for (int j = 0; j < this.getModel().getChildCount(currentNode); j++) {
+                Object child = this.getModel().getChild(currentNode, j);
+                if (lostPathElements[i].toString().equals(child.toString())) {
+                    currentNode = child;
                     treePath.add(currentNode);
                     found = true;
                     break;
