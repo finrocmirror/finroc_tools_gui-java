@@ -23,6 +23,8 @@ package org.finroc.tools.gui.widgets;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -65,6 +67,9 @@ public class Slider extends Widget {
 
     /** Slider background */
     public Color sliderBackground = getDefaultColor(Theme.DefaultColor.SLIDER_BACKGROUND);
+
+    /** Should minimum be on the left (or at the bottom)? */
+    public boolean reverse = false;
 
     /** Show ticks? Show labels? */
     public boolean showTicks = true, showLabels = true;
@@ -117,11 +122,21 @@ public class Slider extends Widget {
 
         @Override
         public void widgetPropertiesChanged() {
+            // Swap value if someone enters invalid minimum and maximum
+            if (minimum > maximum) {
+                reverse = !reverse;
+                double temp = minimum;
+                minimum = maximum;
+                maximum = temp;
+                stepSize = Math.abs(stepSize);
+            }
             slider.setBackground(sliderBackground);
             slider.setPaintTicks(showTicks);
             slider.setPaintLabels(showLabels);
+            slider.setInverted(reverse);
             slider.setParams(minimum, maximum, stepSize);
             slider.setLabelColor(getLabelColor(Slider.this));
+            //slider.setForeground(getLabelColor(Slider.this));  // does not seem to work for ticks
         }
 
         @Override
@@ -145,7 +160,7 @@ class DoubleSlider extends JSlider {
     double min, max, step;
     private static final double MAXTICKSPERPIXEL = 0.1;
     Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
-    JLabel maxLabel, minLabel, valueLabel;
+    JLabel maxLabel, minLabel, valueLabel, invisibleLabel;
     Graphics graphics; // Graphics object while painting - otherwise null
 
     public void setValue(double value) {
@@ -176,14 +191,18 @@ class DoubleSlider extends JSlider {
             maxLabel = new JLabel();
             minLabel = new JLabel();
             valueLabel = new JLabel();
+            invisibleLabel = new JLabel();
         }
         minLabel.setText("" + min);
         maxLabel.setText("" + max);
         valueLabel.setText("                                              ");
+        FontMetrics metrics = minLabel.getFontMetrics(minLabel.getFont());
+        invisibleLabel.setPreferredSize(new Dimension(Math.max(metrics.stringWidth(createValueLabelString(min)), metrics.stringWidth(createValueLabelString(max))) + 5, 0));
         labelTable.clear();
         labelTable.put(0, minLabel);
         labelTable.put(numberOfSteps / 2, valueLabel);
         labelTable.put(numberOfSteps, maxLabel);
+        labelTable.put(numberOfSteps + 1, invisibleLabel);
         setLabelTable(labelTable);
 
         // update value label
@@ -196,7 +215,11 @@ class DoubleSlider extends JSlider {
     }
 
     public void updateValueLabel() {
-        valueLabel.setText("(" + String.format("%.2f", min + getValue() * step) + ")");
+        valueLabel.setText(createValueLabelString(min + getValue() * step));
+    }
+
+    public static String createValueLabelString(double value) {
+        return "(" + String.format("%.2f", value) + ")";
     }
 
     // Call after first updateParams
