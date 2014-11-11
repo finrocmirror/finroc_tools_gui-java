@@ -32,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
@@ -70,6 +71,15 @@ public class MToolBar extends JToolBar {
         jb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
         add(jb);
         return jb;
+    }
+
+    public JComboBox<String> createComboBox(String buttons[], ActionListener listener) {
+        JComboBox<String> cb = new JComboBox<String>(buttons);
+        cb.setFocusable(false);
+        cb.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        cb.addActionListener(listener);
+        add(cb);
+        return cb;
     }
 
     public JToggleButton createToggleButton(String iconFilename, String toolTip, ActionListener listener) {
