@@ -54,6 +54,10 @@ public class CompressedImage extends Blittable implements HasBlittable, StringSe
     /** UID */
     private static final long serialVersionUID = 854673830566034823L;
 
+    public CompressedImage() {
+        compressedData = new byte[0];
+    }
+
     public CompressedImage(byte[] data) {
         compressedData = data;
     }
@@ -108,6 +112,7 @@ public class CompressedImage extends Blittable implements HasBlittable, StringSe
 
     @Override
     public void deserialize(BinaryInputStream is) {
+        uncompressedImage = null;
         int size = is.readInt();
         if (compressedData.length < size) {
             compressedData = new byte[size * 2]; // keep some bytes for reserve...
