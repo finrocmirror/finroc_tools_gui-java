@@ -55,7 +55,7 @@ public class CompressedImage extends Blittable implements HasBlittable, StringSe
     private static final long serialVersionUID = 854673830566034823L;
 
     public CompressedImage() {
-        compressedData = new byte[0];
+        compressedData = new byte[1];
     }
 
     public CompressedImage(byte[] data) {
@@ -91,13 +91,13 @@ public class CompressedImage extends Blittable implements HasBlittable, StringSe
     @Override
     public int getHeight() {
         checkUncompressed();
-        return uncompressedImage.getHeight();
+        return uncompressedImage == null ? 0 : uncompressedImage.getHeight();
     }
 
     @Override
     public int getWidth() {
         checkUncompressed();
-        return uncompressedImage.getWidth();
+        return uncompressedImage == null ? 0 : uncompressedImage.getWidth();
     }
 
     private void checkUncompressed() {
