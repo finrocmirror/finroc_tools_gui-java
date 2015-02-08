@@ -24,6 +24,7 @@ package org.finroc.tools.gui.widgets;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -49,7 +50,9 @@ public class Label extends Widget {
 
     public Color textColor = getDefaultColor(Theme.DefaultColor.ALTERNATIVE_LABEL);
 
-    public float fontSize = 36;
+    public float fontSize = 14;
+
+    public boolean alignLeft;
 
     @Override
     protected void setDefaultColors() {
@@ -79,7 +82,6 @@ public class Label extends Widget {
             super(RenderMode.Swing);
             setLayout(new BorderLayout());
             label = new JLabel("test");
-            label.setHorizontalAlignment(SwingConstants.CENTER);
             add(label, BorderLayout.CENTER);
             text.addChangeListener(this);
             widgetPropertiesChanged();
@@ -89,6 +91,8 @@ public class Label extends Widget {
         public void widgetPropertiesChanged() {
             label.setForeground(textColor);
             label.setFont(label.getFont().deriveFont(fontSize));
+            label.setBorder(BorderFactory.createEmptyBorder(0, alignLeft ? 3 : 0, 0, 0));
+            label.setHorizontalAlignment(alignLeft ? SwingConstants.LEFT : SwingConstants.CENTER);
         }
 
         @Override
