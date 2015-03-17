@@ -170,6 +170,12 @@ public class VideoRenderer extends Widget {
                 return;
             }
             Blittable bl = b.getBlittable(imageIndexInSource);
+            if (bl.getWidth() == 0 || bl.getHeight() == 0) {
+                cache.fill(0);
+                releaseAllLocks();
+                return;
+            }
+
             if (bl.getWidth() != lastWidth || bl.getHeight() != lastHeight) {
                 cache.fill(0);
                 lastWidth = bl.getWidth();
