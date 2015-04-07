@@ -33,6 +33,7 @@ import javax.naming.OperationNotSupportedException;
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputListener;
 
+import org.finroc.plugins.data_types.Pose3D;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
@@ -68,8 +69,11 @@ public class VirtualJoystick extends Picture {
 
     private static BufferedImageARGBColorable circle = null;
 
+    public Pose3D.Component xAxisTwistMapping = Pose3D.Component.Yaw, yAxisTwistMapping = Pose3D.Component.X;
+
     public WidgetOutput.Numeric x;
     public WidgetOutput.Numeric y;
+    public WidgetOutput.Std<Pose3D> twist;
 
     @Override
     protected WidgetUI createWidgetUI() {
@@ -78,6 +82,9 @@ public class VirtualJoystick extends Picture {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
+        if (forPort == twist) {
+            return suggestion.derive(Pose3D.TYPE);
+        }
         return suggestion;
     }
 
@@ -147,6 +154,15 @@ public class VirtualJoystick extends Picture {
 
         public void mouseMoved(MouseEvent e) {}
 
+        public void publishValues(double newX, double newY) {
+            x.publish(newX);
+            y.publish(newY);
+            Pose3D twistBuffer = twist.getUnusedBuffer();
+            twistBuffer.set(xAxisTwistMapping == null ? Pose3D.Component.X : xAxisTwistMapping, newX);
+            twistBuffer.set(yAxisTwistMapping == null ? Pose3D.Component.Yaw : yAxisTwistMapping, newY);
+            twist.publish(twistBuffer);
+        }
+
         public void setPos(Point p) {
 
             double xCenter = (xLeft + xRight) / 2;
@@ -155,8 +171,7 @@ public class VirtualJoystick extends Picture {
             double widgetCenterY = this.getCenter().y;
 
             if (p == null) {
-                x.publish(xCenter);
-                y.publish(yCenter);
+                publishValues(xCenter, yCenter);
                 curPos = getCenter();
                 pointColor = 0xFF00;
             } else {
@@ -186,8 +201,7 @@ public class VirtualJoystick extends Picture {
                 yf = (yf + 1) / 2;
                 //x.setValue(new NumberWithDefault(xf * xRight + (1-xf) * xLeft, xCenter));
                 //y.setValue(new NumberWithDefault(yf * yBottom + (1-yf) * yTop, yCenter));
-                x.publish(xf * xRight + (1 - xf) * xLeft);
-                y.publish(yf * yBottom + (1 - yf) * yTop);
+                publishValues(xf * xRight + (1 - xf) * xLeft, yf * yBottom + (1 - yf) * yTop);
                 pointColor = (255 - colorFactor) << 8 | colorFactor << 16;
             }
             setChanged();
