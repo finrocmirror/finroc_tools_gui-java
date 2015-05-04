@@ -74,6 +74,7 @@ import org.finroc.plugins.data_types.Matrix3x3d;
 import org.finroc.plugins.data_types.Paintable;
 import org.finroc.plugins.data_types.PaintablePortData;
 import org.finroc.plugins.data_types.Pose2D;
+import org.finroc.plugins.data_types.Pose3D;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
@@ -97,7 +98,7 @@ public class GeometryRenderer extends Widget {
     public WidgetOutput.Numeric clickX;
     public WidgetOutput.Numeric clickY;
     public WidgetOutput.Numeric clickCounter;
-    public WidgetOutput.CC<Pose2D> clickPose;
+    public WidgetOutput.CC<Pose3D> clickPose;
 
     /** Parameters */
     public int numberOfGeometries = 3;
@@ -143,7 +144,7 @@ public class GeometryRenderer extends Widget {
         if (geometry != null && geometry.contains(forPort)) {
             return suggestion.derive(PaintablePortData.TYPE);
         } else if (forPort == clickPose) {
-            PortCreationInfo info = suggestion.derive(Pose2D.TYPE);
+            PortCreationInfo info = suggestion.derive(Pose3D.TYPE);
             info.setFlag(FrameworkElementFlags.NO_INITIAL_PUSHING, true);
             return info;
         } else if (objectPoses != null && objectPoses.contains(forPort)) {
@@ -313,7 +314,7 @@ public class GeometryRenderer extends Widget {
                     clickCounter.publish(clickCounter.getDouble() + 1);
 
                     double yaw = Math.atan2(transformedRelease.getY() - transformedPress.getY(), transformedRelease.getX() - transformedPress.getX());
-                    Pose2D publish = new Pose2D();
+                    Pose3D publish = new Pose3D();
                     publish.x = transformedPress.getX();
                     publish.y = transformedPress.getY();
                     publish.yaw = yaw;
