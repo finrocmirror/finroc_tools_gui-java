@@ -421,7 +421,8 @@ public class InterfaceTreeModel implements TreeModel {
                             break;
                         }
                         if (tag.startsWith(REMOTE_RUNTIME_TAG)) {
-                            new RemoteRemoteRuntime(node.getName(), node.getName(), tag.substring(REMOTE_RUNTIME_TAG.length()).trim(), node, InterfaceTreeModel.this, this);
+                            RemoteRuntime parentRuntime = RemoteRuntime.find(node);
+                            new RemoteRemoteRuntime(node.getName(), node.getName(), parentRuntime.getAdminInterface(), tag.substring(REMOTE_RUNTIME_TAG.length()).trim(), node, InterfaceTreeModel.this, this);
                         }
                     }
                 }

@@ -30,8 +30,6 @@ import javax.swing.event.TreeModelListener;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElementFlags;
-import org.finroc.core.FrameworkElementTags;
-import org.finroc.core.LockOrderLevels;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.FrameworkElement.Flag;
 import org.finroc.core.admin.AdminClient;
@@ -41,14 +39,12 @@ import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.net.NetPort;
-import org.finroc.core.port.rpc.internal.AbstractCall;
 import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.RemoteFrameworkElement;
 import org.finroc.core.remote.RemotePort;
 import org.finroc.core.remote.RemoteRuntime;
 import org.finroc.core.remote.RemoteTypes;
-import org.finroc.plugins.tcp.internal.TCP;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.BinaryInputStream;
@@ -83,9 +79,6 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
     /** Handler for remote model */
     private final ModelHandler handler;
 
-    /** List with remote ports that have not been initialized yet */
-    private ArrayList<ProxyPort> uninitializedRemotePorts = new ArrayList<ProxyPort>();
-
     /** Framework element that contains all global links - possibly NULL */
     private FrameworkElement globalLinks;
 
@@ -95,10 +88,10 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
      * Lookup for remote framework elements (currently not ports) - similar to remote CoreRegister
      * (should only be accessed by reader thread of management connection)
      */
-    private HashMap<Integer, ProxyPort> remotePortRegister = new HashMap<Integer, ProxyPort>();
+    private HashMap<Integer, NetPort> remotePortRegister = new HashMap<Integer, NetPort>();
 
-    public RemoteRemoteRuntime(String name, String uuid, String protocolId, ModelNode nodeInParentInterface, InterfaceTreeModel treeModel, ModelHandler handler) {
-        super(name, uuid, new AdminClient("AdminClient", getFrameworkElementForThisRuntime(uuid)), new RemoteTypes());
+    public RemoteRemoteRuntime(String name, String uuid, AdminClient adminClient, String protocolId, ModelNode nodeInParentInterface, InterfaceTreeModel treeModel, ModelHandler handler) {
+        super(name, uuid, adminClient != null ? adminClient : new AdminClient("AdminClient", getFrameworkElementForThisRuntime(uuid)), new RemoteTypes());
         this.frameworkElement = this.getAdminInterface().getParent();
         this.nodeInParentInterface = nodeInParentInterface;
         this.handler = handler;
@@ -215,11 +208,17 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
         FrameworkElementInfo info = new FrameworkElementInfo();
         BinaryInputStream stream = new BinaryInputStream(structureBufferToProcess, BinaryInputStream.TypeEncoding.Names);
         while (stream.moreDataAvailable()) {
-            TCP.OpCode opcode = stream.readEnum(TCP.OpCode.class);
-            if (opcode == TCP.OpCode.STRUCTURE_CREATE) {
-                info.deserialize(stream, FrameworkElementInfo.StructureExchange.FINSTRUCT);
+            byte opcode = stream.readByte();
+            if (opcode == 0) {
+                info.deserialize(stream, FrameworkElementInfo.StructureExchange.FINSTRUCT, true);
+                //Log.log(LogLevel.DEBUG, info.getLink(0).name);
                 addRemoteStructure(info, this.getParent() == null);
-            } else if (opcode == TCP.OpCode.STRUCTURE_CHANGE) {
+                int x = stream.readInt();
+                if (x != 0x58585858) {
+                    Log.log(LogLevel.ERROR, Integer.toHexString(x));
+                }
+
+            }/* else if (opcode == TCP.OpCode.STRUCTURE_CHANGE) {
                 int handle = stream.readInt();
                 int flags = stream.readInt();
                 short strategy = stream.readShort();
@@ -260,38 +259,28 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
             } else {
                 Log.log(LogLevel.WARNING, this, "Received corrupted structure info. Skipping packet");
                 return;
-            }
+            }*/
         }
 
         // Initialize ports whose links are now complete
-        synchronized (frameworkElement.getRegistryLock()) {
-            for (int i = 0; i < uninitializedRemotePorts.size(); i++) {
-                ProxyPort port = uninitializedRemotePorts.get(i);
-                RemotePort[] remotePorts = RemotePort.get(port.getPort());
-                boolean complete = true;
-                for (RemotePort remotePort : remotePorts) {
-                    complete |= remotePort.isNodeAncestor(this);
-                }
-                if (complete) {
-                    for (int j = 0; j < remotePorts.length; j++) {
-                        port.getPort().setName(createPortName(remotePorts[j]), j);
-                    }
-                    port.getPort().init();
-                    uninitializedRemotePorts.remove(i);
-                    i--;
-                }
-            }
-        }
-    }
-
-    /**
-     * Creates qualified link for element of remote framework element model
-     *
-     * @param remoteElement Element to create link for
-     * @return Created Link
-     */
-    private String createPortName(RemoteFrameworkElement remoteElement) {
-        return remoteElement.getQualifiedLink();
+//        synchronized (frameworkElement.getRegistryLock()) {
+//            for (int i = 0; i < uninitializedRemotePorts.size(); i++) {
+//                ProxyPort port = uninitializedRemotePorts.get(i);
+//                RemotePort[] remotePorts = RemotePort.get(port.getPort());
+//                boolean complete = true;
+//                for (RemotePort remotePort : remotePorts) {
+//                    complete |= remotePort.isNodeAncestor(this);
+//                }
+//                if (complete) {
+//                    for (int j = 0; j < remotePorts.length; j++) {
+//                        port.getPort().setName(createPortName(remotePorts[j]), j);
+//                    }
+//                    port.getPort().init();
+//                    uninitializedRemotePorts.remove(i);
+//                    i--;
+//                }
+//            }
+//        }
     }
 
     /**
@@ -304,189 +293,27 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
         return globalLinks;
     }
 
-    /**
-     * (Belongs to ProxyPort)
-     *
-     * Create Port Creation info from PortInfo class.
-     * Except from Shared flag port will be identical to original port.
-     *
-     * @param portInfo Port Information
-     * @return Port Creation info
-     */
-    private static PortCreationInfo createPCI(FrameworkElementInfo portInfo) {
-        PortCreationInfo pci = new PortCreationInfo(portInfo.getFlags());
-        pci.flags = portInfo.getFlags();
+    final char SEPARATOR = 1;
 
-        // set queue size
-        pci.maxQueueSize = portInfo.getStrategy();
+    /** Extra edge provider implementation for this remote runtime */
+    class ExtraEdgeProvider implements NetPort.ExtraEdgeProvider {
 
-        pci.dataType = portInfo.getDataType();
-        pci.lockOrder = LockOrderLevels.REMOTE_PORT;
+        private final ArrayList<FrameworkElementInfo.ConnectionInfo> destinations;
 
-        return pci;
-    }
-
-    /**
-     * Local port that acts as proxy for ports on remote machines
-     */
-    public class ProxyPort extends NetPort {
-
-        /** Handles (remote) of port's outgoing connections */
-        protected ArrayList<FrameworkElementInfo.ConnectionInfo> connections = new ArrayList<FrameworkElementInfo.ConnectionInfo>();
-
-        /** Info on port's outgoing network connections */
-        protected ArrayList<FrameworkElementInfo.NetworkConnection> networkConnections = new ArrayList<FrameworkElementInfo.NetworkConnection>();
-
-
-        /**
-         * @param portInfo Port information
-         */
-        public ProxyPort(FrameworkElementInfo portInfo) {
-            super(createPCI(portInfo), null);
-            remoteHandle = portInfo.getHandle();
-            remotePortRegister.put(remoteHandle, this);
-
-            super.updateFlags(portInfo.getFlags());
-            getPort().setMinNetUpdateInterval(portInfo.getMinNetUpdateInterval());
-            //updateIntervalPartner = portInfo.getMinNetUpdateInterval(); // TODO redundant?
-            propagateStrategyFromTheNet(portInfo.getStrategy());
-            connections = portInfo.copyConnections();
-            networkConnections = portInfo.copyNetworkConnections();
-
-            Log.log(LogLevel.DEBUG_VERBOSE_2, this, "Updating port info: " + portInfo.toString());
-            for (int i = 1, n = portInfo.getLinkCount(); i < n; i++) {
-                FrameworkElement parent = portInfo.getLink(i).unique ? getGlobalLinkElement() : frameworkElement;
-                getPort().link(parent, portInfo.getLink(i).name);
-            }
-            FrameworkElement parent = portInfo.getLink(0).unique ? getGlobalLinkElement() : frameworkElement;
-            getPort().setName(portInfo.getLink(0).name);
-            parent.addChild(getPort());
-            FrameworkElementTags.addTags(getPort(), portInfo.getTags());
-
-            /*if (getPort() instanceof CCPortBase) {
-                ((CCPortBase)getPort()).setPullRequestHandler(RemotePart.this);
-            } else if (getPort() instanceof PortBase) {
-                ((PortBase)getPort()).setPullRequestHandler(RemotePart.this);
-            }*/
-        }
-
-        public void update(int flags, short strategy, short minNetUpdateInterval, ArrayList<FrameworkElementInfo.ConnectionInfo> newConnections,
-                           ArrayList<FrameworkElementInfo.NetworkConnection> newNetworkConnections) {
-            updateFlags(flags);
-            getPort().setMinNetUpdateInterval(minNetUpdateInterval);
-            //updateIntervalPartner = minNetUpdateInterval; // TODO redundant?
-            propagateStrategyFromTheNet(strategy);
-            if (newConnections != null) {
-                connections = newConnections;
-            } else if (connections.size() > 0) {
-                connections = new ArrayList<FrameworkElementInfo.ConnectionInfo>(); // create new list for thread-safety reasons
-            }
-            if (newNetworkConnections != null) {
-                networkConnections = newNetworkConnections;
-            } else if (connections.size() > 0) {
-                networkConnections = new ArrayList<FrameworkElementInfo.NetworkConnection>(); // create new list for thread-safety reasons
-            }
+        public ExtraEdgeProvider(ArrayList<FrameworkElementInfo.ConnectionInfo> destinations) {
+            this.destinations = destinations;
         }
 
         @Override
-        protected void prepareDelete() {
-            remotePortRegister.remove(remoteHandle);
-            getPort().disconnectAll();
-            checkSubscription();
-            super.prepareDelete();
-        }
-
-        @Override
-        protected void connectionRemoved() {
-            checkSubscription();
-        }
-
-        @Override
-        protected void connectionAdded() {
-            checkSubscription();
-        }
-
-        @Override
-        protected void propagateStrategyOverTheNet() {
-            checkSubscription();
-        }
-
-        //TODO
-        //@Override
-        protected void checkSubscription() {
-            /*if (FinrocTypeInfo.isMethodType(getPort().getDataType(), true)) {
-                return;
-            }
-
-            synchronized (getPort().getRegistryLock()) {
-                AbstractPort p = getPort();
-                boolean revPush = p.isInputPort() && (p.isConnectedToReversePushSources() || p.getOutgoingConnectionCount() > 0);
-                short time = getUpdateIntervalForNet();
-                short strategy = p.isInputPort() ? 0 : p.getStrategy();
-                if (!p.isConnected()) {
-                    strategy = -1;
-                }
-
-                TCPConnection c = connection;
-
-                if (c == null) {
-                    subscriptionStrategy = -1;
-                    subscriptionRevPush = false;
-                    subscriptionUpdateTime = -1;
-                } else if (strategy == -1 && subscriptionStrategy > -1) { // disconnect
-                    c.unsubscribe(remoteHandle);
-                    subscriptionStrategy = -1;
-                    subscriptionRevPush = false;
-                    subscriptionUpdateTime = -1;
-                } else if (strategy == -1) {
-                    // still disconnected
-                } else if (strategy != subscriptionStrategy || time != subscriptionUpdateTime || revPush != subscriptionRevPush) {
-                    c.subscribe(remoteHandle, strategy, revPush, time, p.getHandle(), getNetworkEncoding());
-                    subscriptionStrategy = strategy;
-                    subscriptionRevPush = revPush;
-                    subscriptionUpdateTime = time;
-                }
-                setMonitored(publishPortDataOverTheNet() && getPort().isConnected());
-            }*/
-        }
-
-        @Override
-        public int getRemoteEdgeDestinations(List<AbstractPort> result) {
-            result.clear();
-            for (int i = 0; i < connections.size(); i++) {
-                ProxyPort pp = remotePortRegister.get(connections.get(i).handle);
+        public int getRemoteEdgeDestinations(List<AbstractPort> resultList) {
+            for (int i = 0; i < destinations.size(); i++) {
+                NetPort pp = remotePortRegister.get(destinations.get(i).handle);
                 if (pp != null) {
-                    result.add(pp.getPort());
+                    resultList.add(pp.getPort());
                 }
             }
-            int numberOfReverseConnections = 0;
-
-            // TODO
-            /*for (FrameworkElementInfo.NetworkConnection connection : networkConnections) {
-                AbstractPort port = connection.getDestinationPort(currentModelNode);
-                if (port != null) {
-                    if (connection.isDestinationSource()) {
-                        numberOfReverseConnections++;
-                        result.add(port);
-                    } else {
-                        result.add(result.size() - numberOfReverseConnections, port);
-                    }
-                }
-            }*/
-            return result.size() - numberOfReverseConnections;
+            return 0;
         }
-
-        @Override
-        protected void sendCall(AbstractCall mc) {
-            // TODO
-        }
-
-//        @Override
-//        protected void postChildInit() {
-//            this.connection = (getPort().getFlag(FrameworkElementFlags.EXPRESS_PORT) ||
-//                               (getPort().getDataType().getJavaClass() != null && CCType.class.isAssignableFrom(getPort().getDataType().getJavaClass()))) ? expressConnection : bulkConnection;
-//            super.postChildInit();
-//        }
     }
 
     /**
@@ -499,22 +326,35 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
     void addRemoteStructure(FrameworkElementInfo info, boolean initalStructureExchange) {
         Log.log(LogLevel.DEBUG_VERBOSE_1, this, "Adding element: " + info.toString());
         if (info.isPort()) {
-            ProxyPort port = new ProxyPort(info);
-            for (int i = 0; i < info.getLinkCount(); i++) {
-                RemoteFrameworkElement remoteElement = new RemotePort(info.getHandle(), info.getLink(i).name, port.getPort(), i);
-                if (i == 0) {
-                    this.elementLookup.put(info.getHandle(), remoteElement);
+            ModelNode portNode = nodeInParentInterface.getChildByQualifiedName("Internal Ports" + SEPARATOR + (((long)info.getHandle()) & 0xFFFFFFFFL), SEPARATOR);
+            if (portNode == null && getFrameworkElement(info.getLink(0).parent) != null) {
+                portNode = nodeInParentInterface.getChildByQualifiedName(getFrameworkElement(info.getLink(0).parent).getName() + SEPARATOR + info.getLink(0).name, SEPARATOR);
+            }
+            if (portNode instanceof RemotePort) {
+                NetPort netport = ((RemotePort)portNode).getPort().asNetPort();
+                remotePortRegister.put(info.getHandle(), netport);
+                // add edges
+                netport.setExtraEdgeProvider(new ExtraEdgeProvider(info.copyConnections()));
+                //ProxyPort port = new ProxyPort(info);
+                for (int i = 0; i < info.getLinkCount(); i++) {
+                    RemoteFrameworkElement remoteElement = new RemotePort(info.getHandle(), info.getLink(i).name, ((RemotePort)portNode).getPort(), i);
+                    if (i == 0) {
+                        this.elementLookup.put(info.getHandle(), remoteElement);
+                    }
+                    remoteElement.setName(info.getLink(i).name);
+                    remoteElement.setTags(info.getTags());
+                    remoteElement.setFlags(info.getFlags());
+                    ModelNode parent = getFrameworkElement(info.getLink(0).parent);
+                    if (initalStructureExchange) {
+                        parent.add(remoteElement);
+                    } else {
+                        //handler.addNode(parent, remoteElement);
+                        //uninitializedRemotePorts.add(port);
+                    }
                 }
-                remoteElement.setName(info.getLink(i).name);
-                remoteElement.setTags(info.getTags());
-                remoteElement.setFlags(info.getFlags());
-                ModelNode parent = getFrameworkElement(info.getLink(i).parent);
-                if (initalStructureExchange) {
-                    parent.add(remoteElement);
-                } else {
-                    handler.addNode(parent, remoteElement);
-                    uninitializedRemotePorts.add(port);
-                }
+                Log.log(LogLevel.DEBUG, this, "Found port for: " + info.toString());
+            } else {
+                Log.log(LogLevel.WARNING, this, "Could not find the port for: " + info.toString());
             }
         } else {
             RemoteFrameworkElement remoteElement = getFrameworkElement(info.getHandle());
