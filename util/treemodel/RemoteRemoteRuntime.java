@@ -210,7 +210,7 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
         while (stream.moreDataAvailable()) {
             byte opcode = stream.readByte();
             if (opcode == 0) {
-                info.deserialize(stream, FrameworkElementInfo.StructureExchange.FINSTRUCT, true);
+                info.deserialize(stream, FrameworkElementInfo.StructureExchange.FINSTRUCT);
                 //Log.log(LogLevel.DEBUG, info.getLink(0).name);
                 addRemoteStructure(info, this.getParent() == null);
                 int x = stream.readInt();
