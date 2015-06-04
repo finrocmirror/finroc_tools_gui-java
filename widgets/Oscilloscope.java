@@ -52,8 +52,12 @@ import org.rrlib.logging.LogLevel;
 import org.finroc.plugins.data_types.PartWiseLinearFunction;
 import org.rrlib.serialization.rtti.DataType;
 import org.rrlib.serialization.rtti.DataTypeBase;
+import org.finroc.core.FrameworkElementFlags;
+import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
+import org.finroc.core.port.std.PortBase;
+import org.finroc.core.port.std.PortDataManager;
 
 public class Oscilloscope extends Widget {
 
@@ -68,6 +72,8 @@ public class Oscilloscope extends Widget {
     public double rightScaleMax = 110;
     public PropertyList<OscilloscopeSignal> channels = new PropertyList<OscilloscopeSignal>(OscilloscopeSignal.class, 25);
     public long timerIntervalInMs = 100;
+
+    private static final double EPSILON = 0.0000001;
 
     public Oscilloscope() {
         channels.add(new OscilloscopeSignal());
@@ -85,6 +91,11 @@ public class Oscilloscope extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
+        if (signals != null && signals.contains(forPort)) {
+            PortCreationInfo info = suggestion.derive(suggestion.flags | FrameworkElementFlags.HAS_QUEUE | FrameworkElementFlags.USES_QUEUE);
+            info.maxQueueSize = -1;
+            return info;
+        }
         return suggestion;
     }
 
@@ -215,6 +226,7 @@ public class Oscilloscope extends Widget {
         class OscilloscopeThread extends LoopThread {
 
             long startTime, lastTime;
+            ArrayList<PortDataManager> dequeuedValues = new ArrayList<PortDataManager>();
 
             public OscilloscopeThread() {
                 super(timerIntervalInMs, false);
@@ -234,7 +246,26 @@ public class Oscilloscope extends Widget {
                     synchronized (functions) {
                         long time = System.currentTimeMillis();
                         for (int i = 0; i < functions.size(); i++) {
-                            functions.get(i).addNewValue((time - startTime) % timeScaleMaxInMs, signals.get(i).getDouble(), (lastTime - startTime + 1) % timeScaleMaxInMs);
+                            dequeuedValues.clear();
+                            PortDataManager dequeued = null;
+                            while ((dequeued = ((PortBase)signals.get(i).getPort()).dequeueSingleAutoLockedRaw()) != null) {
+                                dequeuedValues.add(dequeued);
+                            }
+                            if (dequeuedValues.size() > 0) {
+                                // TODO: We could use timestamps attached to values if available - however, this would make things a lot more complex
+                                double timestep = (time - lastTime) / ((double)dequeuedValues.size());
+                                //System.out.println("Received " + dequeuedValues.size() + " values - timestep " + timestep);
+                                double lastValueTime = lastTime;
+                                for (int j = 0; j < dequeuedValues.size(); j++) {
+                                    double valueTime = lastTime + (j + 1) * timestep;
+                                    // TODO: an implementation without EPSILON should be possible - and would be cleaner
+                                    functions.get(i).addNewValue((valueTime - startTime) % timeScaleMaxInMs, ((CoreNumber)dequeuedValues.get(j).getObject().getData()).doubleValue(), (lastValueTime - startTime + EPSILON) % timeScaleMaxInMs);
+                                    lastValueTime = valueTime;
+                                }
+                            } else {
+                                functions.get(i).addNewValue((time - startTime) % timeScaleMaxInMs, signals.get(i).getDouble(), (lastTime - startTime + EPSILON) % timeScaleMaxInMs);
+                            }
+                            releaseAllLocks();
                         }
                         lastTime = time;
                     }
