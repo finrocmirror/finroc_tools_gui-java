@@ -393,6 +393,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
         RuntimeSettings.setUseCCPorts(false);
         RuntimeSettings.setMaxCoreRegisterIndexBits(19);
+        Plugins.getInstance().addPrefixForPluginsToLoad("finroc_tools_gui_plugins_");
 
 //      // Server mode ?
 //      if (args.length > 0 && args[0].toLowerCase().contains("-serve")) {

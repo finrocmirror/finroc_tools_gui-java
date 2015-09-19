@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <targets>
-  <finrocprogram name="fingui" libs="xstream.jar xpp3.jar svgSalamander.jar FontChooser.jar"
+  <program name="fingui" libs="xstream.jar xpp3.jar svgSalamander.jar FontChooser.jar"
                  main-class="org.finroc.tools.gui.FinrocGUI">
     <sources exclude="plugins/**">**.java **.png **.txt **.svg</sources>
     <script name="fingui" pre="$(PRELOAD_HELPER)" main-class="org.finroc.tools.gui.FinrocGUI"/>
-  </finrocprogram>
+  </program>
 </targets>
