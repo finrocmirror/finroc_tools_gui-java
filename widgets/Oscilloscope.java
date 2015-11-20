@@ -270,7 +270,7 @@ public class Oscilloscope extends Widget {
                         }
                         lastTime = time;
                     }
-                    repaint();
+                    main.repaint();
                 } catch (Exception e) {
                     Log.log(LogLevel.DEBUG_WARNING, this, "Oscilloscope Thread skipped loop, because of temporary exception");
                 }
