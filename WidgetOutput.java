@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
+import java.util.ArrayList;
+
 import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
@@ -174,6 +176,9 @@ public class WidgetOutput {
         /** Port's data type (can be changed) */
         private DataTypeReference type = new DataTypeReference();
 
+        /** List of change listeners - stored in case port is recreated */
+        private transient ArrayList<PortListener> changeListeners;
+
         @Override
         protected Port createPort() {
             if (type != null && type.get() == null) {
@@ -188,6 +193,11 @@ public class WidgetOutput {
             port = null;
             this.type = type;
             restore(getParent());
+            if (changeListeners != null) {
+                for (PortListener listener : changeListeners) {
+                    EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
+                }
+            }
         }
 
         public synchronized void publishFromString(String s) {
@@ -214,8 +224,12 @@ public class WidgetOutput {
             return type;
         }
 
-        public void addChangeListener(PortListener l) {
+        public synchronized void addChangeListener(PortListener l) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", l);
+            if (changeListeners == null) {
+                changeListeners = new ArrayList<PortListener>();
+            }
+            changeListeners.add(l);
         }
 
         @Override
@@ -228,6 +242,7 @@ public class WidgetOutput {
         @Override
         public void dispose() {
             super.dispose();
+            changeListeners = null;
             RemoteType.removeUnknownTypeListener(this);
         }
     }
