@@ -146,7 +146,6 @@ public class RulerOfTheForest extends JPanel {
         }
 
         // Count minor ticks
-        double minorTickCount = realLength / minorTickSize;
         double ticksPerLabel = 1;
         if (realLength / minorTickSize >= 30) {
             ticksPerLabel = 10;
@@ -156,6 +155,7 @@ public class RulerOfTheForest extends JPanel {
             ticksPerLabel = 2;
         }
 
+        labelFormat.setGroupingUsed(false);
         labelFormat.setMinimumFractionDigits(exponent >= 0 ? 0 : ((-exponent) - (ticksPerLabel < 10 ? 0 : 1)));
         labelFormat.setMaximumFractionDigits(labelFormat.getMaximumFractionDigits());
 
