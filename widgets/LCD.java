@@ -283,6 +283,7 @@ public class LCD extends Widget {
 
             // Get value
             NumericRepresentation cn = input.getAutoLocked();
+            Number number = cn.getNumericRepresentation();
 
             // Optimal size
             int blockWidth = (SVGWIDTH * renderSize.height / SVGHEIGHT);
@@ -291,8 +292,8 @@ public class LCD extends Widget {
             // Format number
             String s = "";
             int commaPos = -1000;
-            if (cn instanceof CoreNumber) {
-                CoreNumber tmp = new CoreNumber((CoreNumber)cn);
+            if (number instanceof CoreNumber) {
+                CoreNumber tmp = new CoreNumber((CoreNumber)number);
                 if (tmp.getUnit() != null && tmp.getUnit().convertibleTo(preferredUnit)) {
                     tmp.setValue(tmp.getUnit().convertTo(tmp.doubleValue(), preferredUnit), preferredUnit);
                 }

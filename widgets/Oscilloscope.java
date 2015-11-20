@@ -50,6 +50,7 @@ import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
 
 import org.finroc.plugins.data_types.PartWiseLinearFunction;
+import org.rrlib.serialization.NumericRepresentation;
 import org.rrlib.serialization.rtti.DataType;
 import org.rrlib.serialization.rtti.DataTypeBase;
 import org.finroc.core.FrameworkElementFlags;
@@ -259,7 +260,7 @@ public class Oscilloscope extends Widget {
                                 for (int j = 0; j < dequeuedValues.size(); j++) {
                                     double valueTime = lastTime + (j + 1) * timestep;
                                     // TODO: an implementation without EPSILON should be possible - and would be cleaner
-                                    functions.get(i).addNewValue((valueTime - startTime) % timeScaleMaxInMs, ((CoreNumber)dequeuedValues.get(j).getObject().getData()).doubleValue(), (lastValueTime - startTime + EPSILON) % timeScaleMaxInMs);
+                                    functions.get(i).addNewValue((valueTime - startTime) % timeScaleMaxInMs, ((NumericRepresentation)dequeuedValues.get(j).getObject().getData()).getNumericRepresentation().doubleValue(), (lastValueTime - startTime + EPSILON) % timeScaleMaxInMs);
                                     lastValueTime = valueTime;
                                 }
                             } else {

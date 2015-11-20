@@ -28,6 +28,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,7 @@ public class RulerOfTheForest extends JPanel {
     private List<Integer> majorTicksList = new ArrayList<Integer>();
     private static final int TOP = 1, BOTTOM = 2, LEFT = 4, RIGHT = 8;
     private int borders;
+    private DecimalFormat labelFormat = new DecimalFormat();
 
     public RulerOfTheForest(int orientation, double maxTicksPerPixel, boolean mirrored, int borders) {
         this(orientation, borders);
@@ -133,21 +135,37 @@ public class RulerOfTheForest extends JPanel {
             return;
         }
         double minorTickSize = Math.signum(realLength);
+        int exponent = 0;
         while (realLength / minorTickSize > pixelLength * MAXTICKSPERPIXEL) {
             minorTickSize *= 10;
+            exponent++;
         }
-        double majorTickSize = minorTickSize * 10;
+        while (realLength / (minorTickSize / 10) < pixelLength * MAXTICKSPERPIXEL) {
+            minorTickSize /= 10;
+            exponent--;
+        }
+
+        // Count minor ticks
+        double minorTickCount = realLength / minorTickSize;
+        double ticksPerLabel = 1;
+        if (realLength / minorTickSize >= 30) {
+            ticksPerLabel = 10;
+        } else if (realLength / minorTickSize >= 20) {
+            ticksPerLabel = 5;
+        } else if (realLength / minorTickSize >= 8) {
+            ticksPerLabel = 2;
+        }
+
+        labelFormat.setMinimumFractionDigits(exponent >= 0 ? 0 : ((-exponent) - (ticksPerLabel < 10 ? 0 : 1)));
+        labelFormat.setMaximumFractionDigits(labelFormat.getMaximumFractionDigits());
 
         // Draw minor ticks
-        double start = (Math.ceil(min / minorTickSize) * minorTickSize); // in mm
+        double start = (Math.ceil(min / minorTickSize) * minorTickSize);
         for (double d = start; minorTickSize < 0 ^ d < max; d += minorTickSize) {
-            drawTick(g2d, d, ((d - min) / realLength) * pixelLength, 3, false);
-        }
-
-        // Draw major ticks
-        start = (Math.ceil(min / majorTickSize) * majorTickSize); // in mm
-        for (double d = start; minorTickSize < 0 ^ d < max; d += majorTickSize) {
-            drawTick(g2d, d, ((d - min) / realLength) * pixelLength, 7, true);
+            long tickIndex = Math.round(d / minorTickSize);
+            boolean majorTick = (tickIndex % 10) == 0;
+            boolean label = (tickIndex % ticksPerLabel) == 0;
+            drawTick(g2d, d, ((d - min) / realLength) * pixelLength, majorTick ? 7 : 3, label);
         }
 
         g2d.dispose();
@@ -160,12 +178,15 @@ public class RulerOfTheForest extends JPanel {
             tempLine.setLine(pixelPos, 0, pixelPos, height);
         }
         if (drawLabel) {
-            String s = "" + ((int)realPos);
+            String s = labelFormat.format(realPos);
+            if (s.equals("-0")) {
+                s = "0";
+            }
             Rectangle2D r = font.getStringBounds(s, g.getFontRenderContext());
             if (!mirrored) {
-                g.drawString("" + ((int)realPos), (int)(pixelPos - r.getWidth() / 2), (int)(-r.getMinY() + 7));
+                g.drawString(s, (int)(pixelPos - r.getWidth() / 2), (int)(-r.getMinY() + 7));
             } else {
-                g.drawString("" + ((int)realPos), (int)(pixelPos - r.getWidth() / 2), (int)(-r.getMinY() + 12));
+                g.drawString(s, (int)(pixelPos - r.getWidth() / 2), (int)(-r.getMinY() + 12));
             }
         }
         g.draw(tempLine);

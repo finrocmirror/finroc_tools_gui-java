@@ -299,7 +299,7 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         jframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         // set window to screen size
-        setSize(r.width, r.height - 70);
+        setSize(r.width / 2, r.height / 2);
         repaint();
 
         // set editmode
