@@ -182,19 +182,29 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
         if (e.getButton() == MouseEvent.BUTTON1) {
             if (parent.getEditMode() == GUIWindowUI.EditMode.editObject || parent.getEditMode() == GUIWindowUI.EditMode.ctrlEditObject) {
                 if (parent.isCtrlPressed()) {
+                    Widget smallestChild = null;
+                    double smallestWidgetSize = Double.MAX_VALUE;
                     for (Widget w : model.getChildren()) {
                         if (w.getBounds().contains(e.getPoint())) {
-                            List<Widget> selection = new ArrayList<Widget>(model.getSelection());
-                            if (!model.getSelection().contains(w)) {
-                                // select
-                                selection.add(w);
-                            } else {
-                                //  deselect
-                                selection.remove(w);
+                            double size = w.getBounds().getWidth() * w.getBounds().getHeight();
+                            if (size < smallestWidgetSize) {
+                                smallestChild = w;
+                                smallestWidgetSize = size;
                             }
-                            model.setSelection(selection);
-                            return;
                         }
+                    }
+
+                    if (smallestChild != null) {
+                        List<Widget> selection = new ArrayList<Widget>(model.getSelection());
+                        if (!model.getSelection().contains(smallestChild)) {
+                            // select
+                            selection.add(smallestChild);
+                        } else {
+                            //  deselect
+                            selection.remove(smallestChild);
+                        }
+                        model.setSelection(selection);
+                        return;
                     }
                 }
             }
@@ -254,7 +264,7 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
         }
 
         updateSelection(me);
-        if (parent != null) {
+        if (parent != null && (!parent.isCtrlPressed())) {
             parent.areaSelected(cleanRectangle(createRectangle));
         }
         createRectangle = null;
