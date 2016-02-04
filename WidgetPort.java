@@ -90,6 +90,11 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         return !getPort().isInputPort();
     }
 
+    @Override
+    public boolean isProxy() {
+        return false;
+    }
+
     public String getDescription() {
         return description;
     }

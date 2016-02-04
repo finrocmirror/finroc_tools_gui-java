@@ -950,7 +950,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         final ConnectorIcon.Type iconType = new ConnectorIcon.Type();
         boolean rpc = FinrocTypeInfo.isMethodType(port.getPort().getDataType(), true);
         boolean leftTreeRPCServerPort = rpc && port.getPort().getFlag(FrameworkElementFlags.ACCEPTS_DATA);
-        iconType.set(port.isInputPort() && (!leftTreeRPCServerPort), (!rpc) && port.getPort().getFlag(FrameworkElementFlags.PROXY), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
+        iconType.set(port.isInputPort() && (!leftTreeRPCServerPort), (!rpc) && port.isProxy(), rpc, rightTree, brighter, color, rightTree ? rightBackgroundColor : leftBackgroundColor);
         return ConnectorIcon.getIcon(iconType, HEIGHT);
     }
 
