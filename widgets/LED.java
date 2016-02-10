@@ -27,6 +27,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 
 import org.finroc.tools.gui.GUIPanel;
 import org.finroc.tools.gui.Widget;
@@ -76,6 +79,8 @@ public class LED extends Widget {
     public PropertyList<LEDProperty> leds = new PropertyList<LEDProperty>(LEDProperty.class, 25);
 
     public boolean smallLEDs = false;
+
+    private static final int blinkingRate = 1000; // in ms
 
     /** Raw-Icons only need to be initialized once application-wide */
     static ImageIcon ledOff, ledOffSmall;
@@ -118,7 +123,7 @@ public class LED extends Widget {
         private static final long serialVersionUID = 6464808920773228472L;
 
         public Color off = new Color(0, 0, 0), on = getDefaultColor(Theme.DefaultColor.LED);
-        public double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
+        public double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY, blinkValue = -1;
         public String label = "LED";
         public boolean bitMode = false;
         public int bit = 0;
@@ -165,6 +170,7 @@ public class LED extends Widget {
                 } else if (!pan.info.bitMode) {
                     double d = nr.getNumericRepresentation().doubleValue();
                     pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
+                    pan.switchBlink(d == pan.info.blinkValue);
                 } else {
                     int v = nr.getNumericRepresentation().intValue();
                     pan.on = (v & (1 << pan.info.bit)) != 0;
@@ -212,11 +218,23 @@ public class LED extends Widget {
 
             private JLabel jl;
             private volatile boolean on;
+            private boolean blinkOn = false;
             BufferedImageRGB renderBuffer;  // buffer for rendering
             BufferedImageRGB renderBufferOff;  // buffer for rendering
             BufferedImageRGB renderBufferSmall;  // buffer for rendering
             BufferedImageRGB renderBufferOffSmall;  // buffer for rendering
             LEDProperty info = null;
+            Timer timer = null;
+
+            public void switchBlink(boolean on) {
+                if (on)
+                    timer.start();
+                else {
+                    timer.stop();
+                    blinkOn = false;
+                }
+
+            }
 
             public LEDPanel() {
                 setLayout(new BorderLayout());
@@ -232,6 +250,9 @@ public class LED extends Widget {
                 renderBufferOff = new BufferedImageRGB(ledOn.getSize());
                 renderBufferSmall = new BufferedImageRGB(ledOnSmall.getSize());
                 renderBufferOffSmall = new BufferedImageRGB(ledOnSmall.getSize());
+
+                timer = new Timer(blinkingRate , new TimerListener(this));
+                timer.setInitialDelay(0);
             }
 
             public void update(LEDProperty info) {
@@ -275,7 +296,7 @@ public class LED extends Widget {
 
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 if (!smallLEDs) {
-                    if (on) {
+                    if (on || blinkOn) {
                         renderBuffer.paintIcon(c, g, x, y);
                     } else if (info.off.equals(Color.BLACK)) {
                         ledOff.paintIcon(c, g, x, y);
@@ -283,13 +304,28 @@ public class LED extends Widget {
                         renderBufferOff.paintIcon(c, g, x, y);
                     }
                 } else {
-                    if (on) {
+                    if (on || blinkOn) {
                         renderBufferSmall.paintIcon(c, g, x, y);
                     } else if (info.off.equals(Color.BLACK)) {
                         ledOffSmall.paintIcon(c, g, x, y);
                     } else {
                         renderBufferOffSmall.paintIcon(c, g, x, y);
                     }
+                }
+            }
+
+
+
+            private class TimerListener implements ActionListener {
+                private LEDPanel pan;
+
+                public TimerListener(LEDPanel pan) {
+                    this.pan = pan;
+                }
+
+                public void actionPerformed(ActionEvent e) {
+                    pan.blinkOn = ! pan.blinkOn;
+                    pan.repaint();
                 }
             }
         }
