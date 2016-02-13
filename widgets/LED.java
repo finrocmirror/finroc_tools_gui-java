@@ -57,8 +57,11 @@ import org.finroc.tools.gui.util.propertyeditor.PropertyList;
 import org.finroc.plugins.data_types.StringList;
 
 import org.finroc.core.datatype.CoreBoolean;
+import org.finroc.core.datatype.CoreNumber;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.NumericRepresentation;
 
 public class LED extends Widget {
@@ -123,7 +126,8 @@ public class LED extends Widget {
         private static final long serialVersionUID = 6464808920773228472L;
 
         public Color off = new Color(0, 0, 0), on = getDefaultColor(Theme.DefaultColor.LED);
-        public double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY, blinkValue = -1;
+        public double lowerLimit = 1, upperLimit = Double.POSITIVE_INFINITY;
+        String blinkValue;
         public String label = "LED";
         public boolean bitMode = false;
         public int bit = 0;
@@ -170,7 +174,15 @@ public class LED extends Widget {
                 } else if (!pan.info.bitMode) {
                     double d = nr.getNumericRepresentation().doubleValue();
                     pan.on = d >= pan.info.lowerLimit && d <= pan.info.upperLimit;
-                    pan.switchBlink(d == pan.info.blinkValue);
+                    boolean blink = false;
+                    if (pan.info.blinkValue != null && pan.info.blinkValue.length() > 0) {
+                        try {
+                            blink = d == Double.parseDouble(pan.info.blinkValue);
+                        } catch (Exception e) {
+                            Log.log(LogLevel.ERROR, "Cannot parse blink value");
+                        }
+                    }
+                    pan.switchBlink(blink);
                 } else {
                     int v = nr.getNumericRepresentation().intValue();
                     pan.on = (v & (1 << pan.info.bit)) != 0;
