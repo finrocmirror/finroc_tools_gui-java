@@ -1064,8 +1064,8 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
                 maxY = Math.max(maxY, (int)w.getBounds().getMaxY());
             }
         }
-        maxX += (asComponent().getBounds().width - children.get(0).asComponent().getBounds().width);
-        maxY += (asComponent().getBounds().height - children.get(0).asComponent().getBounds().height);
+        maxX += (asComponent().getBounds().width - children.get(0).asComponent().getParent().getBounds().width);
+        maxY += (asComponent().getBounds().height - children.get(0).asComponent().getParent().getBounds().height);
         Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         maxX = Math.min(maxX, r.width);
         maxY = Math.min(maxY, r.height - 30);
