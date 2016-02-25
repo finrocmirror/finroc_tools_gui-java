@@ -68,6 +68,7 @@ public abstract class GUIUiBase < P extends UIBase <? , ? , ? , ? >, C extends U
 
     /** Constants for GUI files */
     public static final String GUI_FILE_EXTENSION = "fingui";
+    public static final String GUI_FILE_EXTENSION_READ_ONLY = "gui";
     public static final String GUI_MAIN_FILE_IN_ZIP = "gui.xml";
 
     public static final String GUI_MAIN_FILE_IN_BINARY_ZIP = "gui.bin";
