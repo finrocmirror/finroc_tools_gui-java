@@ -82,7 +82,11 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
     /** Framework element that contains all global links - possibly NULL */
     private FrameworkElement globalLinks;
 
+    /** Id of protocol that this runtime is connected by */
     private final String protocolId;
+
+    /** Lookup for parent model nodes for every protocol id */
+    private static final HashMap<String, ModelNode> protocolParentNodeRegister = new HashMap<String, ModelNode>();
 
     /**
      * Lookup for remote framework elements (currently not ports) - similar to remote CoreRegister
@@ -103,7 +107,6 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
 
     public void delete() {
         treeModel.removeTreeModelListener(this);
-        frameworkElement.managedDelete();
         if (this.getParent() != null) {
             handler.removeNode(this);
         }
@@ -180,6 +183,21 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
         }
     }
 
+    /**
+     * @param handler Model handler
+     * @param protocolId Id of protocol
+     * @return Parent model nodes for specified protocol id
+     */
+    private synchronized static ModelNode getProtocolParentNode(ModelHandler handler, ModelNode treeModelRootNode, String protocolId) {
+        ModelNode parent = protocolParentNodeRegister.get(protocolId);
+        if (parent == null) {
+            parent = new ModelNode(protocolId);
+            protocolParentNodeRegister.put(protocolId, parent);
+            handler.addNode(treeModelRootNode, parent);
+        }
+        return parent;
+    }
+
     @Override
     public void portChanged(AbstractPort origin, MemoryBuffer value) {
         if (origin == structureUpdatesPort.getWrapped()) {
@@ -188,11 +206,7 @@ public class RemoteRemoteRuntime extends RemoteRuntime implements PortListener<M
             processStructurePacket(value);
 
             if (initial) {
-                ModelNode parent = treeModel.getRoot().getChildByName(protocolId);
-                if (parent == null) {
-                    parent = new ModelNode(protocolId);
-                    handler.addNode(treeModel.getRoot(), parent);
-                }
+                ModelNode parent = getProtocolParentNode(handler, treeModel.getRoot(), protocolId);
                 handler.addNode(parent, this);
             }
         }

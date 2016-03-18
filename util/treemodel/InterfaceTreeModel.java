@@ -317,7 +317,9 @@ public class InterfaceTreeModel implements TreeModel {
                     //InterfaceTreeModel.this.nodeStructureChanged(parent);
                     event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
                     for (int j = listener.size() - 1; j >= 0; j--) {
-                        listener.get(j).treeStructureChanged(event);
+                        if (j < listener.size()) {
+                            listener.get(j).treeStructureChanged(event);
+                        }
                     }
                 }
                 break;
