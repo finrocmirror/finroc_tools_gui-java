@@ -352,7 +352,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     public void mousePressed(MouseEvent e) {
 
-        if (e.getButton() != MouseEvent.BUTTON1) {
+        if (e.getButton() != MouseEvent.BUTTON1 || showRightTree == false) {
             return;
         }
 
@@ -369,16 +369,21 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                 highlight.addAll(connections);
             }
         }
+
         // Mark all matches in other tree
         if (highlight.size() > 0) {
             otherTree.setSelectedObjects(new ArrayList<Object>(highlight), false);
             ((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(400);
+        } else {
+            otherTree.setSelectedObjects(null, false);
         }
 
         // Set start points
         startPoints.clear();
         startPointTree = selTree;
-        startPoints.addAll(selTree.getSelectedObjects());
+        if (highlight.size() > 0) {
+            startPoints.addAll(selTree.getSelectedObjects());
+        }
     }
 
     /**
@@ -509,7 +514,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }
 
         if (hypo == null) {
-            if (startPoints.size() > 0) {
+            if (otherTree.getSelectionCount() > 0) {
                 otherTree.clearSelection();
                 ((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
             }
