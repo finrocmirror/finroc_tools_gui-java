@@ -55,7 +55,6 @@ import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.remote.ModelNode;
-import org.finroc.core.remote.PortWrapperTreeNode;
 import org.finroc.core.remote.RemotePort;
 import org.finroc.core.remote.RemoteRuntime;
 
@@ -291,7 +290,7 @@ public class BehaviorSignals extends Widget {
 
                 try {
                     if (remoteModuleHandle != 0) {
-                        for (PortWrapperTreeNode portNode : statusInputs.get(index).getConnectionPartners()) {
+                        for (RemotePort portNode : statusInputs.get(index).getConnectionPartners()) {
 
                             // find runtime parent
                             RemotePort port = (RemotePort)portNode;

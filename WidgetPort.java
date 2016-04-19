@@ -37,12 +37,12 @@ import org.finroc.core.port.PortWrapperBase;
 import org.finroc.core.portdatabase.CCType;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
 import org.finroc.core.remote.HasUid;
-import org.finroc.core.remote.PortWrapperTreeNode;
+import org.finroc.core.remote.PortWrapper;
 import org.finroc.core.remote.RemotePort;
 import org.rrlib.serialization.NumericRepresentation;
 import org.rrlib.xml.XMLNode;
 
-public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapperTreeNode, Serializable {
+public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapper, Serializable {
 
     /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;
@@ -85,14 +85,8 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         super(null);
     }
 
-    @Override
-    public boolean isInputPort() {
-        return !getPort().isInputPort();
-    }
-
-    @Override
-    public boolean isProxy() {
-        return false;
+    public boolean isOutputPort() {
+        return getPort().isOutputPort();
     }
 
     public String getDescription() {
@@ -131,8 +125,8 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         }
     }
 
-    public List<PortWrapperTreeNode> getConnectionPartners() {
-        ArrayList<PortWrapperTreeNode> result = new ArrayList<PortWrapperTreeNode>();
+    public List<RemotePort> getConnectionPartners() {
+        ArrayList<RemotePort> result = new ArrayList<RemotePort>();
         if (port != null) {
             ArrayList<AbstractPort> connectionPartners = new ArrayList<AbstractPort>();
             port.getWrapped().getConnectionPartners(connectionPartners, true, true, false);
@@ -235,7 +229,7 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
 //      port.setDescription(description);
 //  }
 
-    public void connectTo(PortWrapperTreeNode other) {
+    public void connectTo(PortWrapper other) {
         if (getPort().isConnectedTo(other.getPort())) {
             return;
         }

@@ -53,6 +53,9 @@ public class ConnectorIcon extends ImageIcon {
      */
     private Point incomingLineStart, outgoingLineStart, defaultLineStart = new Point();
 
+    /** Insets (white pixels) at top an bottom */
+    private int insetTop = Integer.MIN_VALUE, insetBottom = Integer.MIN_VALUE;
+
     /** Registered colors for icons */
     private static final ArrayList<Color> iconColors = new ArrayList<Color>();
 
@@ -64,6 +67,9 @@ public class ConnectorIcon extends ImageIcon {
 
     /** Available cached icons */
     private static final ConnectorIcon iconCache[] = new ConnectorIcon[MAX_INDEX];
+
+    /** Flags specifying connector icon */
+    public static final int OUTPUT = 1, PROXY = 2, RPC = 4, RIGHT_TREE = 8, BRIGHTER_COLOR = 16;
 
     private ConnectorIcon() {
     }
@@ -100,120 +106,115 @@ public class ConnectorIcon extends ImageIcon {
     }
 
     /**
-     * @param type Icon to get
+     * @param iconType Type of connector icon composed from flags above (see above)
+     * @param color Color of icon
+     * @param background Background color of icon
      * @param height Height of icon
      * @return Icon
      */
-    public static ConnectorIcon getIcon(Type type, int height) {
-        ConnectorIcon icon = iconCache[type.getIndexInCache()];
+    public static ConnectorIcon getIcon(int iconType, IconColor color, BackgroundColor background, int height) {
+        int indexInCache = iconType | color.index << 5 | background.index << 8; // 10 bit: [background color 2 bit][color 3 bit][flags 5 bit]
+        ConnectorIcon icon = iconCache[indexInCache];
         if (icon == null) {
             // Note with respect to concurrency: Since always the same icons are generated,
             // it does not hurt if concurrent threads generate the same icon in parallel.
             // One of them will be garbage collected.
-            icon = createIcon(type, height);
-            iconCache[type.getIndexInCache()] = icon;
+            icon = createIcon(iconType, color, background, height);
+            iconCache[indexInCache] = icon;
         } else if (icon.getIconHeight() != height) {
             Log.log(LogLevel.WARNING, "Icons of different size not properly supported yet"); // Could be added with reasonable effort
-            return createIcon(type, height);
+            return createIcon(iconType, color, background, height);
         }
         return icon;
     }
 
     /** Indexed Icon Color */
-    public static class IconColor {
-        public final Color color;
+    public static class IconColor extends Color {
+
+        /** UID */
+        private static final long serialVersionUID = 1019761626697067967L;
+
+        /** Index of color */
         public final int index;
 
-        public IconColor(Color c) {
-            color = c;
-            index = registerIconColor(c);
+        /** Plain color */
+        public final Color plainColor;
+
+        /** Brighter color */
+        public final Color brighter;
+
+        /** Contour color */
+        public final Color contour;
+
+        public IconColor(int r, int g, int b) {
+            super(r, g, b);
+            brighter = this.brighter();
+            contour = this.darker();
+            plainColor = new Color(r, g, b);
+            index = registerIconColor(this);
+        }
+
+        public IconColor(Color normal, Color brighter) {
+            super(normal.getRed(), normal.getGreen(), normal.getBlue());
+            this.brighter = brighter;
+            this.contour = new Color((int)(normal.getRed() * 0.83), (int)(normal.getGreen() * 0.83), (int)(normal.getBlue() * 0.83));
+            plainColor = normal;
+            index = registerIconColor(this);
+        }
+
+        public IconColor(Color normal, Color brighter, Color contour) {
+            super(normal.getRed(), normal.getGreen(), normal.getBlue());
+            this.brighter = brighter;
+            this.contour = contour;
+            plainColor = normal;
+            index = registerIconColor(this);
         }
     }
 
     /** Indexed Background Color */
-    public static class BackgroundColor {
-        public final Color color;
+    public static class BackgroundColor extends Color {
+
+        /** UID */
+        private static final long serialVersionUID = -6447560429557999239L;
+
+        /** Index of color */
         public final int index;
 
-        public BackgroundColor(Color c) {
-            color = c;
-            index = registerBackgroundColor(c);
-        }
-    }
-
-    /**
-     * Unique id/type of every icon
-     */
-    public static class Type {
-
-        /** Output port? (displayed as outgoing arrow - or as client) */
-        public boolean outputPort;
-
-        /** Proxy/routing port? */
-        public boolean proxy;
-
-        /** RPC port? */
-        public boolean rpc;
-
-        /** In right connection panel tree? */
-        public boolean rightTree;
-
-        /** Brighter version of foreground color? */
-        public boolean brighterColor;
-
-        /** Color of icon (Register index in iconColors) */
-        public IconColor color;
-
-        /** Background color of icon (Register index in backgroundColors) */
-        public BackgroundColor background;
-
-        /**
-         * Method to set all variables at once for convenience
-         */
-        public void set(boolean outputPort, boolean proxy, boolean rpc, boolean rightTree, boolean brighterColor, IconColor color, BackgroundColor background) {
-            this.outputPort = outputPort;
-            this.proxy = proxy;
-            this.rpc = rpc;
-            this.rightTree = rightTree;
-            this.brighterColor = brighterColor;
-            this.color = color;
-            this.background = background;
-        }
-
-        /**
-         * @return Index in icon cache (10 bit: [background color 2 bit][color 3 bit][flags 5 bit]
-         */
-        private int getIndexInCache() {
-            return (outputPort ? 1 : 0) | (proxy ? 2 : 0) | (rpc ? 4 : 0) | (rightTree ? 8 : 0)  | (brighterColor ? 16 : 0) | color.index << 5 | background.index << 8;
+        public BackgroundColor(int r, int g, int b) {
+            super(r, g, b);
+            index = registerBackgroundColor(this);
         }
     }
 
     /**
      * Draws/creates connector icon of specified type
      *
-     * @param type Type of icon to draw
+     * @param iconType Type of connector icon composed from flags above (see above)
+     * @param iconColor Color of icon
+     * @param background Background color of icon
      * @return Created icon
      */
-    private static ConnectorIcon createIcon(Type type, int height) {
+    private static ConnectorIcon createIcon(int iconType, IconColor iconColor, BackgroundColor background, int height) {
         assert(height > 0);
-        Color color = type.brighterColor ? type.color.color.brighter() : type.color.color;
-        Color background = type.background.color;
-        boolean inputPort = !type.outputPort;
+        Color color = (iconType & BRIGHTER_COLOR) != 0 ? iconColor.brighter : iconColor;
+        boolean inputPort = (iconType & OUTPUT) == 0;
+        boolean proxy = (iconType & PROXY) != 0;
+        boolean rpc = (iconType & RPC) != 0;
         int colorInt = color.getRGB();
         int backgroundInt = background.getRGB();
         int width = (height + 1) / 2;
-        if (type.rpc) {
-            width = type.proxy ? 9 : (inputPort ? 12 : 13);
+        if (rpc) {
+            width = proxy ? 9 : (inputPort ? 14 : 12);
         }
         BufferedImageRGB img = new BufferedImageRGB(width, height);
         ConnectorIcon icon = new ConnectorIcon();
         icon.defaultLineStart.y = height / 2;
-        img.drawFilledRectangle(img.getBounds(), inputPort && (!type.rpc) && (!type.proxy) ? colorInt : backgroundInt);
+        img.drawFilledRectangle(img.getBounds(), inputPort && (!rpc) && (!proxy) ? colorInt : backgroundInt);
         int[] buffer = img.getBuffer();
 
-        if (!type.rpc) {
+        if (!rpc) {
 
-            if (!type.proxy) {
+            if (!proxy) {
 
                 // draw triangle
                 int top = 0;
@@ -237,7 +238,7 @@ public class ConnectorIcon extends ImageIcon {
             } else {
                 int primaryHeight = height - 6;
                 icon.defaultLineStart.y = primaryHeight / 2;
-                if (type.outputPort) {
+                if (!inputPort) {
                     for (int i = 0; i < primaryHeight; i++) {
                         img.drawLine(new Point(0, i), new Point(3 + primaryHeight / 2 - Math.abs(i - primaryHeight / 2), i), color);
                     }
@@ -268,7 +269,7 @@ public class ConnectorIcon extends ImageIcon {
             int h4 = height / 4;
             img.drawLine(new Point(0, 0), new Point(0, height - 1), color);
 
-            if (!type.proxy) {
+            if (!proxy) {
                 img.drawFilledRectangle(new Rectangle(0, middle - 1, 4, 3), colorInt);
             } else {
                 img.drawFilledRectangle(new Rectangle(0, h4, 4, 2), colorInt);
@@ -278,7 +279,7 @@ public class ConnectorIcon extends ImageIcon {
             Graphics2D g = img.getBufferedImage().createGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setColor(color);
-            if (type.proxy) {
+            if (proxy) {
                 g.drawOval(4, 0, middle, middle);
                 g.fillOval(3, height - h4 - 1 - (h4 / 2), h4 + 2, h4 + 2);
             } else if (!inputPort) {
@@ -288,13 +289,23 @@ public class ConnectorIcon extends ImageIcon {
             }
             icon.defaultLineStart.x = img.getWidth() - 3;
 
-            if (type.proxy) {
+            if (proxy) {
                 icon.outgoingLineStart = new Point(img.getWidth() - 2, h4 + 1);
                 icon.incomingLineStart = new Point(img.getWidth() - 1, height - h4);
             }
         }
 
-        if (type.rightTree) {
+        // scan for insets
+        for (int i = 0; i < img.getIconWidth(); i++) {
+            if (icon.insetTop == Integer.MIN_VALUE && img.getPixel(i, 0) == backgroundInt) {
+                icon.insetTop = (img.getWidth() - i) + (img.getPixel(i, 1) != backgroundInt ? 1 : 0);
+            }
+            if (icon.insetBottom == Integer.MIN_VALUE && img.getPixel(i, img.getIconHeight() - 1) == backgroundInt) {
+                icon.insetBottom = (img.getWidth() - i) + (img.getPixel(i, img.getIconHeight() - 2) != backgroundInt ? 1 : 0);
+            }
+        }
+
+        if ((iconType & RIGHT_TREE) > 0) {
             img.mirrorLeftRight();
         }
         if (icon.incomingLineStart == null) {
@@ -304,6 +315,21 @@ public class ConnectorIcon extends ImageIcon {
             icon.outgoingLineStart = icon.defaultLineStart;
         }
         icon.setImage(img.getBufferedImage());
+
         return icon;
+    }
+
+    /**
+     * @return Insets (white pixels) at top
+     */
+    public int getInsetTop() {
+        return insetTop;
+    }
+
+    /**
+     * @return Insets (white pixels) at bottom
+     */
+    public int getInsetBottom() {
+        return insetBottom;
     }
 }

@@ -41,6 +41,7 @@ import javax.swing.tree.TreePath;
 
 import org.finroc.core.remote.ModelNode;
 import org.finroc.tools.gui.commons.EventRouter;
+import org.finroc.tools.gui.util.ElementFilter;
 
 
 /**
@@ -56,8 +57,8 @@ public class MJTree<T> extends JTree implements MouseListener {
     /** UID */
     private static final long serialVersionUID = 1166608861920603326L;
 
-    /** Type of objects that can be selected */
-    private final Class <? extends T > selectableObjectType;
+    /** Filter for objects that can be selected */
+    private final ElementFilter<Object> selectableObjectFilter;
 
     /** temporary variable - for letting selection get smaller at mouse release (for drag & drop) */
     private TreePath[] newSelection;
@@ -79,12 +80,11 @@ public class MJTree<T> extends JTree implements MouseListener {
 
 
     /**
-     * @param selectableObjectType Type of objects that can be selected
+     * @param selectableObjectFilter Filter for objects that can be selected. Must only accept elements of type T.
      * @param newModelExpandLevel Up to which level should new model be expanded by default?
      */
-    @SuppressWarnings("unchecked")
-    public MJTree(Class<?> selectableObjectType, int newModelExpandLevel) {
-        this.selectableObjectType = (Class <? extends T >)selectableObjectType;
+    public MJTree(ElementFilter<Object> selectableObjectFilter, int newModelExpandLevel) {
+        this.selectableObjectFilter = selectableObjectFilter;
         this.newModelExpandLevel = newModelExpandLevel;
         super.addMouseListener(this);
         super.setLargeModel(true);
@@ -106,7 +106,7 @@ public class MJTree<T> extends JTree implements MouseListener {
     }
 
     private boolean hasCorrectType(Object o) {
-        return selectableObjectType.isAssignableFrom(o.getClass());
+        return selectableObjectFilter.acceptElement(o);
     }
 
     public void setSelectedObjects(List<T> objects, boolean overwriteMouseRelease) {
