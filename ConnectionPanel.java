@@ -562,8 +562,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     public void mouseDragged(MouseEvent e) {
+        saveLastMousePos(e);
         if (startPoints.size() > 0) {
-            saveLastMousePos(e);
             repaint();
         }
     }
@@ -703,12 +703,26 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
     /**
      * Get hypothetical connections for selected objects in current tree with visible nodes in other tree
-     * (may be overridden)
      *
      * @param tn Tree node in other tree to connect to
-     * @return List of nodes to connect to. Null if there is no suitable combination.
+     * @return List of nodes to connect to. null if there is no suitable combination.
      */
+    @SuppressWarnings("unchecked")
     protected List<Object> hypotheticalConnection(Object tn) {
+        if (tn == null) {
+            return null;
+        }
+        Object result = hypotheticalConnectionImplementation(tn);
+        return result != null && result.getClass().equals(ArrayList.class) ? (ArrayList<Object>)result : null;
+    }
+
+    /**
+     * Implementation of hypotheticalConnection()
+     *
+     * @param tn Tree node in other tree to connect to
+     * @return ArrayList<Object> of nodes to connect to. String or null if there is no suitable combination (String contains hint/reason as may be displayed as tool tip atop tn).
+     */
+    protected Object hypotheticalConnectionImplementation(Object tn) {
 
         MJTree<Object> selTree = selectionFromRight ? rightTree : leftTree;
         MJTree<Object> otherTree = selectionFromRight ? leftTree : rightTree;
@@ -723,7 +737,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             }
         }
         if (!canConnect) {
-            return null;
+            return "No selected element in other tree can connect to this one";
         }
 
         // Find "best" connection
@@ -744,10 +758,10 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                 }
                 i = (i + 1) % potentialPartners.size();
             } while (i != startElement);
+            if (partner == null) {
+                return "No connection partner for '" + srcNode.toString();
+            }
             result.add(partner);
-        }
-        if (result.size() != nodesToConnect.size()) {
-            return null;
         }
         return result;
     }
