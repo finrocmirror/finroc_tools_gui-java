@@ -289,7 +289,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         connectionPanelWindow.setSize(Math.min(1280, r.width), r.height - 70);
 
-        jframe.setJMenuBar(menuBar);
+        if (!getParent().isInImmutableMode()) {
+            jframe.setJMenuBar(menuBar);
+        }
         jframe.pack();
         setVisible(true);
         setFocusTraversalKeysEnabled(false);
@@ -329,7 +331,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
         Container root = jframe.getContentPane();
         root.removeAll();
         root.setLayout(new BorderLayout());
-        root.add(toolBar, BorderLayout.PAGE_START);
+        if (!getParent().isInImmutableMode()) {
+            root.add(toolBar, BorderLayout.PAGE_START);
+        }
         root.add(statusBar, BorderLayout.SOUTH);
         if (model == null) {
             jframe.setTitle("error: no model");
@@ -942,7 +946,9 @@ public class GUIWindowUI extends GUIWindowUIBase<FinrocGUI> implements ActionLis
     }
 
     private EditMode getEditModeFromMenu() {
-        if (miEditOriginal.isSelected()) {
+        if (getParent().isInImmutableMode()) {
+            return EditMode.none;
+        } else if (miEditOriginal.isSelected()) {
             return EditMode.editObject;
         } else if (miEditCtrl.isSelected()) {
             return EditMode.ctrlEditObject;

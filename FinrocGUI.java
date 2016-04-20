@@ -83,6 +83,9 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
     /** Is Control-Key currently pressed? */
     private transient boolean ctrlPressed = false;
 
+    /** Is GUI in immutable mode? (no editing - only using GUI) */
+    private transient final boolean immutableMode;
+
     /** Dummy variable in order to create dependency to TCP plugin - at least as long as there is no other network transport available */
     static final Peer TCP_DEPENDENCY = null;
 
@@ -101,7 +104,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
         }
     }
 
-    public FinrocGUI() throws Exception {
+    public FinrocGUI(boolean immutableMode) throws Exception {
+        this.immutableMode = immutableMode;
 
         // install keyboard hook
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
@@ -347,7 +351,8 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
             if (url != null) {
                 newGui = super.loadGUI(url.openStream());
                 guifile = null;
-            } else if (f.getAbsolutePath().toLowerCase().endsWith(GUI_FILE_EXTENSION.toLowerCase())) {
+            } else if (f.getAbsolutePath().toLowerCase().endsWith("." + GUI_FILE_EXTENSION.toLowerCase()) ||
+                       f.getAbsolutePath().toLowerCase().endsWith("." + GUI_FILE_EXTENSION_READ_ONLY.toLowerCase())) {
                 newGui = super.loadGUI(new FileInputStream(f));
                 guifile = f;
             } else {
@@ -475,7 +480,7 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
             public void run() {
                 try {
                     //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    FinrocGUI fingui = new FinrocGUI();
+                    FinrocGUI fingui = new FinrocGUI(!loadTasks.isEmpty() && loadTasks.get(0).toLowerCase().endsWith("." + GUI_FILE_EXTENSION_READ_ONLY.toLowerCase()));
 
                     // load GUI file at startup?
                     if (!loadTasks.isEmpty()) {
@@ -678,5 +683,12 @@ public class FinrocGUI extends GUIUiWithInterfaces<FinrocGUI, GUIWindowUI> imple
 
     public boolean isCtrlPressed() {
         return ctrlPressed;
+    }
+
+    /**
+     * \return Is GUI in immutable mode? (no editing - only using GUI)
+     */
+    public boolean isInImmutableMode() {
+        return immutableMode;
     }
 }
