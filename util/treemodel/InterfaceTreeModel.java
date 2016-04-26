@@ -168,7 +168,7 @@ public class InterfaceTreeModel implements TreeModel {
     private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
 
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
-    private enum ElementClass { INTERFACE, NONPORT, PORT, HIDDEN }
+    private enum ElementClass { SENSOR_INTERFACE, CONTROLLER_INTERFACE, INTERFACE, PARAMETER_INTERFACE, NONPORT, PORT, HIDDEN }
 
     /**
      * Contains information on an element to show initially
@@ -362,11 +362,14 @@ public class InterfaceTreeModel implements TreeModel {
                 if (node.isHidden(false)) {
                     return ElementClass.HIDDEN;
                 }
-                int flags = ((RemoteFrameworkElement)node).getFlags();
-                if ((flags & FrameworkElementFlags.PORT) != 0) {
+                RemoteFrameworkElement element = (RemoteFrameworkElement)node;
+                if (element.getFlag(FrameworkElementFlags.PORT)) {
                     return ElementClass.PORT;
                 }
-                return ((flags & FrameworkElementFlags.INTERFACE) != 0) ? ElementClass.INTERFACE : ElementClass.NONPORT;
+                if (node.isInterface()) {
+                    return element.isSensorInterface() ? ElementClass.SENSOR_INTERFACE : (element.isControllerInterface() ? ElementClass.CONTROLLER_INTERFACE : (element.getName().startsWith("Parameter") ? ElementClass.PARAMETER_INTERFACE : ElementClass.INTERFACE));
+                }
+                return ElementClass.NONPORT;
             }
             return ElementClass.NONPORT;
         }
