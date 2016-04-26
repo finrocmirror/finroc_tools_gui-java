@@ -462,7 +462,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else {
             return false;
         }
-        if (!wp.isOutputPort()) {
+        if (wp.isOutputPort()) {
             return wp.getPort().mayConnectTo(((PortWrapper)other).getPort(), false);
         } else {
             return ((PortWrapper)other).getPort().mayConnectTo(wp.getPort(), false);
