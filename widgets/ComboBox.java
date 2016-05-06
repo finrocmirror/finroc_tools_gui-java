@@ -41,6 +41,8 @@ import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.Serialization;
 
 
@@ -151,7 +153,11 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
                 output2.publish(cbe.output2);
                 output3.publish(cbe.output3);
                 if (cbe.customOutput != null) {
-                    customOutput.publishFromString(cbe.customOutput);
+                    try {
+                        customOutput.publishFromString(cbe.customOutput);
+                    } catch (Exception e1) {
+                        Log.log(LogLevel.ERROR, this, "Cannot parse '" + cbe.customOutput + "' for publishing (type " + customOutput.asPort().getDataType().getName() + ").");
+                    }
                 }
             }
         }

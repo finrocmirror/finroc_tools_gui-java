@@ -32,6 +32,7 @@ import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.BinarySerializable;
 import org.rrlib.serialization.StringInputStream;
 import org.finroc.core.port.Port;
+import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
 import org.finroc.core.port.cc.CCPortDataManagerTL;
@@ -184,11 +185,17 @@ public class WidgetOutput {
             if (type != null && type.get() == null) {
                 RemoteType.addRemoteTypeListener(this);
             }
-            return new Port(getPci().derive((type == null || type.get() == null) ? CoreNumber.TYPE : type.get()));
+            PortCreationInfo pci = getPci();
+            if (type == null && pci.dataType != null) {
+                type = new DataTypeReference(pci.dataType);
+            }
+            return new Port(pci.derive((type == null || type.get() == null) ? CoreNumber.TYPE : type.get()));
         }
 
         public void changeDataType(DataTypeReference type) {
-            frameworkElement.managedDelete();
+            if (frameworkElement != null) {
+                frameworkElement.managedDelete();
+            }
             frameworkElement = null;
             port = null;
             this.type = type;
@@ -200,7 +207,7 @@ public class WidgetOutput {
             }
         }
 
-        public synchronized void publishFromString(String s) {
+        public synchronized void publishFromString(String s) throws Exception {
             BinarySerializable buffer = asPort().getUnusedBuffer();
             StringInputStream sis = new StringInputStream(s);
             try {
@@ -213,7 +220,7 @@ public class WidgetOutput {
                 } else {
                     ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
                 }
-                Log.log(LogLevel.ERROR, this, "Cannot parse '" + s + "' for publishing (type " + asPort().getDataType().getName() + ").");
+                throw ex;
             }
         }
 

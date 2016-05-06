@@ -31,6 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
+import org.finroc.tools.gui.GUIPanel;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
@@ -38,6 +39,7 @@ import org.finroc.tools.gui.WidgetUI;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -52,8 +54,8 @@ public class ValueInputField extends Widget {
     /** UID */
     private static final long serialVersionUID = -4427052569245621L;
 
-    /** Button output port */
-    public WidgetOutput.Numeric value;
+    /** Output port with custom type */
+    public WidgetOutput.Custom value;
 
     /** Background colors of widget */
     private static final Color EDITING_BACKGROUND_COLOR = Color.LIGHT_GRAY;
@@ -66,9 +68,8 @@ public class ValueInputField extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
+        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE).derive(value.getType() == null ? CoreNumber.TYPE : null);
     }
-
 
     class ValueInputFieldUI extends WidgetUI implements CaretListener, ActionListener, PortListener<CoreNumber>, Runnable {
 
@@ -114,13 +115,13 @@ public class ValueInputField extends Widget {
                 return;
             }
             lastInputTime = System.currentTimeMillis();
-            textfield.setBackground(textfield.getText().equals(value.getAutoLocked().toString()) ? DEFAULT_BACKGROUND_COLOR : EDITING_BACKGROUND_COLOR);
+            textfield.setBackground(textfield.getText().equals(value.asPort().getAutoLocked().toString()) ? DEFAULT_BACKGROUND_COLOR : EDITING_BACKGROUND_COLOR);
             this.releaseAllLocks();
         }
 
         public synchronized void actionPerformed(ActionEvent e) {
             try {
-                value.publish(Double.parseDouble(textfield.getText()));
+                value.publishFromString(textfield.getText());
                 lastInputTime = 0;
                 textfield.setBackground(DEFAULT_BACKGROUND_COLOR);
             } catch (Exception ex) {
@@ -137,7 +138,7 @@ public class ValueInputField extends Widget {
         public void run() {
             if (System.currentTimeMillis() - GRACE_PERIOD > lastInputTime) {
                 ignoreUpdate = true;
-                textfield.setText(value == null ? "" : ("" + value.getAutoLocked().toString()));
+                textfield.setText(value == null ? "" : ("" + value.asPort().getAutoLocked().toString()));
                 this.releaseAllLocks();
                 textfield.setBackground(DEFAULT_BACKGROUND_COLOR);
                 ignoreUpdate = false;
