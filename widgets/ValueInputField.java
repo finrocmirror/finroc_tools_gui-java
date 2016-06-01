@@ -71,7 +71,8 @@ public class ValueInputField extends Widget {
         return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE).derive(value.getType() == null ? CoreNumber.TYPE : null);
     }
 
-    class ValueInputFieldUI extends WidgetUI implements CaretListener, ActionListener, PortListener<CoreNumber>, Runnable {
+    @SuppressWarnings("rawtypes")
+    class ValueInputFieldUI extends WidgetUI implements CaretListener, ActionListener, PortListener, Runnable {
 
         /** UID */
         private static final long serialVersionUID = -3628234631895609L;
@@ -130,7 +131,7 @@ public class ValueInputField extends Widget {
         }
 
         @Override
-        public void portChanged(AbstractPort origin, CoreNumber value) {
+        public void portChanged(AbstractPort origin, Object value) {
             SwingUtilities.invokeLater(this);
         }
 
