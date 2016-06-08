@@ -129,7 +129,7 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
         miPaste.setEnabled(parent.getClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor));
         // edit properties & connections enabled?
         //miEditConnections.setEnabled(ro == ReleasedOn.Widget);
-        miProperties.setEnabled(ro == ReleasedOn.Widget);
+        miProperties.setEnabled(miCut.isEnabled());
         // select
         miSelect.setEnabled(ro == ReleasedOn.Widget && !model.getSelection().contains(curWidget));
     }
@@ -234,6 +234,14 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
             Point p = me.getPoint();
             curPos = p;
 
+            // Released on selection
+            if (!selection.isEmpty() && selection.getBounds().contains(me.getPoint())) {
+                curWidget = null;
+                setMenuItemsEnabled(ReleasedOn.Selection);
+                popupMenu.show(ui, me.getX(), me.getY());
+                return;
+            }
+
             // Released on widget?
             for (Widget w : model.getChildren()) {
                 if (w.getBounds().contains(p)) {
@@ -242,14 +250,6 @@ public class GUIPanelUI extends UIBase < GUIWindowUIBase<?>, GUIPanelUI.GUIPanel
                     popupMenu.show(ui, me.getX(), me.getY());
                     return;
                 }
-            }
-
-            // Released on selection
-            if (!selection.isEmpty() && selection.getBounds().contains(me.getPoint())) {
-                curWidget = null;
-                setMenuItemsEnabled(ReleasedOn.Selection);
-                popupMenu.show(ui, me.getX(), me.getY());
-                return;
             }
 
             // Released somewhere on panel
