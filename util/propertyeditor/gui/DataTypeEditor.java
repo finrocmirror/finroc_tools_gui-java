@@ -22,15 +22,24 @@
 package org.finroc.tools.gui.util.propertyeditor.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import javax.naming.OperationNotSupportedException;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 
 import org.finroc.core.datatype.DataTypeReference;
-import org.finroc.tools.gui.util.propertyeditor.ComboBoxEditor;
 import org.finroc.tools.gui.util.propertyeditor.PropertiesPanel;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
+import org.rrlib.serialization.rtti.DataTypeBase;
 
 /**
  * @author Max Reichardt
@@ -38,42 +47,201 @@ import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
  * Editor for data types: Adds button to editor that lets user
  * import enum constants.
  */
-public class DataTypeEditor extends ComboBoxEditor<DataTypeReference> implements ActionListener {
+public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> implements ActionListener {
 
     /** UID */
     private static final long serialVersionUID = -8458082858218885773L;
 
-    private JButton importEnumConstants;
+    static class TypeEntry {
+        String longName;
+        String namespace;
+        String shortName;
+        DataTypeReference plainType;
+        DataTypeReference listType;
+
+        @Override
+        public String toString() {
+            return shortName;
+        }
+    }
 
     private EnumConstantsImporter importer;
-
     private PropertiesPanel propPanel;
+    private String[] namespaces;
+    TreeMap<String, TypeEntry> types = new TreeMap<String, TypeEntry>(String.CASE_INSENSITIVE_ORDER);
+    private Dimension typeSelectorMinDimension;
+    private Dimension typeSelectorPreferredDimension;
+
+    private JButton importEnumConstants;
+    private JComboBox<String> namespaceSelector;
+    private JComboBox<TypeEntry> typeSelector;
+    private JCheckBox listTypeSelector;
 
     public DataTypeEditor(DataTypeReference[] values, EnumConstantsImporter importer, PropertiesPanel propPanel) {
-        super(values);
         this.importer = importer;
         this.propPanel = propPanel;
+
+        // Process types
+        for (DataTypeReference value : values) {
+            String longName = value.toString();
+            boolean listType = longName.startsWith("List<");
+            while (longName.startsWith("List<")) {
+                longName = longName.substring("List<".length(), longName.length() - 1);
+            }
+            TypeEntry entry = types.get(longName);
+            if (entry == null) {
+                // Create new entry
+                entry = new TypeEntry();
+                entry.longName = longName;
+
+                // Split name into namespace and short name
+                int namespaceDividerIndex = -1;
+                for (int i = 0; i < longName.length(); i++) {
+                    char c = longName.charAt(i);
+                    if (c == '.') {
+                        namespaceDividerIndex = i;
+                    }
+                    if (c == '<') {
+                        break;
+                    }
+                }
+                entry.namespace = namespaceDividerIndex < 0 ? "(global)" : longName.substring(0, namespaceDividerIndex);
+                entry.shortName = namespaceDividerIndex < 0 ? longName : longName.substring(namespaceDividerIndex + 1);
+                types.put(longName, entry);
+            }
+            if (listType) {
+                entry.listType = value;
+            } else {
+                entry.plainType = value;
+            }
+        }
+
+        // Generate list with namespaces
+        TreeSet<String> namespaces = new TreeSet<String>();
+        for (TypeEntry entry : types.values()) {
+            namespaces.add(entry.namespace);
+        }
+        this.namespaces = namespaces.toArray(new String[0]);
+
+        // Calculate min dimension for type selector combo box
+        String[] typeStrings = new String[types.values().size()];
+        int index = 0;
+        for (TypeEntry entry : types.values()) {
+            typeStrings[index] = entry.shortName;
+            index++;
+        }
+        typeSelectorMinDimension = new JComboBox<>(typeStrings).getMinimumSize();
+        typeSelectorPreferredDimension = new JComboBox<>(typeStrings).getPreferredSize();
     }
 
     @Override
     protected void createAndShow() {
-        super.createAndShow();
-        if (importer != null) {
-            importEnumConstants = new JButton("Import Enum Constants");
-            importEnumConstants.addActionListener(this);
-            add(importEnumConstants, BorderLayout.WEST);
-            jcmb.addActionListener(this);
-            updateButtonState();
+        try {
+            createAndShowMinimal(getCurWidgetValue());
+        } catch (Exception e) {
+            Log.log(LogLevel.ERROR, this, e);
         }
     }
 
-    private void updateButtonState() {
-        importEnumConstants.setEnabled(getCurEditorValue().get().getEnumConstants() != null);
+    @Override
+    public void createAndShowMinimal(DataTypeReference currentValue) throws OperationNotSupportedException {
+        try {
+            namespaceSelector = new JComboBox<String>(namespaces);
+            namespaceSelector.addActionListener(this);
+            add(namespaceSelector, BorderLayout.WEST);
+            namespaceSelector.setEnabled(isModifiable());
+
+            typeSelector = new JComboBox<TypeEntry>();
+            typeSelector.addActionListener(this);
+            add(typeSelector, BorderLayout.CENTER);
+            typeSelector.setEnabled(isModifiable());
+            typeSelector.setMinimumSize(typeSelectorMinDimension);
+            typeSelector.setPreferredSize(typeSelectorPreferredDimension);
+
+            listTypeSelector = new JCheckBox("std::vector");
+            add(listTypeSelector, BorderLayout.EAST);
+            listTypeSelector.setEnabled(isModifiable());
+
+            if (importer != null) {
+                importEnumConstants = new JButton("Import Enum Constants");
+                importEnumConstants.addActionListener(this);
+                add(importEnumConstants, BorderLayout.SOUTH);
+            }
+            valueUpdated(currentValue);
+        } catch (Exception e) {
+            Log.log(LogLevel.ERROR, this, e);
+        }
+    }
+
+    @Override
+    public DataTypeReference getCurEditorValue() {
+        Object selectedType = typeSelector.getSelectedItem();
+        if (selectedType == null) {
+            return new DataTypeReference(DataTypeBase.NULL_TYPE);
+        }
+        TypeEntry entry = (TypeEntry)selectedType;
+        return listTypeSelector.isSelected() ? entry.listType : entry.plainType;
+    }
+
+    @Override
+    protected void valueUpdated(DataTypeReference type) {
+        String longName = type.toString();
+        boolean listType = longName.startsWith("List<");
+        if (listType) {
+            longName = longName.substring("List<".length(), longName.length() - 1);
+        }
+        TypeEntry entry = type == null ? null : types.get(longName);
+        if (entry == null) {
+            namespaceSelector.setSelectedIndex(0);
+            typeSelector.setSelectedIndex(0);
+        } else {
+            namespaceSelector.setSelectedItem(entry.namespace);
+            typeSelector.setSelectedItem(entry);
+            listTypeSelector.setSelected(listType);
+        }
+        updateButtonStates();
+    }
+
+    private void updateButtonStates() {
+        Object selectedType = typeSelector.getSelectedItem();
+        if (selectedType == null) {
+            listTypeSelector.setEnabled(false);
+        } else {
+            TypeEntry entry = (TypeEntry)selectedType;
+            listTypeSelector.setEnabled(entry.listType != null && entry.plainType != null);
+            if (entry.listType == null) {
+                listTypeSelector.setSelected(false);
+            }
+            if (entry.plainType == null) {
+                listTypeSelector.setSelected(true);
+            }
+        }
+        if (importEnumConstants != null) {
+            importEnumConstants.setEnabled(getCurEditorValue().get().getEnumConstants() != null);
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == importEnumConstants) {
+        if (e.getSource() == namespaceSelector) {
+
+            // filter list
+            ArrayList<TypeEntry> filteredTypes = new ArrayList<TypeEntry>();
+            if (namespaceSelector.getSelectedItem() == null) {
+                filteredTypes.addAll(types.values());
+            } else {
+                for (TypeEntry entry : types.values()) {
+                    if (entry.namespace.equals(namespaceSelector.getSelectedItem())) {
+                        filteredTypes.add(entry);
+                    }
+                }
+            }
+            typeSelector.setModel(new JComboBox<TypeEntry>(filteredTypes.toArray(new TypeEntry[0])).getModel());
+            typeSelector.setSelectedIndex(0);
+            updateButtonStates();
+        } else if (e.getSource() == typeSelector) {
+            updateButtonStates();
+        } else if (e.getSource() == importEnumConstants) {
             try {
                 for (PropertyEditComponent<?> pec : propPanel.getComponentList()) {
                     pec.applyChanges();
@@ -85,8 +253,6 @@ public class DataTypeEditor extends ComboBoxEditor<DataTypeReference> implements
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        } else if (e.getSource() == jcmb) {
-            updateButtonState();
         }
     }
 }
