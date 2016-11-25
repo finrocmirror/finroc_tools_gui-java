@@ -54,8 +54,20 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
 
     private GUIPanelUI parent;
 
+    /** Screen layout traits */
+    public static final int TRAIT_DISPLAYS_LABEL = 1,
+                            TRAIT_REQUIRES_BORDER_IN_DARK_COLORING = 2;
+
+    /** Screen layout traits */
+    private final int layoutTraits;
+
     protected WidgetUI(RenderMode renderMode) {
+        this(renderMode, 0);
+    }
+
+    protected WidgetUI(RenderMode renderMode, int traits) {
         super(renderMode);
+        layoutTraits = traits;
         this.setOpaque(useOpaquePanels());
     }
 
@@ -274,4 +286,10 @@ public abstract class WidgetUI extends FastCustomDrawableComponent {
         return Themes.getCurTheme().useOpaquePanels();
     }
 
+    /**
+     * @return Screen layout traits
+     */
+    public int getLayoutTraits() {
+        return layoutTraits;
+    }
 }

@@ -128,7 +128,7 @@ public class Oscilloscope extends Widget {
         OscilloscopeThread thread;
 
         public OscilloscopeUI() {
-            super(RenderMode.Swing);
+            super(RenderMode.Swing, TRAIT_DISPLAYS_LABEL | TRAIT_REQUIRES_BORDER_IN_DARK_COLORING);
 
             // create GUI elements
             setLayout(new BorderLayout());

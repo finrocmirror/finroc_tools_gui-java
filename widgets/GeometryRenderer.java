@@ -170,7 +170,7 @@ public class GeometryRenderer extends Widget {
         Point lastMouseDragPoint;
 
         public GeometryRendererUI() {
-            super(RenderMode.Swing);
+            super(RenderMode.Swing, TRAIT_REQUIRES_BORDER_IN_DARK_COLORING);
             this.setLayout(new BorderLayout());
             JPanel centerPanel = new JPanel();
             cordBar = new JLabel(" ");

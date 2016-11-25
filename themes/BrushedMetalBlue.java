@@ -36,7 +36,6 @@ import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.util.gui.IconManager;
 import org.finroc.tools.gui.util.gui.MPanel;
 import org.finroc.tools.gui.util.gui.MToolBar;
-import org.finroc.tools.gui.widgets.GeometryRenderer;
 
 /**
  * @author Max Reichardt
@@ -104,10 +103,9 @@ public class BrushedMetalBlue extends Theme {
     @Override
     public void processWidget(Widget w, WidgetUI wui) {
         boolean alt = useAlternativeColorSet(w);
-        boolean oglwidget = w.getClass().getSimpleName().equals("OpenGLWidget") || w.getClass().getSimpleName().equals("Oscilloscope"); // TODO: this is not nice
         wui.setBackground(alt ? ALT_BACKGROUND : BACKGROUND);
         String label = w.getLabel();
-        if (label != null && !label.equals("") && (!oglwidget)) {
+        if (label != null && !label.equals("") && (wui.getLayoutTraits() & WidgetUI.TRAIT_DISPLAYS_LABEL) == 0) {
             TitledBorder tb = new TitledBorder(label);
             tb.setTitleColor(alt ? BACKGROUND : LABEL);
             if (!alt) {
@@ -126,7 +124,7 @@ public class BrushedMetalBlue extends Theme {
             if (!alt) {
                 wui.setBackground((ImageIcon)null);
                 wui.setTitleBorder(null);
-                if (oglwidget || (w instanceof GeometryRenderer)) {
+                if ((wui.getLayoutTraits() & WidgetUI.TRAIT_REQUIRES_BORDER_IN_DARK_COLORING) != 0) {
                     wui.setTitleBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
                 }
             } else {
