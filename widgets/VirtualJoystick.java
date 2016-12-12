@@ -43,6 +43,7 @@ import org.finroc.tools.gui.commons.fastdraw.BufferedImageRGB;
 import org.finroc.tools.gui.commons.fastdraw.InvisibleComponent;
 import org.finroc.tools.gui.themes.Theme;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.PortCreationInfo;
 
 
@@ -84,6 +85,9 @@ public class VirtualJoystick extends Picture {
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
         if (forPort == twist) {
             return suggestion.derive(Pose3D.TYPE);
+        }
+        if (forPort == x || forPort == y) {
+            return suggestion.derive(suggestion.flags | FrameworkElementFlags.DEFAULT_ON_DISCONNECT);
         }
         return suggestion;
     }
