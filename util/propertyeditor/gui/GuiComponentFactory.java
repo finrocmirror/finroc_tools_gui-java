@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util.propertyeditor.gui;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import org.finroc.tools.gui.util.embeddedfiles.AbstractFile;
@@ -37,7 +36,6 @@ import org.finroc.tools.gui.util.propertyeditor.StringEditor;
 import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.datatype.Unit;
 import org.finroc.plugins.data_types.StringList;
-import org.rrlib.serialization.rtti.DataTypeBase;
 
 /**
  * @author Max Reichardt
@@ -76,13 +74,6 @@ public class GuiComponentFactory implements ComponentFactory, Comparator<DataTyp
         } else if (StringList.class.isAssignableFrom(type)) {
             wpec = new StringEditor(-1);
             acc = new StringListAdapter((PropertyAccessor<StringList>)acc);
-        } else if (DataTypeReference.class.isAssignableFrom(acc.getType())) {
-            DataTypeReference[] types = new DataTypeReference[DataTypeBase.getTypeCount()];
-            for (short i = 0; i < types.length; i++) {
-                types[i] = new DataTypeReference(DataTypeBase.getType(i));
-            }
-            Arrays.sort(types, this);
-            wpec = new DataTypeEditor(types, (acc instanceof EnumConstantsImporter) ? (EnumConstantsImporter)acc : null, panel);
         } else if (Unit.class.equals(type)) {
             wpec = new UnitEditor();
         }

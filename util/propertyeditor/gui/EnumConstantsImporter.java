@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui.util.propertyeditor.gui;
 
-import org.finroc.core.datatype.DataTypeReference;
 
 /**
  * @author Max Reichardt
@@ -33,9 +32,10 @@ public interface EnumConstantsImporter {
     /**
      * Import enum constants of specified enum class.
      *
-     * @param enumType Enum type to import constants from.
+     * @param enumStrings Enum strings
+     * @param enumValues Enum values. null if they are the default values.
      */
-    public void importEnumConstants(DataTypeReference enumType);
+    public void importEnumConstants(Object[] enumStrings, long[] enumValues);
 
     /**
      * Is enum constants importing supported?

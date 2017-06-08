@@ -26,19 +26,17 @@ import java.util.ArrayList;
 import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
-import org.finroc.core.datatype.DataTypeReference;
-import org.rrlib.logging.Log;
-import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.BinarySerializable;
 import org.rrlib.serialization.StringInputStream;
+import org.rrlib.serialization.StringSerializable;
+import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.Port;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
-import org.finroc.core.port.cc.CCPortDataManagerTL;
 import org.finroc.core.port.cc.PortNumeric;
+import org.finroc.core.port.std.PortBase;
 import org.finroc.core.port.std.PortDataManager;
-import org.finroc.core.remote.RemoteType;
 
 /**
  * @author Max Reichardt
@@ -139,9 +137,9 @@ public class WidgetOutput {
 
     public static class Blackboard<T> { /*extends WidgetOutputPort<RawBlackboardClient.WritePort>*/
 
-        /** UID */
-        private static final long serialVersionUID = 2712886077657464267L;
-
+//        /** UID */
+//        private static final long serialVersionUID = 2712886077657464267L;
+//
 //        private transient BlackboardClient<T> c;
 //
 //        @Override
@@ -168,91 +166,67 @@ public class WidgetOutput {
 //        }
     }
 
+    /** Custom string serialiazable output */
     @SuppressWarnings("rawtypes")
-    public static class Custom extends WidgetOutputPort<Port<BinarySerializable>> implements RemoteType.Listener {
+    public static class Custom extends WidgetOutputPort<Port<BinarySerializable>> {
 
         /** UID */
         private static final long serialVersionUID = -3991768387448158703L;
 
-        /** Port's data type (can be changed) */
-        private DataTypeReference type = new DataTypeReference();
-
-        /** List of change listeners - stored in case port is recreated */
-        private transient ArrayList<PortListener> changeListeners;
-
         @Override
         protected Port createPort() {
-            if (type != null && type.get() == null) {
-                RemoteType.addRemoteTypeListener(this);
-            }
-            PortCreationInfo pci = getPci();
-            if (type == null && pci.dataType != null) {
-                type = new DataTypeReference(pci.dataType);
-            }
-            return new Port(pci.derive((type == null || type.get() == null) ? CoreNumber.TYPE : type.get()));
+            return Port.wrap(new CustomPort(getPci()));
         }
 
-        public void changeDataType(DataTypeReference type) {
-            if (frameworkElement != null) {
-                frameworkElement.managedDelete();
-            }
-            frameworkElement = null;
-            port = null;
-            this.type = type;
-            restore(getParent());
-            if (changeListeners != null) {
-                for (PortListener listener : changeListeners) {
-                    EventRouter.addListener(getPort(), "addPortListenerRaw", listener);
-                }
-            }
-        }
-
+        @SuppressWarnings("unchecked")
         public synchronized void publishFromString(String s) throws Exception {
-            BinarySerializable buffer = asPort().getUnusedBuffer();
-            StringInputStream sis = new StringInputStream(s);
-            try {
-                buffer = (BinarySerializable)sis.readObject(buffer, buffer.getClass());
-                asPort().publish(buffer);
-                buffer = null;
-            } catch (Exception ex) {
-                if (asPort().hasCCType()) {
-                    ((CCPortDataManagerTL)CCPortDataManagerTL.getManager(buffer)).recycleUnused();
-                } else {
+            ArrayList<AbstractPort> result = new ArrayList<>();
+            getPort().getConnectionPartners(result, true, false, false);
+            for (AbstractPort destination : result) {
+                Port destinationPort = Port.wrap(destination);
+                StringSerializable buffer = (StringSerializable)destinationPort.getUnusedBuffer();
+                StringInputStream stream = new StringInputStream(s);
+                try {
+                    buffer.deserialize(stream);
+                    destinationPort.publish((BinarySerializable)buffer);
+                } catch (Exception ex) {
                     ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
+                    throw ex;
                 }
-                throw ex;
             }
         }
 
-        /**
-         * @return Port's data type
-         */
-        public DataTypeReference getType() {
-            return type;
+        public StringSerializable getAutoLocked() {
+            return (StringSerializable)asPort().getAutoLocked();
         }
 
         public synchronized void addChangeListener(PortListener l) {
             EventRouter.addListener(getPort(), "addPortListenerRaw", l);
-            if (changeListeners == null) {
-                changeListeners = new ArrayList<PortListener>();
-            }
-            changeListeners.add(l);
-        }
-
-        @Override
-        public void remoteTypeAdded(RemoteType t) {
-            if (t == type.get()) {
-                changeDataType(type);
-            }
-        }
-
-        @Override
-        public void dispose() {
-            super.dispose();
-            changeListeners = null;
-            RemoteType.removeUnknownTypeListener(this);
         }
     }
+
+
+    private static class CustomPort extends PortBase {
+
+        @Override
+        public boolean mayConnectTo(AbstractPort target, boolean warnIfImpossible) {
+            if (StringSerializable.class.isAssignableFrom(target.getDataType().getJavaClass())) {
+                return true;
+            }
+            return super.mayConnectTo(target, warnIfImpossible);
+        }
+
+        public CustomPort(PortCreationInfo pci) {
+            super(adjustPci(pci));
+        }
+
+        private static PortCreationInfo adjustPci(PortCreationInfo pci) {
+            pci.dataType = StringSerializable.TYPE;
+            return pci;
+        }
+    }
+
+
 
 //  public static class Strings extends WidgetOutputPort<ContainsStrings> {
 //      /** UID*/

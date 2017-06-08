@@ -43,7 +43,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -55,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIDefaults;
 import javax.swing.event.MouseInputListener;
@@ -66,8 +67,9 @@ import javax.swing.tree.TreePath;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
-import org.finroc.core.portdatabase.FinrocTypeInfo;
+import org.finroc.core.remote.Definitions;
 import org.finroc.core.remote.HasUid;
+import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.PortWrapper;
 import org.finroc.core.remote.RemoteFrameworkElement;
 import org.finroc.core.remote.RemotePort;
@@ -77,6 +79,7 @@ import org.finroc.tools.gui.abstractbase.DataModelListener;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.ElementFilter;
 import org.finroc.tools.gui.util.gui.MJTree;
+import org.rrlib.serialization.rtti.DataTypeBase;
 
 
 /**
@@ -120,6 +123,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     private List<Object> startPoints = new ArrayList<Object>();
     private MJTree<Object> startPointTree = null;
     private Point lastMousePos;
+    protected final HashMap<Object, Definitions.TypeConversionRating> highlightedElementRatings = new HashMap<Object, Definitions.TypeConversionRating>();
 
     /** Tree node that mouse cursor is currently over - NULL if somewhere else */
     protected Object mouseOver = null;
@@ -132,13 +136,19 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     /** Tree cell Height */
     public static int HEIGHT = 0;
 
-    /** Temporary object always returned by getNodeAppearance (allocated here to avoid object allocation whenever getNodeAppearance is called) */
+    /** Temporary object always returned by getNodeAppearance (allocated here to avoid object allocation whenever getNodeAppearance is called; may only be accessed by AWT Thread) */
     protected final NodeRenderingStyle tempRenderingStyle = new NodeRenderingStyle();
+
+    /** Temporary object always returned by checkConnect (allocated here to avoid object allocation whenever getNodeAppearance is called; may only be accessed by AWT Thread) */
+    protected final CheckConnectResult tempCheckConnectResult = new CheckConnectResult();
 
     /** Constant for text color in NodeRenderingStyle that signals that background color should be used */
     public static final Color TEXT_COLOR_BACKGROUND = new Color(255, 255, 255);
 
     static boolean NIMBUS_LOOK_AND_FEEL = Themes.nimbusLookAndFeel();
+
+    /** Show hidden elements? */
+    private boolean showHiddenElements = false;
 
     public ConnectionPanel(Owner win, Font treeFont) {
 
@@ -162,7 +172,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         leftTree.setRepaintDelegate(this);
 
         leftScrollPane = new JScrollPane(leftTree);
+        leftScrollPane.getVerticalScrollBar().setUnitIncrement(40);
         rightScrollPane = new JScrollPane(rightTree);
+        rightScrollPane.getVerticalScrollBar().setUnitIncrement(40);
         leftScrollPane.setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 4, 0));
         rightScrollPane.setPreferredSize(new Dimension(Math.min(1920, Toolkit.getDefaultToolkit().getScreenSize().width) / 4, 0));
         leftScrollPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -362,17 +374,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         MJTree<Object> otherTree = selectionFromRight ? leftTree : rightTree;
 
         // Which matches exist?
-        Set<Object> highlight = new HashSet<Object>();
-        for (Object tn : otherTree.getVisibleObjects()) {
-            List<Object> connections = hypotheticalConnection(tn);
-            if (connections != null) {
-                highlight.addAll(connections);
+        highlightedElementRatings.clear();
+        for (Object otherNode : otherTree.getVisibleObjects()) {
+            CheckConnectResult connections = checkConnect(otherNode);
+            if (connections.impossibleHint.length() == 0) {
+                highlightedElementRatings.put(otherNode, connections.minScore);
             }
         }
 
         // Mark all matches in other tree
-        if (highlight.size() > 0) {
-            otherTree.setSelectedObjects(new ArrayList<Object>(highlight), false);
+        if (highlightedElementRatings.size() > 0) {
+            otherTree.setSelectedObjects(new ArrayList<Object>(highlightedElementRatings.keySet()), false);
             ((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(400);
         } else {
             otherTree.setSelectedObjects(null, false);
@@ -381,7 +393,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         // Set start points
         startPoints.clear();
         startPointTree = selTree;
-        if (highlight.size() > 0) {
+        if (highlightedElementRatings.size() > 0) {
             startPoints.addAll(selTree.getSelectedObjects());
         }
     }
@@ -407,7 +419,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @param lineStart Type of line to determine starting position
      * @return Start point of connection line
      */
-    private Point getLineStartPoint(MJTree<Object> tree, Object p, ConnectorIcon.LineStart lineStart) {
+    protected Point getLineStartPoint(MJTree<Object> tree, Object p, ConnectorIcon.LineStart lineStart) {
         Rectangle r2 = tree.getObjectBounds(p, true);  // Bounds of tree node
         Rectangle r = tree.getObjectBounds(p, false);  // Bounds of tree node
 
@@ -507,22 +519,22 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         }
 
         saveLastMousePos(e);
-        List<Object> hypo = null;
+        CheckConnectResult newConnections = null;
         MJTree<Object> otherTree = selectionFromRight ? leftTree : rightTree;
         if (startPoints.size() > 0) {
-            hypo = hypotheticalConnection(getTreeNodeFromPos(otherTree));
+            newConnections = checkConnect(getTreeNodeFromPos(otherTree));
         }
 
-        if (hypo == null) {
+        if (newConnections == null || (newConnections.impossibleHint != null && newConnections.impossibleHint.length() > 0)) {
             if (otherTree.getSelectionCount() > 0) {
                 otherTree.clearSelection();
                 ((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
             }
         } else {
             // connect
-            MJTree<Object> selTree = selectionFromRight ? rightTree : leftTree;
-            List<Object> srcNodes = selTree.getSelectedObjects();
-            connect(srcNodes, hypo);
+            MJTree<Object> selectionTree = selectionFromRight ? rightTree : leftTree;
+            List<Object> sourceNodes = selectionTree.getSelectedObjects();
+            connect(sourceNodes, newConnections.partnerNodes);
             leftTree.setSelectedObjects(null, true);
             rightTree.setSelectedObjects(null, true);
             parent.addUndoBufferEntry("Connect");
@@ -584,17 +596,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         if (startPoints.size() > 0 && lastMousePos != null) {
             MJTree<Object> otherTree = selectionFromRight ? leftTree : rightTree;
-            List<Object> drawFat = hypotheticalConnection(getTreeNodeFromPos(otherTree));
-            if (drawFat == null) {
+            CheckConnectResult drawFat = checkConnect(getTreeNodeFromPos(otherTree));
+            if (drawFat.partnerNodes.size() == 0) {
                 for (Object p : startPoints) {
                     drawLine(g, getLineStartPoint(startPointTree, p, ConnectorIcon.LineStart.Default), lastMousePos, Color.BLACK, false, false);
                 }
             } else {
                 //((GuiTreeCellRenderer)otherTree.getCellRenderer()).showSelectionAfter(0);
                 for (int i = 0; i < startPoints.size(); i++) {
-                    if (drawFat.get(i) != null) {
-                        Point p1 = getLineStartPoint(startPointTree, startPoints.get(i), getLineStartPosition(startPoints.get(i), drawFat.get(i)));
-                        Point p2 = getLineStartPoint(otherTree, drawFat.get(i), getLineStartPosition(drawFat.get(i), startPoints.get(i)));
+                    if (i < drawFat.partnerNodes.size()) {
+                        Point p1 = getLineStartPoint(startPointTree, startPoints.get(i), getLineStartPosition(startPoints.get(i), drawFat.partnerNodes.get(i)));
+                        Point p2 = getLineStartPoint(otherTree, drawFat.partnerNodes.get(i), getLineStartPosition(drawFat.partnerNodes.get(i), startPoints.get(i)));
                         drawLine(g, p1, p2, selectedColor, true, false);
                     }
                 }
@@ -680,7 +692,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         return new ArrayList<Object>();
     }
 
-    private void drawLine(Graphics g, Point p1, Point p2, Color c, boolean fat, boolean transparency) {
+    protected void drawLine(Graphics g, Point p1, Point p2, Color c, boolean fat, boolean transparency) {
         Graphics2D g2d = (Graphics2D)g;
         g.setColor(c);
         if (transparency) {
@@ -702,56 +714,83 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     /**
-     * Get hypothetical connections for selected objects in current tree with visible nodes in other tree
-     *
-     * @param tn Tree node in other tree to connect to
-     * @return List of nodes to connect to. null if there is no suitable combination.
+     * Result of checkConnect() method
+     * Used like a struct -> public fields.
      */
-    @SuppressWarnings("unchecked")
-    protected List<Object> hypotheticalConnection(Object tn) {
-        if (tn == null) {
-            return null;
-        }
-        Object result = hypotheticalConnectionImplementation(tn);
-        return result != null && result.getClass().equals(ArrayList.class) ? (ArrayList<Object>)result : null;
+    public static class CheckConnectResult {
+
+        /** Partner nodes that source nodes (with same index) could/would be connected to */
+        public final ArrayList<Object> partnerNodes = new ArrayList<Object>();
+
+        /** Scores for connection from source node #index to partner node #index (-> list has the same size as partnerNodes) */
+        public final ArrayList<Definitions.TypeConversionRating> connectionScores = new ArrayList<Definitions.TypeConversionRating>();
+
+        /** Minimum score in connectionScores */
+        public Definitions.TypeConversionRating minScore;
+
+        /** If there is no suitable combination to connect source nodes to partner nodes: contains hint/reason why not (as may be displayed as tool tip atop tree node) */
+        public String impossibleHint;
     }
 
     /**
-     * Implementation of hypotheticalConnection()
+     * Get hypothetical connections for selected objects in current tree with visible nodes in other tree
      *
-     * @param tn Tree node in other tree to connect to
-     * @return ArrayList<Object> of nodes to connect to. String or null if there is no suitable combination (String contains hint/reason as may be displayed as tool tip atop tn).
+     * @param other Tree node in other tree to connect to
+     * @param resultBuffer Buffer to write result to (optional). Is returned if provided - otherwise a new object is created.
+     * @return List of nodes to connect to. null if there is no suitable combination.
      */
-    protected Object hypotheticalConnectionImplementation(Object tn) {
+    protected CheckConnectResult checkConnect(Object other) {
+        assert(SwingUtilities.isEventDispatchThread());
+        return checkConnect(other, tempCheckConnectResult);
+    }
 
-        MJTree<Object> selTree = selectionFromRight ? rightTree : leftTree;
+    /**
+     * Get hypothetical connections for selected objects in current tree with visible nodes in other tree
+     *
+     * @param other Tree node in other tree to connect to
+     * @param Buffer to write result to
+     * @return List of nodes to connect to. null if there is no suitable combination.
+     */
+    protected CheckConnectResult checkConnect(Object other, CheckConnectResult resultBuffer) {
+
+        // Init objects
+        resultBuffer.partnerNodes.clear();
+        resultBuffer.connectionScores.clear();
+        resultBuffer.minScore = Definitions.TypeConversionRating.IMPOSSIBLE;
+        resultBuffer.impossibleHint = "";
+        if (other == null) {
+            resultBuffer.impossibleHint = "Partner object is null";
+            return resultBuffer;
+        }
+
+        MJTree<Object> selectionTree = selectionFromRight ? rightTree : leftTree;
         MJTree<Object> otherTree = selectionFromRight ? leftTree : rightTree;
 
-        // can connect to this node?
-        List<Object> nodesToConnect = selTree.getSelectedObjects();
+        // Can connect to this node?
+        List<Object> nodesToConnect = selectionTree.getSelectedObjects();
         boolean canConnect = false;
         for (Object srcNode : nodesToConnect) {
-            canConnect |= canConnect(tn, srcNode);
+            canConnect |= canConnect(other, srcNode);
             if (canConnect) {
                 break;
             }
         }
         if (!canConnect) {
-            return "No selected element in other tree can connect to this one";
+            resultBuffer.impossibleHint = "No selected element in other tree can connect to this one";
+            return resultBuffer;
         }
 
         // Find "best" connection
         List<Object> potentialPartners = otherTree.getVisibleObjects();
-        int startElement = potentialPartners.indexOf(tn);
+        int startElement = potentialPartners.indexOf(other);
         assert(startElement >= 0);
-        List<Object> result = new ArrayList<Object>();
         for (Object srcNode : nodesToConnect) {
             int i = startElement;
             Object partner = null;
             do {
                 Object potentialPartner = potentialPartners.get(i);
                 if (canConnect(srcNode, potentialPartner)) {
-                    if (!result.contains(potentialPartner)) {
+                    if (!resultBuffer.partnerNodes.contains(potentialPartner)) {
                         partner = potentialPartners.get(i);
                         break;
                     }
@@ -759,11 +798,17 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                 i = (i + 1) % potentialPartners.size();
             } while (i != startElement);
             if (partner == null) {
-                return "No connection partner for '" + srcNode.toString();
+                resultBuffer.impossibleHint = "No connection partner for '" + srcNode.toString();
+                resultBuffer.partnerNodes.clear();
+                resultBuffer.connectionScores.clear();
+                return resultBuffer;
             }
-            result.add(partner);
+            resultBuffer.partnerNodes.add(partner);
+            resultBuffer.connectionScores.add(Definitions.TypeConversionRating.NO_CONVERSION);
         }
-        return result;
+        resultBuffer.minScore = Definitions.TypeConversionRating.NO_CONVERSION;
+        resultBuffer.impossibleHint = "";
+        return resultBuffer;
     }
 
     public Object getTreeNodeFromPos(MJTree<Object> otherTree) {
@@ -934,6 +979,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     }
 
     /**
+     * @param show Whether to show hidden elements
+     */
+    public void setShowHiddenElements(boolean show) {
+        showHiddenElements = show;
+    }
+
+    /**
      * Rendering style for node in tree
      */
     public class NodeRenderingStyle {
@@ -984,12 +1036,13 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
      * @return Rendering style. Note that object is reused on next call to this method (to avoid frequent memory allocations).
      */
     protected NodeRenderingStyle getNodeAppearance(Object node, MJTree<Object> tree, boolean selected) {
+        assert(SwingUtilities.isEventDispatchThread());
         NodeRenderingStyle result = tempRenderingStyle;
         result.reset();
         if (node instanceof PortWrapper) {
             AbstractPort port = ((PortWrapper)node).getPort();
             result.textColor = tree.getBackground();
-            boolean rpc = FinrocTypeInfo.isMethodType(port.getDataType(), true);
+            boolean rpc = (port.getDataType().getTypeTraits() & DataTypeBase.IS_RPC_TYPE) != 0; //FinrocTypeInfo.isMethodType(port.getDataType(), true);
             boolean leftTreeRPCServerPort = rpc && port.getFlag(FrameworkElementFlags.ACCEPTS_DATA);
             boolean mouseOverFlag = (mouseOver instanceof PortWrapper) && (port == ((PortWrapper)mouseOver).getPort() || port.isConnectedTo(((PortWrapper)mouseOver).getPort()));
             result.nodeColor = selected ? selectedColor : (port.isConnected() ? connectedColor : (port.hasLinkEdges() ? connectionPartnerMissingColor : defaultColor));
@@ -1036,8 +1089,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         /** Tree renderer belong to */
         private final MJTree<Object> parent;
 
-        /** Default renderer for JTree */
-        private final DefaultTreeCellRenderer defaultRenderer;
+        /** Default renderer for JTree - and one for invisible nodes */
+        private final DefaultTreeCellRenderer defaultRenderer, invisibleRenderer;
 
         /** Color for contour */
         private Color contourColor;
@@ -1049,6 +1102,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
             setBackgroundSelectionColor(selectedColor);
             defaultRenderer = new DefaultTreeCellRenderer();
             defaultRenderer.setBackgroundNonSelectionColor(backgroundColor);
+            invisibleRenderer = new DefaultTreeCellRenderer();
+            invisibleRenderer.setPreferredSize(new Dimension(1, 0));
             this.rightTree = rightTree;
             this.parent = parent;
             timer = new Timer(1000, this);
@@ -1057,6 +1112,9 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if ((!showHiddenElements) && (value instanceof ModelNode) && ((ModelNode)value).isHidden(true)) {
+                return invisibleRenderer;
+            }
             NodeRenderingStyle style = getNodeAppearance(value, parent, !timer.isRunning() && sel);
             if (style.nodeColor == null || style.nodeColor.getClass().equals(Color.class)) {
                 Color bg = style.nodeColor == null ? backgroundColor : style.nodeColor;

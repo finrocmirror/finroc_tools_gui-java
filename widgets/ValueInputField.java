@@ -31,15 +31,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
-import org.finroc.tools.gui.GUIPanel;
 import org.finroc.tools.gui.Widget;
 import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 
 import org.finroc.core.FrameworkElementFlags;
-import org.finroc.core.datatype.CoreNumber;
-import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -68,7 +65,7 @@ public class ValueInputField extends Widget {
 
     @Override
     protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort<?> forPort) {
-        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE).derive(value.getType() == null ? CoreNumber.TYPE : null);
+        return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
     }
 
     @SuppressWarnings("rawtypes")

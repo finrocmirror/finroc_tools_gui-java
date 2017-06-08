@@ -35,6 +35,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 
 import org.finroc.core.datatype.DataTypeReference;
+import org.finroc.core.remote.RemoteType;
 import org.finroc.tools.gui.util.propertyeditor.PropertiesPanel;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.rrlib.logging.Log;
@@ -56,8 +57,8 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
         String longName;
         String namespace;
         String shortName;
-        DataTypeReference plainType;
-        DataTypeReference listType;
+        Object plainType;
+        Object listType;
 
         @Override
         public String toString() {
@@ -77,12 +78,16 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
     private JComboBox<TypeEntry> typeSelector;
     private JCheckBox listTypeSelector;
 
-    public DataTypeEditor(DataTypeReference[] values, EnumConstantsImporter importer, PropertiesPanel propPanel) {
+    public DataTypeEditor(Object[] values, EnumConstantsImporter importer, PropertiesPanel propPanel) {
         this.importer = importer;
         this.propPanel = propPanel;
 
         // Process types
-        for (DataTypeReference value : values) {
+        for (Object value : values) {
+            if (value.toString().equals(DataTypeBase.NULL_TYPE)) {
+                continue;
+            }
+
             String longName = value.toString();
             boolean listType = longName.startsWith("List<");
             while (longName.startsWith("List<")) {
@@ -180,7 +185,7 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
             return new DataTypeReference(DataTypeBase.NULL_TYPE);
         }
         TypeEntry entry = (TypeEntry)selectedType;
-        return listTypeSelector.isSelected() ? entry.listType : entry.plainType;
+        return new DataTypeReference((listTypeSelector.isSelected() ? entry.listType : entry.plainType).toString());
     }
 
     @Override
@@ -217,8 +222,18 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
             }
         }
         if (importEnumConstants != null) {
-            importEnumConstants.setEnabled(getCurEditorValue().get().getEnumConstants() != null);
+            TypeEntry entry = (TypeEntry)typeSelector.getSelectedItem();
+            importEnumConstants.setEnabled(entry != null && getEnumConstants(listTypeSelector.isSelected() ? entry.listType : entry.plainType) != null);
         }
+    }
+
+    private Object[] getEnumConstants(Object type) {
+        if (type instanceof DataTypeBase) {
+            return ((DataTypeBase)type).getEnumConstants();
+        } else if (type instanceof RemoteType) {
+            return ((RemoteType)type).getEnumConstants();
+        }
+        return null;
     }
 
     @Override
@@ -246,7 +261,9 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
                 for (PropertyEditComponent<?> pec : propPanel.getComponentList()) {
                     pec.applyChanges();
                 }
-                importer.importEnumConstants(getCurEditorValue());
+                TypeEntry entry = (TypeEntry)typeSelector.getSelectedItem();
+                Object type = listTypeSelector.isSelected() ? entry.listType : entry.plainType;
+                importer.importEnumConstants(getEnumConstants(type), (type instanceof RemoteType) ? ((RemoteType)type).getEnumValues() : null);
                 for (PropertyEditComponent<?> pec : propPanel.getComponentList()) {
                     pec.updateValue();
                 }

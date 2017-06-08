@@ -63,7 +63,7 @@ public class ConnectorIcon extends ImageIcon {
     private static final ArrayList<Color> backgroundColors = new ArrayList<Color>();
 
     /** Maximum index for icon cache (see calculation in Type.indexInCache()) */
-    private static final int MAX_INDEX = 1 << 10;
+    private static final int MAX_INDEX = 1 << 11;
 
     /** Available cached icons */
     private static final ConnectorIcon iconCache[] = new ConnectorIcon[MAX_INDEX];
@@ -113,7 +113,7 @@ public class ConnectorIcon extends ImageIcon {
      * @return Icon
      */
     public static ConnectorIcon getIcon(int iconType, IconColor color, BackgroundColor background, int height) {
-        int indexInCache = iconType | color.index << 5 | background.index << 8; // 10 bit: [background color 2 bit][color 3 bit][flags 5 bit]
+        int indexInCache = iconType | color.index << 5 | background.index << 9; // 11 bit: [background color 2 bit][color 4 bit][flags 5 bit]
         ConnectorIcon icon = iconCache[indexInCache];
         if (icon == null) {
             // Note with respect to concurrency: Since always the same icons are generated,

@@ -37,8 +37,10 @@ import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.FrameworkElementTags;
 import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.plugin.ExternalConnection;
+import org.finroc.core.remote.BufferedModelChanges;
 import org.finroc.core.remote.ModelHandler;
 import org.finroc.core.remote.ModelNode;
+import org.finroc.core.remote.ModelOperations;
 import org.finroc.core.remote.RemoteFrameworkElement;
 import org.finroc.core.remote.RemoteRuntime;
 import org.rrlib.logging.Log;
@@ -72,9 +74,6 @@ public class InterfaceTreeModel implements TreeModel {
     /** Current list with elements to show initially */
     private final ArrayList<ElementToShowInitially> elementsToShowInitially = new ArrayList<ElementToShowInitially>();
 
-    /** Show hidden elements in finstruct (not necessary and confusing for application developers; Finroc developers can be interested) */
-    public final boolean SHOW_HIDDEN_ELEMENTS = false;
-
     public InterfaceTreeModel() {
         externalConnectionParent.init();
     }
@@ -106,7 +105,28 @@ public class InterfaceTreeModel implements TreeModel {
                 return root;
             }
             if (qualifiedName.charAt(rootString.length()) == separator) {
-                return root.getChildByQualifiedName(qualifiedName, rootString.length() + 1, separator);
+                return root.getChildByQualifiedName(qualifiedName, rootString.length() + 1, separator, false);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a child with the specified qualified name
+     *
+     * @param qualifiedName Qualified name (Names of elements separated with separator char)
+     * @param separator Separator
+     * @param returnDeepestAncestorElement If element with specified link is not in tree, return element whose link has the longest match with qualified name
+     * @return Child with the specified qualified name. Null if no such child exists.
+     */
+    public ModelNode getChildByQualifiedName(String qualifiedName, char separator, boolean returnDeepestAncestorElement) {
+        String rootString = root.toString();
+        if (qualifiedName.startsWith(rootString)) {
+            if (qualifiedName.length() == rootString.length()) {
+                return root;
+            }
+            if (qualifiedName.charAt(rootString.length()) == separator) {
+                return root.getChildByQualifiedName(qualifiedName, rootString.length() + 1, separator, returnDeepestAncestorElement);
             }
         }
         return null;
@@ -164,11 +184,8 @@ public class InterfaceTreeModel implements TreeModel {
         return result;
     }
 
-    /** Helper enum for ModelHandler implementation below: Opcodes */
-    private enum Operation { ADD, CHANGE, REMOVE, REPLACE, SETMODEL }
-
     /** Helper enum for ModelHandler implementation below: Remote framework element classes in sorting order */
-    private enum ElementClass { SENSOR_INTERFACE, CONTROLLER_INTERFACE, INTERFACE, PARAMETER_INTERFACE, NONPORT, PORT, HIDDEN }
+    private enum ElementClass { SENSOR_INTERFACE, CONTROLLER_INTERFACE, INTERFACE, PARAMETER_INTERFACE, NONPORT, PORT }
 
     /**
      * Contains information on an element to show initially
@@ -188,36 +205,122 @@ public class InterfaceTreeModel implements TreeModel {
     /**
      * Model handler for single external connection
      */
-    class SingleInterfaceHandler implements ModelHandler, Comparator<ModelNode> {
+    class SingleInterfaceHandler implements ModelHandler, Comparator<ModelNode>, ModelOperations {
 
         /** Root node for this interface */
         ModelNode root;
 
         @Override
+        public void applyModelChanges(BufferedModelChanges bufferedChanges) {
+            if (bufferedChanges.empty()) {
+                return;
+            }
+            if (SwingUtilities.isEventDispatchThread()) {
+                bufferedChanges.executeOperations(this);
+            } else {
+                bufferedChanges.setModelOperationsForRun(this);
+                SwingUtilities.invokeLater(bufferedChanges);
+            }
+        }
+
+        @Override
         public void addNode(ModelNode parent, ModelNode newChild) {
-            callOperation(Operation.ADD, parent, newChild, null);
+            markHiddenElements(newChild);
+            sortNewTreeNode(newChild);
+            checkForElementsToShow(newChild);
+
+            if (newChild.getParent() == parent) {
+                return;
+            }
+
+            // use alphabetic sorting for framework elements (with interfaces at the front)
+            if (parent instanceof RemoteFrameworkElement) {
+                for (int i = 0; i < parent.getChildCount(); i++) {
+                    ModelNode child = parent.getChildAt(i);
+                    if (compare(newChild, child) < 0) {
+
+                        //InterfaceTreeModel.this.insertNodeInto(newChild, parent, i);
+                        parent.insertChild(i, newChild);
+                        TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {i}, new Object[] {newChild});
+                        for (int j = listener.size() - 1; j >= 0; j--) {
+                            listener.get(j).treeNodesInserted(event);
+                        }
+                        return;
+                    }
+                }
+            }
+
+
+            int index = parent.getChildCount();
+
+            //InterfaceTreeModel.this.insertNodeInto(newChild, parent, index);
+            parent.add(newChild);
+            TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {index}, new Object[] {newChild});
+            for (int j = listener.size() - 1; j >= 0; j--) {
+                listener.get(j).treeNodesInserted(event);
+            }
         }
 
         @Override
         public void changeNodeName(ModelNode node, String newName) {
-            callOperation(Operation.CHANGE, node, null, newName);
+            node.setName(newName);
+
+            //InterfaceTreeModel.this.nodeChanged(node1);
+            TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(node.getParent()), new int[] {node.getParent().indexOf(node)}, new Object[] {node});
+            for (int j = listener.size() - 1; j >= 0; j--) {
+                listener.get(j).treeNodesChanged(event);
+            }
         }
 
         @Override
         public void removeNode(ModelNode childToRemove) {
             assert(childToRemove != null);
-            callOperation(Operation.REMOVE, childToRemove, null, null);
+            ModelNode parent = childToRemove.getParent();
+            if (parent != null) {
+                parent.remove(childToRemove);
+                /*index = parent.getIndex(node1);
+                parent.remove(index);*/
+                //modelHandler.getTreeModel().nodesWereRemoved(this, new int[]{index}, new TreeNode[]{child});   // doesn't work :-( => occasional NullPointerExceptions
+
+                //InterfaceTreeModel.this.nodeStructureChanged(parent);
+                TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
+                for (int j = listener.size() - 1; j >= 0; j--) {
+                    if (j < listener.size()) {
+                        listener.get(j).treeStructureChanged(event);
+                    }
+                }
+            }
         }
 
         @Override
         public void replaceNode(ModelNode oldNode, ModelNode newNode) {
             assert(oldNode != null && newNode != null);
-            callOperation(Operation.REPLACE, oldNode, newNode, null);
+            ModelNode parent = oldNode.getParent();
+            if (parent != null) {
+                markHiddenElements(newNode);
+                sortNewTreeNode(newNode);
+                checkForElementsToShow(newNode);
+                parent.replace(oldNode, newNode);
+                /*index = parent.getIndex(node1);
+                assert(index >= 0);
+                parent.remove(node1);
+                parent.insert(node2, index);*/
+
+                //InterfaceTreeModel.this.nodeStructureChanged(parent);
+                TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
+                for (int j = listener.size() - 1; j >= 0; j--) {
+                    listener.get(j).treeStructureChanged(event);
+                }
+            }
         }
 
         @Override
         public void setModelRoot(final ModelNode newRoot) {
-            callOperation(Operation.SETMODEL, newRoot, null, null);
+            if (this.root != null) {
+                replaceNode(this.root, newRoot);
+            } else {
+                addNode(InterfaceTreeModel.this.root, newRoot);
+            }
         }
 
         @Override
@@ -230,138 +333,11 @@ public class InterfaceTreeModel implements TreeModel {
         }
 
         /**
-         * We forward all operations to this method to avoid having many inner classes.
-         *
-         * @param operation Operation to perform
-         * @param node1 First node
-         * @param node2 Second node (optional)
-         * @param name Name (optional)
-         */
-        private void callOperation(final Operation operation, final ModelNode node1, final ModelNode node2, final String name) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                callOperationImplementation(operation, node1, node2, name);
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    callOperationImplementation(operation, node1, node2, name);
-                }
-            });
-        }
-
-        /**
-         * Implementation of all operations.
-         *
-         * @param operation Operation to perform
-         * @param node1 First node
-         * @param node2 Second node (optional)
-         * @param name Name (optional)
-         */
-        private void callOperationImplementation(Operation operation, ModelNode node1, ModelNode node2, String name) {
-            switch (operation) {
-            case ADD:
-                ModelNode parent = node1;
-                ModelNode newChild = node2;
-                markHiddenElements(newChild);
-                sortNewTreeNode(newChild);
-                checkForElementsToShow(newChild);
-
-                if (newChild.getParent() == parent) {
-                    return;
-                }
-
-                // use alphabetic sorting for framework elements (with interfaces at the front)
-                if (parent instanceof RemoteFrameworkElement) {
-                    for (int i = 0; i < parent.getChildCount(); i++) {
-                        ModelNode child = parent.getChildAt(i);
-                        if (compare(newChild, child) < 0) {
-
-                            //InterfaceTreeModel.this.insertNodeInto(newChild, parent, i);
-                            parent.insertChild(i, newChild);
-                            TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {i}, new Object[] {newChild});
-                            for (int j = listener.size() - 1; j >= 0; j--) {
-                                listener.get(j).treeNodesInserted(event);
-                            }
-                            return;
-                        }
-                    }
-                }
-
-
-                int index = parent.getChildCount();
-
-                //InterfaceTreeModel.this.insertNodeInto(newChild, parent, index);
-                parent.add(newChild);
-                TreeModelEvent event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent), new int[] {index}, new Object[] {newChild});
-                for (int j = listener.size() - 1; j >= 0; j--) {
-                    listener.get(j).treeNodesInserted(event);
-                }
-                break;
-            case CHANGE:
-                node1.setName(name);
-
-                //InterfaceTreeModel.this.nodeChanged(node1);
-                event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(node1.getParent()), new int[] {node1.getParent().indexOf(node1)}, new Object[] {node1});
-                for (int j = listener.size() - 1; j >= 0; j--) {
-                    listener.get(j).treeNodesChanged(event);
-                }
-                break;
-            case REMOVE:
-                parent = node1.getParent();
-                if (parent != null) {
-                    parent.remove(node1);
-                    /*index = parent.getIndex(node1);
-                    parent.remove(index);*/
-                    //modelHandler.getTreeModel().nodesWereRemoved(this, new int[]{index}, new TreeNode[]{child});   // doesn't work :-( => occasional NullPointerExceptions
-
-                    //InterfaceTreeModel.this.nodeStructureChanged(parent);
-                    event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
-                    for (int j = listener.size() - 1; j >= 0; j--) {
-                        if (j < listener.size()) {
-                            listener.get(j).treeStructureChanged(event);
-                        }
-                    }
-                }
-                break;
-            case REPLACE:
-                parent = node1.getParent();
-                if (parent != null) {
-                    markHiddenElements(node2);
-                    sortNewTreeNode(node2);
-                    checkForElementsToShow(node2);
-                    parent.replace(node1, node2);
-                    /*index = parent.getIndex(node1);
-                    assert(index >= 0);
-                    parent.remove(node1);
-                    parent.insert(node2, index);*/
-
-                    //InterfaceTreeModel.this.nodeStructureChanged(parent);
-                    event = new TreeModelEvent(InterfaceTreeModel.this, getTreePath(parent));
-                    for (int j = listener.size() - 1; j >= 0; j--) {
-                        listener.get(j).treeStructureChanged(event);
-                    }
-                }
-                break;
-            case SETMODEL:
-                if (this.root != null) {
-                    callOperationImplementation(Operation.REPLACE, this.root, node1, null);
-                } else {
-                    callOperationImplementation(Operation.ADD, InterfaceTreeModel.this.root, node1, null);
-                }
-                this.root = node1;
-                break;
-            }
-        }
-
-        /**
          * @param node Node
          * @return Node class of specified node
          */
         private ElementClass getNodeClass(ModelNode node) {
             if (node instanceof RemoteFrameworkElement) {
-                if (node.isHidden(false)) {
-                    return ElementClass.HIDDEN;
-                }
                 RemoteFrameworkElement element = (RemoteFrameworkElement)node;
                 if (element.getFlag(FrameworkElementFlags.PORT)) {
                     return ElementClass.PORT;
@@ -385,9 +361,6 @@ public class InterfaceTreeModel implements TreeModel {
          * Checks all elements for hidden flag
          */
         private void markHiddenElements(ModelNode node) {
-            if (SHOW_HIDDEN_ELEMENTS) {
-                return;
-            }
             if (node instanceof RemoteFrameworkElement && ((RemoteFrameworkElement)node).isTagged(FrameworkElementTags.HIDDEN_IN_TOOLS)) {
                 node.setHidden(true);
             }
@@ -462,6 +435,36 @@ public class InterfaceTreeModel implements TreeModel {
         return new TreePath(result);
     }
 
+//    /**
+//     * (may only be called by AWT thread)
+//     * @return All remote runtimes in this tree model
+//     */
+//    public ArrayList<RemoteRuntime> getAllRemoteRuntimes() {
+//        ArrayList<RemoteRuntime> result = new ArrayList<>();
+//        getAllRemoteRuntimes(result, getRoot(), 3);
+//        return result;
+//    }
+//
+//    /**
+//     * Helper for getAllRemoteRuntimes()
+//     *
+//     * @param result Result list
+//     * @param currentNode Node to process
+//     * @param remainingLevels Remaining levels (depth) to process
+//     */
+//    private void getAllRemoteRuntimes(ArrayList<RemoteRuntime> result, ModelNode currentNode, int remainingLevels) {
+//        for (int i = 0; i < currentNode.getChildCount(); i++) {
+//            ModelNode child = currentNode.getChildAt(i);
+//            if (child instanceof RemoteRuntime) {
+//                result.add((RemoteRuntime)child);
+//            }
+//            if (remainingLevels >= 1) {
+//                getAllRemoteRuntimes(result, child, remainingLevels - 1);
+//            }
+//        }
+//    }
+
+
     @Override
     public Object getChild(Object parent, int index) {
         return ((ModelNode)parent).getChildAt(index);
@@ -469,15 +472,6 @@ public class InterfaceTreeModel implements TreeModel {
 
     @Override
     public int getChildCount(Object parent) {
-        if (parent instanceof RemoteRuntime) {
-            // only return number of non-hidden elements
-            for (int i = 0; i < ((ModelNode)parent).getChildCount(); i++) {
-                ModelNode child = ((ModelNode)parent).getChildAt(i);
-                if (child.isHidden(false)) {
-                    return i;
-                }
-            }
-        }
         return ((ModelNode)parent).getChildCount();
     }
 
