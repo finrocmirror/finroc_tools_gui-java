@@ -52,7 +52,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
 
     /** children */
     @NotInPropertyEditor
-    protected Vector<C> children = new Vector<C>();;
+    protected Vector<C> children = new Vector<C>();
 
     /** parent */
     protected transient P parent;
@@ -176,7 +176,7 @@ public abstract class DataModelBase < R extends DataModelBase < R, ? , ? >, P ex
     }
 
     public int getChildCount() {
-        return children.size();
+        return children == null ? 0 : children.size();
     }
 
     public int getIndex(TreeNode node) {
