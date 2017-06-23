@@ -27,6 +27,7 @@ import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
 import org.rrlib.serialization.BinarySerializable;
+import org.rrlib.serialization.Serialization;
 import org.rrlib.serialization.StringInputStream;
 import org.rrlib.serialization.StringSerializable;
 import org.finroc.core.port.AbstractPort;
@@ -182,17 +183,48 @@ public class WidgetOutput {
         public synchronized void publishFromString(String s) throws Exception {
             ArrayList<AbstractPort> result = new ArrayList<>();
             getPort().getConnectionPartners(result, true, false, false);
-            for (AbstractPort destination : result) {
-                Port destinationPort = Port.wrap(destination);
-                StringSerializable buffer = (StringSerializable)destinationPort.getUnusedBuffer();
-                StringInputStream stream = new StringInputStream(s);
-                try {
-                    buffer.deserialize(stream);
-                    destinationPort.publish((BinarySerializable)buffer);
-                } catch (Exception ex) {
-                    ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
-                    throw ex;
+
+            // prepare buffers
+            StringSerializable[] buffers = new StringSerializable[result.size()];
+            try {
+                for (int i = 0; i < result.size(); i++) {
+                    Port destinationPort = Port.wrap(result.get(i));
+                    buffers[i] = (StringSerializable)destinationPort.getUnusedBuffer();
+                    Serialization.deepCopy(destinationPort.getAutoLocked(), buffers[i]);
+                    StringInputStream stream = new StringInputStream(s);
+                    buffers[i].deserialize(stream);
                 }
+            } catch (Exception e) {
+                for (StringSerializable buffer : buffers) {
+                    if (buffer != null) {
+                        ((PortDataManager)PortDataManager.getManager(buffer)).recycleUnused();
+                    }
+                }
+                getPort().releaseAutoLocks();
+                throw e;
+            }
+            getPort().releaseAutoLocks();
+
+            // disconnect all ports but the first
+            for (int i = 1; i < result.size(); i++) {
+                getPort().disconnectFrom(result.get(i));
+            }
+
+            // now publish to each port
+            Port thisPort = Port.wrap(getPort());
+            for (int i = 0; i < result.size(); i++) {
+
+                if (i > 0) {
+                    getPort().connectTo(result.get(i)); // connecting first should prevent initial pushing
+                    getPort().disconnectFrom(result.get(i - 1));
+                }
+
+                thisPort.publish((BinarySerializable)buffers[i]);
+            }
+
+            // re-establish connections to all ports
+            for (int i = 0; i < result.size(); i++) {
+                getPort().connectTo(result.get(i));
             }
         }
 
