@@ -35,7 +35,6 @@ import org.finroc.tools.gui.WidgetOutput;
 import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.tools.gui.util.propertyeditor.PropertyList;
-import org.finroc.tools.gui.util.propertyeditor.gui.EnumConstantsImporter;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
@@ -48,7 +47,7 @@ import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.Serialization;
 
 
-public class ComboBox extends Widget implements EnumConstantsImporter {
+public class ComboBox extends Widget {
 
     /** UID */
     private static final long serialVersionUID = 8816685145481173845L;
@@ -74,39 +73,6 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
     @Override
     protected WidgetUI createWidgetUI() {
         return new ComboBoxUI();
-    }
-
-    @Override
-    public void importEnumConstants(Object[] enumStrings, long[] enumValues) {
-
-        // Check whether anything needs to be changed
-        if (choices.size() == enumStrings.length) {
-            int i = 0;
-            boolean equal = true;
-            for (Object o : enumStrings) {
-                long value = enumValues == null ? i : enumValues[i];
-                String customOutput = (o instanceof Enum<?>) ? Serialization.serialize((Enum<?>)o) : (o.toString() + " (" + value + ")");
-                equal |= customOutput.equals(choices.get(i).name);
-                i++;
-            }
-            if (equal) {
-                return;
-            }
-        }
-
-        choices.clear();
-        int i = 0;
-        for (Object o : enumStrings) {
-            long value = enumValues == null ? i : enumValues[i];
-            String customOutput = (o instanceof Enum<?>) ? Serialization.serialize((Enum<?>)o) : (o.toString() + " (" + value + ")");
-            choices.add(new ComboBoxElement(o.toString(), value, value, value, customOutput));
-            i++;
-        }
-    }
-
-    @Override
-    public boolean importEnumConstantsSupported() {
-        return true;
     }
 
     public static class ComboBoxElement implements Serializable {
@@ -188,23 +154,23 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
 
         @Override
         public void run() {
-            for (ComboBoxElement cbe : choices) {
-
-                // Auto-import enum constants on reverse push
-                if (customOutput.getPort().isConnected()) {
-                    ArrayList<AbstractPort> result = new ArrayList<>();
-                    customOutput.getPort().getConnectionPartners(result, true, false, false);
-                    for (AbstractPort destination : result) {
-                        RemotePort[] remotePorts = RemotePort.get(destination);
-                        if (remotePorts != null) {
-                            RemoteType type = remotePorts[0].getDataType();
-                            if (type.isEnum()) {
-                                importEnumConstants(type.getEnumConstants(), type.getEnumValues());
-                                break;
-                            }
+            // Auto-import enum constants on reverse push
+            if (customOutput.getPort().isConnected()) {
+                ArrayList<AbstractPort> result = new ArrayList<>();
+                customOutput.getPort().getConnectionPartners(result, true, false, false);
+                for (AbstractPort destination : result) {
+                    RemotePort[] remotePorts = RemotePort.get(destination);
+                    if (remotePorts != null) {
+                        RemoteType type = remotePorts[0].getDataType();
+                        if (type.isEnum()) {
+                            importEnumConstants(type.getEnumConstants(), type.getEnumValues());
+                            break;
                         }
                     }
                 }
+            }
+
+            for (ComboBoxElement cbe : choices) {
 
                 if ((output1.getDouble() == cbe.output1 || !output1.getPort().isConnected()) &&
                         (output2.getDouble() == cbe.output2 || !output2.getPort().isConnected()) &&
@@ -219,6 +185,34 @@ public class ComboBox extends Widget implements EnumConstantsImporter {
             }
             releaseAllLocks();
             comboBox.setSelectedItem(null);
+        }
+
+        public void importEnumConstants(Object[] enumStrings, long[] enumValues) {
+
+            // Check whether anything needs to be changed
+            if (choices.size() == enumStrings.length) {
+                int i = 0;
+                boolean equal = true;
+                for (Object o : enumStrings) {
+                    long value = enumValues == null ? i : enumValues[i];
+                    String customOutput = (o instanceof Enum<?>) ? Serialization.serialize((Enum<?>)o) : (o.toString() + " (" + value + ")");
+                    equal |= customOutput.equals(choices.get(i).name);
+                    i++;
+                }
+                if (equal) {
+                    return;
+                }
+            }
+
+            choices.clear();
+            int i = 0;
+            for (Object o : enumStrings) {
+                long value = enumValues == null ? i : enumValues[i];
+                String customOutput = (o instanceof Enum<?>) ? Serialization.serialize((Enum<?>)o) : (o.toString() + " (" + value + ")");
+                choices.add(new ComboBoxElement(o.toString(), value, value, value, customOutput));
+                i++;
+            }
+            widgetPropertiesChanged();
         }
     }
 }

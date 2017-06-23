@@ -53,6 +53,7 @@ import org.finroc.core.datatype.Unit;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
+import org.finroc.core.remote.RemoteEnumValue;
 
 /**
  * @author Max Reichardt
@@ -311,7 +312,7 @@ public class LCD extends Widget {
                 }
             } else if (cn instanceof CoreBoolean) {
                 s = cn.toString().toUpperCase();
-            } else if (cn instanceof EnumValue) {
+            } else if (cn instanceof EnumValue || cn instanceof RemoteEnumValue) {
                 s = "" + cn.getNumericRepresentation().intValue();
             } else if (cn instanceof Angle) {
                 CoreNumber cn2 = new CoreNumber(cn.getNumericRepresentation().doubleValue());

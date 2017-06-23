@@ -30,13 +30,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.naming.OperationNotSupportedException;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 
 import org.finroc.core.datatype.DataTypeReference;
 import org.finroc.core.remote.RemoteType;
-import org.finroc.tools.gui.util.propertyeditor.PropertiesPanel;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
@@ -66,21 +64,16 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
         }
     }
 
-    private EnumConstantsImporter importer;
-    private PropertiesPanel propPanel;
     private String[] namespaces;
     TreeMap<String, TypeEntry> types = new TreeMap<String, TypeEntry>(String.CASE_INSENSITIVE_ORDER);
     private Dimension typeSelectorMinDimension;
     private Dimension typeSelectorPreferredDimension;
 
-    private JButton importEnumConstants;
     private JComboBox<String> namespaceSelector;
     private JComboBox<TypeEntry> typeSelector;
     private JCheckBox listTypeSelector;
 
-    public DataTypeEditor(Object[] values, EnumConstantsImporter importer, PropertiesPanel propPanel) {
-        this.importer = importer;
-        this.propPanel = propPanel;
+    public DataTypeEditor(Object[] values) {
 
         // Process types
         for (Object value : values) {
@@ -167,11 +160,6 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
             add(listTypeSelector, BorderLayout.EAST);
             listTypeSelector.setEnabled(isModifiable());
 
-            if (importer != null) {
-                importEnumConstants = new JButton("Import Enum Constants");
-                importEnumConstants.addActionListener(this);
-                add(importEnumConstants, BorderLayout.SOUTH);
-            }
             valueUpdated(currentValue);
         } catch (Exception e) {
             Log.log(LogLevel.ERROR, this, e);
@@ -221,10 +209,6 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
                 listTypeSelector.setSelected(true);
             }
         }
-        if (importEnumConstants != null) {
-            TypeEntry entry = (TypeEntry)typeSelector.getSelectedItem();
-            importEnumConstants.setEnabled(entry != null && getEnumConstants(listTypeSelector.isSelected() ? entry.listType : entry.plainType) != null);
-        }
     }
 
     private Object[] getEnumConstants(Object type) {
@@ -256,20 +240,6 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
             updateButtonStates();
         } else if (e.getSource() == typeSelector) {
             updateButtonStates();
-        } else if (e.getSource() == importEnumConstants) {
-            try {
-                for (PropertyEditComponent<?> pec : propPanel.getComponentList()) {
-                    pec.applyChanges();
-                }
-                TypeEntry entry = (TypeEntry)typeSelector.getSelectedItem();
-                Object type = listTypeSelector.isSelected() ? entry.listType : entry.plainType;
-                importer.importEnumConstants(getEnumConstants(type), (type instanceof RemoteType) ? ((RemoteType)type).getEnumValues() : null);
-                for (PropertyEditComponent<?> pec : propPanel.getComponentList()) {
-                    pec.updateValue();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
         }
     }
 }
