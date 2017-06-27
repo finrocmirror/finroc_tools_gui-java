@@ -377,7 +377,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         highlightedElementRatings.clear();
         for (Object otherNode : otherTree.getVisibleObjects()) {
             CheckConnectResult connections = checkConnect(otherNode);
-            if (connections.impossibleHint.length() == 0) {
+            if (connections.impossibleHint == null || connections.impossibleHint.length() == 0) {
                 highlightedElementRatings.put(otherNode, connections.minScore);
             }
         }
