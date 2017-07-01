@@ -76,6 +76,7 @@ import org.finroc.core.remote.RemotePort;
 import org.finroc.tools.gui.ConnectorIcon.IconColor;
 import org.finroc.tools.gui.abstractbase.DataModelBase;
 import org.finroc.tools.gui.abstractbase.DataModelListener;
+import org.finroc.tools.gui.commons.Util;
 import org.finroc.tools.gui.themes.Themes;
 import org.finroc.tools.gui.util.ElementFilter;
 import org.finroc.tools.gui.util.gui.MJTree;
@@ -351,7 +352,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else {
             String s = null;
             for (String link : links) {
-                link = link.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+                link = Util.escapeForHtml(link);
                 if (s == null) {
                     s = "<html><p>" + link;
                 } else {

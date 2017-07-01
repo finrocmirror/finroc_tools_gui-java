@@ -46,6 +46,10 @@ import javax.swing.JOptionPane;
  */
 public class Util {
 
+    public static String escapeForHtml(String toEscape) {
+        return toEscape.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     public static byte[] intToBytes(int i) {
         byte[] result = new byte[4];
         if (Endian.MCA_BIG_ENDIAN) {
