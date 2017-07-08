@@ -42,6 +42,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +69,7 @@ import javax.swing.tree.TreePath;
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.remote.Definitions;
-import org.finroc.core.remote.HasUid;
+import org.finroc.core.remote.HasURI;
 import org.finroc.core.remote.ModelNode;
 import org.finroc.core.remote.PortWrapper;
 import org.finroc.core.remote.RemoteFrameworkElement;
@@ -132,7 +133,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     /** PopupMenu */
     protected JPopupMenu popupMenu;
     protected boolean popupOnRight;
-    protected JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyUID, miCopyLinks, miShowPartner;
+    protected JMenuItem miSelectAll, miSelectVisible, miSelectNone, miExpandAll, miCollapseAll, miRemoveConnections, miRefresh, miRemoveAllConnections, miCopyURI, miCopyHostSpecificURI, miCopyLinks, miShowPartner;
 
     /** Tree cell Height */
     public static int HEIGHT = 0;
@@ -218,7 +219,8 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         miSelectVisible = createMenuEntry("Select Visible");
         miSelectNone = createMenuEntry("Select None");
         popupMenu.addSeparator();
-        miCopyUID = createMenuEntry("Copy UID");
+        miCopyURI = createMenuEntry("Copy URI");
+        miCopyHostSpecificURI = createMenuEntry("Copy host-specific URI");
         miCopyLinks = createMenuEntry("Copy Connection Links");
         miShowPartner = createMenuEntry("Show Connection Partner(s)");
         setTreeFont(treeFont);
@@ -490,14 +492,15 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
     protected void updatePopupMenu(Object treeNode) {
         if (treeNode instanceof WidgetPort<?>) {
             WidgetPort<?> wp = (WidgetPort<?>)treeNode;
-            miCopyUID.setEnabled(false);
+            miCopyURI.setEnabled(false);
             miCopyLinks.setEnabled(wp.getConnectionLinks().size() > 0);
             miShowPartner.setEnabled(miCopyLinks.isEnabled() && wp.getPort().isConnected());
         } else {
-            miCopyUID.setEnabled(!popupOnRight && (treeNode instanceof HasUid));
+            miCopyURI.setEnabled(!popupOnRight && (treeNode instanceof HasURI));
             miCopyLinks.setEnabled(false);
             miShowPartner.setEnabled(false);
         }
+        miCopyHostSpecificURI.setEnabled(miCopyURI.isEnabled());
     }
 
     @SuppressWarnings("unchecked")
@@ -875,14 +878,23 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
                 parent.addUndoBufferEntry("Remove all connections");
                 repaint();
             }
-        } else if (e.getSource() == miCopyUID) {
+        } else if (e.getSource() == miCopyURI || e.getSource() == miCopyHostSpecificURI) {
             Object tnp = getTreeNodeFromPos(ptree);
-            String uid = "Element has no UID";
-            if (tnp instanceof HasUid) {
-                uid = ((HasUid)tnp).getUid();
+            String uriString = "Element has no UID";
+            if (tnp instanceof HasURI) {
+                URI uri = ((HasURI)tnp).getURI();
+                if (e.getSource() == miCopyURI) {
+                    uri = Util.getHostIndependentURI(uri);
+                    try {
+                        uri = new URI(uri.getScheme(), null, uri.getPath(), null);
+                    } catch (Exception ex) {
+                        uriString = "Erroneous UID (" + ex.getMessage() + ")";
+                    }
+                }
+                uriString = uri.toString();
             }
             Clipboard clipboard = getToolkit().getSystemClipboard();
-            clipboard.setContents(new StringSelection(uid), null);
+            clipboard.setContents(new StringSelection(uriString), null);
         } else if (e.getSource() == miCopyLinks) {
             Object tnp = getTreeNodeFromPos(ptree);
             String uid = "";
@@ -920,7 +932,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         } else if (tnp instanceof PortWrapper) {
             for (Object wptnp : rightTree.getObjects()) {
                 WidgetPort<?> wp = (WidgetPort<?>)wptnp;
-                wp.removeConnection(((PortWrapper)tnp).getPort(), ((HasUid)tnp).getUid());
+                wp.removeConnection(((PortWrapper)tnp).getPort(), ((HasURI)tnp).getURI());
             }
             ((PortWrapper)tnp).getPort().disconnectAll(); // just to make sure...
         }

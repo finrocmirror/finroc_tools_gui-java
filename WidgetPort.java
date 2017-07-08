@@ -22,6 +22,7 @@
 package org.finroc.tools.gui;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,22 +33,24 @@ import org.finroc.tools.gui.abstractbase.DataModelBase;
 
 import org.finroc.core.FrameworkElement;
 import org.finroc.core.FrameworkElementFlags;
+import org.finroc.core.RuntimeEnvironment;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortWrapperBase;
 import org.finroc.core.portdatabase.CCType;
 import org.finroc.core.portdatabase.FinrocTypeInfo;
-import org.finroc.core.remote.HasUid;
+import org.finroc.core.remote.HasURI;
 import org.finroc.core.remote.PortWrapper;
 import org.finroc.core.remote.RemotePort;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 import org.rrlib.serialization.NumericRepresentation;
 import org.rrlib.xml.XMLNode;
 
 public abstract class WidgetPort < P extends PortWrapperBase > extends DataModelBase < GUI, Widget, WidgetPort<? >> implements PortWrapper, Serializable {
 
-    /** UID & protected empty constructor */
     private static final long serialVersionUID = 88243609872346L;
 
-    /** UIDs of ports that this port is connected to */
+    /** URIs of ports that this port is connected to */
     private Set<String> connectedTo = new HashSet<String>();
 
     /** name/description of port (redundant - for serialization) */
@@ -104,9 +107,9 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         frameworkElement.init();
         for (String s : connectedTo) {
             if (getPort().isInputPort()) {
-                getPort().connectTo(s, AbstractPort.ConnectDirection.TO_SOURCE, false);
+                getPort().connectTo(getPortLinkFromConnectedToEntry(s), AbstractPort.ConnectDirection.TO_SOURCE, false);
             } else {
-                getPort().connectTo(s, AbstractPort.ConnectDirection.TO_TARGET, false);
+                getPort().connectTo(getPortLinkFromConnectedToEntry(s), AbstractPort.ConnectDirection.TO_TARGET, false);
             }
         }
         if (defaultFlags == 0) {
@@ -114,15 +117,36 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         }
     }
 
+    private String getPortLinkFromConnectedToEntry(String connectedTo) {
+        if (connectedTo.startsWith("/")) {
+            return connectedTo;
+        } else {
+            try {
+                URI uri = new URI(connectedTo);
+                String result = uri.getPath();
+                if (uri.getAuthority() != null) {
+                    result = "/" + uri.getAuthority() + result;
+                }
+                if (uri.getScheme() != null) {
+                    result = "/" + uri.getScheme() + result;
+                }
+                return result;
+            } catch (Exception e) {
+                Log.log(LogLevel.WARNING, "Failed parsing connectedTo entry '" + connectedTo + "': ", e);
+            }
+        }
+        return "/Erroneous link";
+    }
+
     public void clearConnections() {
         connectedTo.clear();
         getPort().disconnectAll();
     }
 
-    public void removeConnection(AbstractPort p, String uid) {
-        if (connectedTo.remove(uid)) {
-            getPort().disconnectFrom(p);
-        }
+    public void removeConnection(AbstractPort p, URI uri) {
+        connectedTo.remove(uri.toString());
+        connectedTo.remove(uri.getPath());
+        getPort().disconnectFrom(p);
     }
 
     public List<RemotePort> getConnectionPartners() {
@@ -233,15 +257,17 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         if (getPort().isConnectedTo(other.getPort())) {
             return;
         }
+        URI uri = ((HasURI)other).getURI();
+        String connectTo = RuntimeEnvironment.getInstance().countElements(uri.getPath()) > 1 ? uri.toString() : uri.getPath();
+        connectedTo.add(connectTo);
         if (getPort().isInputPort()) {
-            getPort().connectTo(((HasUid)other).getUid(), AbstractPort.ConnectDirection.TO_SOURCE, false);
+            getPort().connectTo(getPortLinkFromConnectedToEntry(connectTo), AbstractPort.ConnectDirection.TO_SOURCE, false);
         } else {
-            getPort().connectTo(((HasUid)other).getUid(), AbstractPort.ConnectDirection.TO_TARGET, false);
+            getPort().connectTo(getPortLinkFromConnectedToEntry(connectTo), AbstractPort.ConnectDirection.TO_TARGET, false);
         }
-        connectedTo.add(((HasUid)other).getUid());
     }
 
-    public void connectTo(String other) {
+    /*public void connectTo(String other) {
         if (other == null || other.length() == 0 || connectedTo.contains(other)) {
             return;
         }
@@ -251,7 +277,7 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
             getPort().connectTo(other, AbstractPort.ConnectDirection.TO_TARGET, false);
         }
         connectedTo.add(other);
-    }
+    }*/
 
     /**
      * update port strategy

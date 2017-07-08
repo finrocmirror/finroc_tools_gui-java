@@ -32,6 +32,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -48,6 +49,14 @@ public class Util {
 
     public static String escapeForHtml(String toEscape) {
         return toEscape.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    public static URI getHostIndependentURI(URI uri) {
+        try {
+            return new URI(uri.getScheme(), null, uri.getPath(), null);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error creating host-indepent URI");
+        }
     }
 
     public static byte[] intToBytes(int i) {

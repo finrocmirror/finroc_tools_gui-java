@@ -57,7 +57,7 @@ public class InterfaceTreeModel implements TreeModel {
     private final ModelNode root = new ModelNode("Interfaces");
 
     /** Framework element that is parent of all connections */
-    private final FrameworkElement externalConnectionParent = new FrameworkElement(RuntimeEnvironment.getInstance(), "Interfaces");
+    private final FrameworkElement externalConnectionParent = new FrameworkElement(RuntimeEnvironment.getInstance(), "Interfaces", FrameworkElementFlags.ALTERNATIVE_LINK_ROOT, -1);
 
     /** Tree model listener list */
     private final ArrayList<TreeModelListener> listener = new ArrayList<TreeModelListener>();
