@@ -34,6 +34,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.plugins.data_types.ContainsStrings;
 
+import org.finroc.core.datatype.CoreString;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
@@ -50,6 +51,9 @@ public class BlackboardDropDown extends Widget {
     /** Output port returns selected index */
     public WidgetOutput.Numeric selectedIndex;
 
+    /** Output port returns selected element */
+    public WidgetOutput.Std<CoreString> selectedElement;
+
     /** Input Blackboard contains list elements as strings */
     public WidgetInput.Std<ContainsStrings> elements;
 
@@ -58,7 +62,10 @@ public class BlackboardDropDown extends Widget {
             WidgetPort < ? > forPort) {
         if (forPort == elements) {
             return suggestion.derive(ContainsStrings.TYPE);
+        } else if (forPort == selectedElement) {
+            return suggestion.derive(CoreString.TYPE);
         }
+
         return suggestion;
     }
 
@@ -94,6 +101,9 @@ public class BlackboardDropDown extends Widget {
 
         public void actionPerformed(ActionEvent e) {
             selectedIndex.publish(comboBox.getSelectedIndex());
+            CoreString string = selectedElement.getUnusedBuffer();
+            string.set(comboBox.getSelectedItem().toString());
+            selectedElement.publish(string);
         }
 
         @Override
