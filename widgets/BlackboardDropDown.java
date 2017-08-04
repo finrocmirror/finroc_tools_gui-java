@@ -34,6 +34,7 @@ import org.finroc.tools.gui.WidgetPort;
 import org.finroc.tools.gui.WidgetUI;
 import org.finroc.plugins.data_types.ContainsStrings;
 
+import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.datatype.CoreString;
 import org.finroc.core.port.AbstractPort;
 import org.finroc.core.port.PortCreationInfo;
@@ -58,12 +59,13 @@ public class BlackboardDropDown extends Widget {
     public WidgetInput.Std<ContainsStrings> elements;
 
     @Override
-    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion,
-            WidgetPort < ? > forPort) {
+    protected PortCreationInfo getPortCreationInfo(PortCreationInfo suggestion, WidgetPort < ? > forPort) {
         if (forPort == elements) {
             return suggestion.derive(ContainsStrings.TYPE);
         } else if (forPort == selectedElement) {
-            return suggestion.derive(CoreString.TYPE);
+            return suggestion.derive(CoreString.TYPE).derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
+        } else if (forPort == selectedIndex) {
+            return suggestion.derive(suggestion.flags | FrameworkElementFlags.PUSH_STRATEGY_REVERSE);
         }
 
         return suggestion;
@@ -74,24 +76,28 @@ public class BlackboardDropDown extends Widget {
         return new BlackboardDropDownUI();
     }
 
-    class BlackboardDropDownUI extends WidgetUI implements
-        PortListener<ContainsStrings>, ActionListener, Runnable {
+    @SuppressWarnings("rawtypes")
+    class BlackboardDropDownUI extends WidgetUI implements PortListener, ActionListener, Runnable {
         /** UID */
         private static final long serialVersionUID = -4319918865786225484L;
 
-        JComboBox comboBox;
+        JComboBox<String> comboBox;
+        boolean updatingFromPortListener = true;
 
+        @SuppressWarnings("unchecked")
         public BlackboardDropDownUI() {
             super(RenderMode.Swing);
             setLayout(new BorderLayout());
             comboBox = new JComboBox();
             add(comboBox);
 
-            // comboxbox change listner
+            // combobox change listener
             comboBox.addActionListener(this);
 
-            // input black change listner
+            // port listeners
             elements.addChangeListener(this);
+            selectedIndex.addChangeListener(this);
+            selectedElement.addChangeListener(this);
         }
 
         @Override
@@ -100,27 +106,54 @@ public class BlackboardDropDown extends Widget {
         }
 
         public void actionPerformed(ActionEvent e) {
-            selectedIndex.publish(comboBox.getSelectedIndex());
-            CoreString string = selectedElement.getUnusedBuffer();
-            string.set(comboBox.getSelectedItem().toString());
-            selectedElement.publish(string);
+            Object selectedItem = comboBox.getSelectedItem();
+            if (selectedItem != null && (!updatingFromPortListener)) {
+                selectedIndex.publish(comboBox.getSelectedIndex());
+                CoreString string = selectedElement.getUnusedBuffer();
+                string.set(selectedItem.toString());
+                selectedElement.publish(string);
+            }
         }
 
         @Override
-        public void portChanged(AbstractPort origin, ContainsStrings value) {
+        public void portChanged(AbstractPort origin, Object value) {
             SwingUtilities.invokeLater(this);
         }
 
         @Override
         public void run() {
+            updatingFromPortListener = true;
             ContainsStrings value = elements.getAutoLocked();
-            comboBox.removeAllItems();
-            if (value != null && value.stringCount() > 0) {
-                for (int i = 0; i < value.stringCount(); i++) {
-                    comboBox.addItem(value.getString(i).toString());
+            boolean elementsChanged = comboBox.getItemCount() != ((value == null) ? 0 : value.stringCount());
+            if (!elementsChanged) {
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    elementsChanged |= (!value.getString(i).equals(comboBox.getItemAt(i).toString()));
                 }
             }
+            if (elementsChanged) {
+                comboBox.removeAllItems();
+                if (value != null && value.stringCount() > 0) {
+                    for (int i = 0; i < value.stringCount(); i++) {
+                        comboBox.addItem(value.getString(i).toString());
+                    }
+                }
+            }
+            if ((!selectedElement.getPort().isConnected()) && (!selectedIndex.getPort().isConnected())) {
+                comboBox.setSelectedIndex(-1);
+            } else {
+                int index = -1;
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    String item = comboBox.getItemAt(i);
+                    if (((selectedIndex.getInt() == i) || !selectedIndex.getPort().isConnected()) &&
+                            ((selectedElement.asPort().getAutoLocked().toString().equals(item)) || !selectedElement.getPort().isConnected())) {
+                        index = i;
+                    }
+                }
+                comboBox.setSelectedIndex(index);
+            }
+
             releaseAllLocks();
+            updatingFromPortListener = false;
         }
     }
 }
