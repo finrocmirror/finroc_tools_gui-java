@@ -116,6 +116,10 @@ public class GeometryRenderer extends Widget {
     public boolean resetClickPosOnMouseRelease = false;
     public boolean hideToolbar = false;
     public EmbeddedPaintables mapObjects = new EmbeddedPaintables();
+    public int autoWatchObject = -1;
+    public boolean rotateWithWatchedObject = false;
+    public double rotateWithWatchedObjectOffset = 0;
+
     public int drawGeometriesAfterMapObject = 2;
     public boolean provideGeometryPoseInputs = false;
 
@@ -525,7 +529,12 @@ public class GeometryRenderer extends Widget {
                 wp.addChangeListener(renderer);
             }
 
-            stopTracking();
+            if (autoWatchObject >= 0 && autoWatchObject < mapObjects.size()) {
+                trackObject = mapObjects.get(autoWatchObject);
+                toolbar.setSelected(Action.Watch, true);
+            } else {
+                stopTracking();
+            }
 
             updateRulers();
         }
@@ -620,6 +629,10 @@ public class GeometryRenderer extends Widget {
                     if (index >= 0) {
                         translationX = -getObjectXCoordinate(index);
                         translationY = invertObjectYInput ? getObjectYCoordinate(index + 1) : -getObjectYCoordinate(index + 1);
+                        if (rotateWithWatchedObject) {
+                            rotation = (invertObjectYInput ? getObjectYawAngle(index + 1) : -getObjectYawAngle(index + 1)) + rotateWithWatchedObjectOffset;
+                        }
+                        updateRulers();
                     } else {
                         stopTracking();
                     }
