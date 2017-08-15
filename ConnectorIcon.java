@@ -204,7 +204,7 @@ public class ConnectorIcon extends ImageIcon {
         int backgroundInt = background.getRGB();
         int width = (height + 1) / 2;
         if (rpc) {
-            width = proxy ? 9 : (inputPort ? 14 : 12);
+            width = proxy ? (inputPort ? 10 : 9) : (inputPort ? 14 : 12);
         }
         BufferedImageRGB img = new BufferedImageRGB(width, height);
         ConnectorIcon icon = new ConnectorIcon();
@@ -272,16 +272,22 @@ public class ConnectorIcon extends ImageIcon {
             if (!proxy) {
                 img.drawFilledRectangle(new Rectangle(0, middle - 1, 4, 3), colorInt);
             } else {
-                img.drawFilledRectangle(new Rectangle(0, h4, 4, 2), colorInt);
-                img.drawFilledRectangle(new Rectangle(0, height - h4 - 1, 4, 2), colorInt);
+                int yOffset = inputPort ? -1 : 0;
+                img.drawFilledRectangle(new Rectangle(0, yOffset + h4, 4, 2), colorInt);
+                img.drawFilledRectangle(new Rectangle(0, yOffset + height - h4 - 1, 4, 2), colorInt);
             }
 
             Graphics2D g = img.getBufferedImage().createGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setColor(color);
             if (proxy) {
-                g.drawOval(4, 0, middle, middle);
-                g.fillOval(3, height - h4 - 1 - (h4 / 2), h4 + 2, h4 + 2);
+                if (inputPort) {
+                    g.drawOval(4, middle + 1, middle - 1, middle - 1);
+                    g.fillOval(3, (h4 / 2) - 2, h4 + 3, h4 + 3);
+                } else {
+                    g.drawOval(4, 0, middle, middle);
+                    g.fillOval(3, height - h4 - 1 - (h4 / 2), h4 + 2, h4 + 2);
+                }
             } else if (!inputPort) {
                 g.drawOval(4, middle - 6, 13, 13);
             } else {
@@ -290,8 +296,13 @@ public class ConnectorIcon extends ImageIcon {
             icon.defaultLineStart.x = img.getWidth() - 3;
 
             if (proxy) {
-                icon.outgoingLineStart = new Point(img.getWidth() - 2, h4 + 1);
-                icon.incomingLineStart = new Point(img.getWidth() - 1, height - h4);
+                if (inputPort) {
+                    icon.outgoingLineStart = new Point(img.getWidth() - 2, height - h4);
+                    icon.incomingLineStart = new Point(img.getWidth() - 1, h4 - 1);
+                } else {
+                    icon.outgoingLineStart = new Point(img.getWidth() - 2, h4 + 1);
+                    icon.incomingLineStart = new Point(img.getWidth() - 1, height - h4);
+                }
             }
         }
 
