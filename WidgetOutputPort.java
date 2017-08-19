@@ -36,7 +36,7 @@ public abstract class WidgetOutputPort < P extends PortWrapperBase > extends Wid
     /** UID */
     private static final long serialVersionUID = 4183113499724602127L;
 
-    static PortCreationInfo stdPci = new PortCreationInfo("", FrameworkElementFlags.OUTPUT_PORT);
+    static PortCreationInfo stdPci = new PortCreationInfo("", FrameworkElementFlags.OUTPUT_PORT | FrameworkElementFlags.NO_INITIAL_PUSHING);
 
     public PortCreationInfo getPci() {
         PortCreationInfo def = stdPci.derive(getDescription());

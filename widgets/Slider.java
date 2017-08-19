@@ -90,6 +90,7 @@ public class Slider extends Widget {
         private static final long serialVersionUID = -226842649519588097L;
 
         private DoubleSlider slider;
+        boolean updatingFromReversePush = false;
 
         SliderUI() {
             super(RenderMode.Swing);
@@ -107,8 +108,10 @@ public class Slider extends Widget {
         }
 
         public void stateChanged(ChangeEvent e) {
-            slider.setToolTipText(String.format("%.2f", slider.getDoubleValue()));
-            value.publish(slider.getDoubleValue());
+            if (!updatingFromReversePush) {
+                slider.setToolTipText(String.format("%.2f", slider.getDoubleValue()));
+                value.publish(slider.getDoubleValue());
+            }
         }
 
         public void componentHidden(ComponentEvent e) {}
@@ -146,7 +149,9 @@ public class Slider extends Widget {
 
         @Override
         public void run() {
+            updatingFromReversePush = true;
             slider.setValue(Slider.this.value.getDouble());
+            updatingFromReversePush = false;
         }
     }
 }
