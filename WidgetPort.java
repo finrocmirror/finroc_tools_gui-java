@@ -292,9 +292,9 @@ public abstract class WidgetPort < P extends PortWrapperBase > extends DataModel
         if (p.getFlag(FrameworkElementFlags.ACCEPTS_DATA) && (defaultFlags & FrameworkElementFlags.PUSH_STRATEGY) != 0) {
             p.setPushStrategy(push);
         }
-        if ((defaultFlags & FrameworkElementFlags.PUSH_STRATEGY_REVERSE) != 0) {
+        /*if ((defaultFlags & FrameworkElementFlags.PUSH_STRATEGY_REVERSE) != 0) {
             p.setReversePushStrategy(push);
-        }
+        }*/
     }
 
     /**
