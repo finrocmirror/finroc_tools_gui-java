@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import org.finroc.tools.gui.commons.EventRouter;
 
 import org.finroc.core.datatype.CoreNumber;
+import org.finroc.core.datatype.DataTypeReference;
 import org.rrlib.serialization.BinarySerializable;
 import org.rrlib.serialization.Serialization;
 import org.rrlib.serialization.StringInputStream;

@@ -141,7 +141,7 @@ public class ComboBox extends Widget {
                     try {
                         customOutput.publishFromString(cbe.customOutput);
                     } catch (Exception e1) {
-                        Log.log(LogLevel.ERROR, this, "Cannot parse '" + cbe.customOutput + "' for publishing (type " + customOutput.asPort().getDataType().getName() + ").");
+                        Log.log(LogLevel.ERROR, this, "Cannot parse '" + cbe.customOutput + "' for publishing.");
                     }
                 }
             }
