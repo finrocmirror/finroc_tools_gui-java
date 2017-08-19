@@ -174,6 +174,9 @@ public class WidgetOutput {
         /** UID */
         private static final long serialVersionUID = -3991768387448158703L;
 
+        /** Port's data type (legacy - retained to make loading of old GUIs not fail)  */
+        private transient DataTypeReference type = new DataTypeReference();
+
         @Override
         protected Port createPort() {
             return Port.wrap(new CustomPort(getPci()));
