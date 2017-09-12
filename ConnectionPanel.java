@@ -1055,7 +1055,7 @@ public class ConnectionPanel extends JPanel implements ComponentListener, DataMo
         if (node instanceof PortWrapper) {
             AbstractPort port = ((PortWrapper)node).getPort();
             result.textColor = tree.getBackground();
-            boolean rpc = (port.getDataType().getTypeTraits() & DataTypeBase.IS_RPC_TYPE) != 0; //FinrocTypeInfo.isMethodType(port.getDataType(), true);
+            boolean rpc = port.getDataType().getTypeClassification() == DataTypeBase.CLASSIFICATION_RPC_TYPE;
             boolean leftTreeRPCServerPort = rpc && port.getFlag(FrameworkElementFlags.ACCEPTS_DATA);
             boolean mouseOverFlag = (mouseOver instanceof PortWrapper) && (port == ((PortWrapper)mouseOver).getPort() || port.isConnectedTo(((PortWrapper)mouseOver).getPort()));
             result.nodeColor = selected ? selectedColor : (port.isConnected() ? connectedColor : (port.hasLinkEdges() ? connectionPartnerMissingColor : defaultColor));
