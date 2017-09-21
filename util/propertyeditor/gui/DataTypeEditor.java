@@ -26,15 +26,16 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.naming.OperationNotSupportedException;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.finroc.core.datatype.DataTypeReference;
-import org.finroc.core.remote.RemoteType;
 import org.finroc.tools.gui.util.propertyeditor.PropertyEditComponent;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
@@ -46,32 +47,18 @@ import org.rrlib.serialization.rtti.DataTypeBase;
  * Editor for data types: Adds button to editor that lets user
  * import enum constants.
  */
-public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> implements ActionListener {
+public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> implements ActionListener, DocumentListener, Comparator<Object> {
 
     /** UID */
     private static final long serialVersionUID = -8458082858218885773L;
 
-    static class TypeEntry {
-        String longName;
-        String namespace;
-        String shortName;
-        Object plainType;
-        Object listType;
+    TreeMap<String, Object> types = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
 
-        @Override
-        public String toString() {
-            return shortName;
-        }
-    }
-
-    private String[] namespaces;
-    TreeMap<String, TypeEntry> types = new TreeMap<String, TypeEntry>(String.CASE_INSENSITIVE_ORDER);
     private Dimension typeSelectorMinDimension;
     private Dimension typeSelectorPreferredDimension;
 
-    private JComboBox<String> namespaceSelector;
-    private JComboBox<TypeEntry> typeSelector;
-    private JCheckBox listTypeSelector;
+    private JTextField typeFilter;
+    private JComboBox<Object> typeSelector;
 
     public DataTypeEditor(Object[] values) {
 
@@ -80,56 +67,13 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
             if (value.toString().equals(DataTypeBase.NULL_TYPE)) {
                 continue;
             }
-
-            String longName = value.toString();
-            boolean listType = longName.startsWith("List<");
-            while (longName.startsWith("List<")) {
-                longName = longName.substring("List<".length(), longName.length() - 1);
-            }
-            TypeEntry entry = types.get(longName);
-            if (entry == null) {
-                // Create new entry
-                entry = new TypeEntry();
-                entry.longName = longName;
-
-                // Split name into namespace and short name
-                int namespaceDividerIndex = -1;
-                for (int i = 0; i < longName.length(); i++) {
-                    char c = longName.charAt(i);
-                    if (c == '.') {
-                        namespaceDividerIndex = i;
-                    }
-                    if (c == '<') {
-                        break;
-                    }
-                }
-                entry.namespace = namespaceDividerIndex < 0 ? "(global)" : longName.substring(0, namespaceDividerIndex);
-                entry.shortName = namespaceDividerIndex < 0 ? longName : longName.substring(namespaceDividerIndex + 1);
-                types.put(longName, entry);
-            }
-            if (listType) {
-                entry.listType = value;
-            } else {
-                entry.plainType = value;
-            }
+            types.put(value.toString(), value);
         }
-
-        // Generate list with namespaces
-        TreeSet<String> namespaces = new TreeSet<String>();
-        for (TypeEntry entry : types.values()) {
-            namespaces.add(entry.namespace);
-        }
-        this.namespaces = namespaces.toArray(new String[0]);
 
         // Calculate min dimension for type selector combo box
-        String[] typeStrings = new String[types.values().size()];
-        int index = 0;
-        for (TypeEntry entry : types.values()) {
-            typeStrings[index] = entry.shortName;
-            index++;
-        }
-        typeSelectorMinDimension = new JComboBox<>(typeStrings).getMinimumSize();
-        typeSelectorPreferredDimension = new JComboBox<>(typeStrings).getPreferredSize();
+        JComboBox<Object> testBox = new JComboBox<Object>(types.values().toArray());
+        typeSelectorMinDimension = testBox.getMinimumSize();
+        typeSelectorPreferredDimension = testBox.getPreferredSize();
     }
 
     @Override
@@ -144,21 +88,19 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
     @Override
     public void createAndShowMinimal(DataTypeReference currentValue) throws OperationNotSupportedException {
         try {
-            namespaceSelector = new JComboBox<String>(namespaces);
-            namespaceSelector.addActionListener(this);
-            add(namespaceSelector, BorderLayout.WEST);
-            namespaceSelector.setEnabled(isModifiable());
+            typeFilter = new JTextField();
+            typeFilter.addActionListener(this);
+            add(typeFilter, BorderLayout.WEST);
+            typeFilter.setEnabled(isModifiable());
+            typeFilter.setPreferredSize(new Dimension(200, typeFilter.getPreferredSize().height));
+            typeFilter.getDocument().addDocumentListener(this);
 
-            typeSelector = new JComboBox<TypeEntry>();
+            typeSelector = new JComboBox<Object>(types.values().toArray());
             typeSelector.addActionListener(this);
             add(typeSelector, BorderLayout.CENTER);
             typeSelector.setEnabled(isModifiable());
             typeSelector.setMinimumSize(typeSelectorMinDimension);
             typeSelector.setPreferredSize(typeSelectorPreferredDimension);
-
-            listTypeSelector = new JCheckBox("std::vector");
-            add(listTypeSelector, BorderLayout.EAST);
-            listTypeSelector.setEnabled(isModifiable());
 
             valueUpdated(currentValue);
         } catch (Exception e) {
@@ -172,74 +114,72 @@ public class DataTypeEditor extends PropertyEditComponent<DataTypeReference> imp
         if (selectedType == null) {
             return new DataTypeReference(DataTypeBase.NULL_TYPE);
         }
-        TypeEntry entry = (TypeEntry)selectedType;
-        return new DataTypeReference((listTypeSelector.isSelected() ? entry.listType : entry.plainType).toString());
+        return new DataTypeReference(selectedType.toString());
     }
 
     @Override
     protected void valueUpdated(DataTypeReference type) {
-        String longName = type.toString();
-        boolean listType = longName.startsWith("List<");
-        if (listType) {
-            longName = longName.substring("List<".length(), longName.length() - 1);
-        }
-        TypeEntry entry = type == null ? null : types.get(longName);
+        Object entry = type == null ? null : types.get(type.toString());
         if (entry == null) {
-            namespaceSelector.setSelectedIndex(0);
             typeSelector.setSelectedIndex(0);
         } else {
-            namespaceSelector.setSelectedItem(entry.namespace);
             typeSelector.setSelectedItem(entry);
-            listTypeSelector.setSelected(listType);
         }
-        updateButtonStates();
-    }
-
-    private void updateButtonStates() {
-        Object selectedType = typeSelector.getSelectedItem();
-        if (selectedType == null) {
-            listTypeSelector.setEnabled(false);
-        } else {
-            TypeEntry entry = (TypeEntry)selectedType;
-            listTypeSelector.setEnabled(entry.listType != null && entry.plainType != null);
-            if (entry.listType == null) {
-                listTypeSelector.setSelected(false);
-            }
-            if (entry.plainType == null) {
-                listTypeSelector.setSelected(true);
-            }
-        }
-    }
-
-    private Object[] getEnumConstants(Object type) {
-        if (type instanceof DataTypeBase) {
-            return ((DataTypeBase)type).getEnumConstants();
-        } else if (type instanceof RemoteType) {
-            return ((RemoteType)type).getEnumConstants();
-        }
-        return null;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == namespaceSelector) {
+    }
 
-            // filter list
-            ArrayList<TypeEntry> filteredTypes = new ArrayList<TypeEntry>();
-            if (namespaceSelector.getSelectedItem() == null) {
-                filteredTypes.addAll(types.values());
-            } else {
-                for (TypeEntry entry : types.values()) {
-                    if (entry.namespace.equals(namespaceSelector.getSelectedItem())) {
-                        filteredTypes.add(entry);
-                    }
-                }
-            }
-            typeSelector.setModel(new JComboBox<TypeEntry>(filteredTypes.toArray(new TypeEntry[0])).getModel());
-            typeSelector.setSelectedIndex(0);
-            updateButtonStates();
-        } else if (e.getSource() == typeSelector) {
-            updateButtonStates();
+    private void filterTypes(DocumentEvent e) {
+        if (typeFilter.getText().trim().length() == 0) {
+            typeSelector.setModel(new JComboBox<Object>(types.values().toArray()).getModel());
+            return;
         }
+
+        // filter list
+        ArrayList<Object> filteredTypes = new ArrayList<Object>();
+        String[] filters = typeFilter.getText().trim().split(" ");
+        for (int i = 0; i < filters.length; i++) {
+            filters[i] = filters[i].trim().toLowerCase();
+        }
+        for (Object type : types.values()) {
+            boolean matches = true;
+            String typeName = type.toString().toLowerCase();
+            for (String filter : filters) {
+                matches &= (typeName.contains(filter));
+            }
+            if (matches) {
+                filteredTypes.add(type);
+            }
+        }
+
+        // sort filtered types by length
+        filteredTypes.sort(this);
+
+        typeSelector.setModel(new JComboBox<Object>(filteredTypes.toArray()).getModel());
+        if (typeSelector.getItemCount() > 0) {
+            typeSelector.setSelectedIndex(0);
+        }
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        filterTypes(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        filterTypes(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        filterTypes(e);
+    }
+
+    @Override
+    public int compare(Object o1, Object o2) {
+        return Integer.compare(o1.toString().length(), o2.toString().length());
     }
 }
