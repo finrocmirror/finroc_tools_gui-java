@@ -81,4 +81,9 @@ public class NumberEditor extends PropertyEditComponent<Number> {
     protected void valueUpdated(Number t) {
         jtf.setText(t.toString());
     }
+
+    @Override
+    protected double getMinimalDefaultGridWeight() {
+        return 0.3;
+    }
 }

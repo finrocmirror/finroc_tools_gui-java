@@ -46,7 +46,7 @@ public class BooleanEditor extends PropertyEditComponent<Boolean> {
         chk = new JCheckBox();
         chk.setEnabled(isModifiable());
         valueUpdated(b);
-        add(chk);
+        add(chk, BorderLayout.CENTER);
     }
 
     @Override
@@ -59,4 +59,8 @@ public class BooleanEditor extends PropertyEditComponent<Boolean> {
         chk.setSelected(t);
     }
 
+    @Override
+    protected double getMinimalDefaultGridWeight() {
+        return 0;
+    }
 }

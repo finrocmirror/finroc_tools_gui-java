@@ -107,6 +107,8 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
                     }
                     pecs[i] = wpec;
                     gbc.gridx = i;
+                    gbc.weightx = wpec.getMinimalDefaultGridWeight();
+                    gbc.fill = gbc.weightx > 0 ? GridBagConstraints.BOTH : 0;
                     listPanel.add(wpec, gbc);
                 } else {
                     Log.log(LogLevel.WARNING, this, "Cannot find component type for type " + property.getType().getName()); // skip this property
@@ -189,7 +191,7 @@ public class PropertyListEditor extends PropertyEditComponent < PropertyListAcce
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.NORTH;
         //gbc.fill = GridBagConstraints.VERTICAL;
-        gbc.weightx = 0.5;
+        gbc.weightx = 0.00000001;
         gbc.weighty = 0.00000001;
         for (int i = 0; i < attributes.size(); i++) {
             gbc.gridx = i;

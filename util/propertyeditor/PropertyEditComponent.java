@@ -146,4 +146,11 @@ public abstract class PropertyEditComponent<T> extends JPanel {
     protected boolean isModifiable() {
         return property.isModifiable();
     }
+
+    /**
+     * @return Default grid weight of minimal version
+     */
+    protected double getMinimalDefaultGridWeight() {
+        return 0.05;
+    }
 }

@@ -100,8 +100,8 @@ public class StringEditor extends PropertyEditComponent<String> {
         jtc = new JTextField();
         valueUpdated(s);
         jtc.setMinimumSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
-        jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
-        add(jtc);
+        //jtc.setPreferredSize(new Dimension(TEXTFIELDWIDTH, jtc.getPreferredSize().height));
+        add(jtc, BorderLayout.CENTER);
         jtc.setEnabled(isModifiable());
     }
 
@@ -132,5 +132,10 @@ public class StringEditor extends PropertyEditComponent<String> {
         if (!stringTooLong) {
             super.applyChanges();
         }
+    }
+
+    @Override
+    protected double getMinimalDefaultGridWeight() {
+        return 1;
     }
 }
