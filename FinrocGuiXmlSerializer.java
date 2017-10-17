@@ -74,6 +74,7 @@ public class FinrocGuiXmlSerializer {
         xstream.alias("InputPortNumeric", WidgetInput.Numeric.class);
         xstream.alias("InputPortCC", WidgetInput.CC.class);
         xstream.alias("InputPort", WidgetInput.Std.class);
+        xstream.alias("InputQueue", WidgetInput.Queue.class);
         xstream.alias("OutputPortNumeric", WidgetOutput.Numeric.class);
         xstream.alias("OutputPortCC", WidgetOutput.CC.class);
         xstream.alias("OutputPort", WidgetOutput.Std.class);

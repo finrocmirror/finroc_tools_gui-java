@@ -21,14 +21,20 @@
 //----------------------------------------------------------------------
 package org.finroc.tools.gui;
 
+import java.util.Arrays;
+
 import org.finroc.tools.gui.commons.EventRouter;
 import org.rrlib.serialization.BinarySerializable;
 import org.rrlib.serialization.NumericRepresentation;
 
 import org.finroc.core.FrameworkElementFlags;
 import org.finroc.core.port.Port;
+import org.finroc.core.port.PortCreationInfo;
 import org.finroc.core.port.PortListener;
 import org.finroc.core.port.ThreadLocalCache;
+import org.finroc.core.port.std.PortBase;
+import org.finroc.core.port.std.PortDataManager;
+import org.finroc.core.port.std.PortQueueFragmentRaw;
 
 /**
  * @author Max Reichardt
@@ -110,6 +116,96 @@ public class WidgetInput {
 
         public NumericRepresentation getAutoLocked() {
             return (NumericRepresentation)asPort().getAutoLocked();
+        }
+    }
+
+    /**
+     * Queued input (default queue size is 2)
+     *
+     * Contains additional functionality to get data with same timestamp from multiple queued inputs
+     */
+    public static class Queue<T extends BinarySerializable> extends Std<T> {
+
+        @Override
+        public PortCreationInfo getPci() {
+            PortCreationInfo info = super.getPci();
+            info.flags |= FrameworkElementFlags.HAS_QUEUE | FrameworkElementFlags.USES_QUEUE;
+            info.maxQueueSize = 2;
+            return info;
+        }
+
+        public PortQueueFragmentRaw dequeueAll() {
+            ((PortBase)getPort()).dequeueAllRaw(queueFragment);
+            return queueFragment;
+        }
+
+        /**
+         * Get data with identical timestamps from all specified inputs
+         * (caller needs not to worry about locks; data is locked until next call to this method - or until port disposal)
+         * (note: does not work properly in conjunction with calling dequeueAll on any of the inputs)
+         *
+         * @param result Array to place result in (PortDataManger with data from every input on success, null entries otherwise). Must have sufficient length.
+         * @param inputs Inputs to get consistent data from
+         * @return Returns true if consistent data could be found; false if not
+         */
+        public static boolean getConsistentData(PortDataManager[] result, Queue<?> ... inputs) {
+            for (Queue<?> input : inputs) {
+                input.dequeueNewValues();
+            }
+            for (int i = 0; i < 2; i++) {
+                boolean consistent = true;
+                result[0] = i == 0 ? inputs[0].newestValue : inputs[0].secondNewestValue;
+                if (result[0] == null) {
+                    continue;
+                }
+                for (int j = 1; j < inputs.length; j++) {
+                    result[j] = (inputs[j].newestValue != null && inputs[j].newestValue.getTimestamp().longValue() == result[0].getTimestamp().longValue()) ? inputs[j].newestValue : inputs[j].secondNewestValue;
+                    if (result[j] == null || result[j].getTimestamp().longValue() != result[0].getTimestamp().longValue()) {
+                        consistent = false;
+                        break;
+                    }
+                }
+                if (consistent) {
+                    return true;
+                }
+            }
+            Arrays.fill(result, null);
+            return false;
+        }
+
+        @Override
+        public void dispose() {
+            if (newestValue != null) {
+                newestValue.releaseLock();
+            }
+            if (secondNewestValue != null) {
+                secondNewestValue.releaseLock();
+            }
+            super.dispose();
+        }
+
+        private transient PortQueueFragmentRaw queueFragment = new PortQueueFragmentRaw();
+        private transient PortDataManager newestValue, secondNewestValue;
+
+        @Override
+        public void restore(Widget parent) {
+            queueFragment = new PortQueueFragmentRaw();
+            super.restore(parent);
+        }
+
+        private void dequeueNewValues() {
+            ((PortBase)getPort()).dequeueAllRaw(queueFragment);
+            PortDataManager dequeued;
+            while ((dequeued = queueFragment.dequeueUnsafe()) != null) {
+                if (secondNewestValue != null) {
+                    secondNewestValue.releaseLock();
+                }
+                secondNewestValue = newestValue;
+                newestValue = dequeued;
+            }
+            if (newestValue == null) {
+                newestValue = ((PortBase)getPort()).getLockedUnsafeRaw(true);
+            }
         }
     }
 

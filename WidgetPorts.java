@@ -165,6 +165,8 @@ public class WidgetPorts < P extends WidgetPort<? >> extends ArrayList<P> implem
             return "OutputPortCC";
         } else if (type.equals(WidgetOutput.Blackboard.class)) {
             return "BlackboardPort";
+        } else if (type.equals(WidgetInput.Std.class)) {
+            return "InputQueue";
         } else {
             Log.log(LogLevel.WARNING, "Unknown port type");
             return "Port";
